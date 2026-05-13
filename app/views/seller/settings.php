@@ -1,3 +1,13 @@
+<?php 
+$pendingUpdate = $pendingUpdate ?? null; 
+if (!isset($shop)) {
+    $shop = new stdClass();
+    $shop->name = '';
+    $shop->description = '';
+    $shop->logo = '';
+    $shop->banner = '';
+}
+?>
 <div class="container-fluid">
     <h2 class="mb-4">Thông tin Shop</h2>
 
@@ -13,7 +23,7 @@
         </div>
     <?php endif; ?>
 
-    <?php if ($pendingUpdate): ?>
+    <?php if ($pendingUpdate): ?> 
         <div class="alert alert-warning shadow-sm border-0" style="border-radius: 10px; border-left: 5px solid #ffc107;">
             <i class="fas fa-hourglass-half mr-2"></i> Bạn đang có một yêu cầu cập nhật thông tin Shop gửi đi lúc <?php echo date('d/m/Y H:i', strtotime($pendingUpdate->created_at)); ?>. Yêu cầu đang được Admin xem xét.
             <br>Tên mới chờ duyệt: <strong><?php echo htmlspecialchars($pendingUpdate->new_name); ?></strong>
@@ -28,7 +38,7 @@
                     <div class="col-md-8">
                         <div class="form-group mb-4">
                             <label class="font-weight-bold">Tên Shop <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control form-control-lg" value="<?php echo htmlspecialchars($shop->name); ?>" required <?php echo $pendingUpdate ? 'disabled' : ''; ?>>
+                            <input type="text" name="name" class="form-control form-control-lg" value="<?php echo htmlspecialchars($shop->name); ?>" required <?php echo $pendingUpdate ? 'disabled' : ''; ?>> 
                         </div>
 
                         <div class="form-group mb-4">
