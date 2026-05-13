@@ -43,37 +43,102 @@ include 'app/views/shares/header.php';
             <div class="card-body p-4 p-md-5">
                 <div class="row align-items-start">
                     <!-- IMAGE COLUMN -->
-                    <div class="col-md-5 text-center mb-4 mb-md-0 position-relative">
-                        <!-- Wishlist Heart -->
-                        <?php
-                        $isFav = isset($wishlistItems) && is_array($wishlistItems) && in_array($product->id, $wishlistItems);
-                        $heartClass = $isFav ? 'fas fa-heart' : 'far fa-heart';
-                        ?>
-                        <div class="like-wrapper-detail position-absolute d-flex flex-column align-items-center" style="top: 15px; right: 25px; z-index: 10;">
-                            <button class="btn btn-light rounded-circle shadow-sm wishlist-btn-toggle" data-id="<?php echo $product->id; ?>" style="width: 45px; height: 45px; color: #ee225b; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; border: none;">
-                                <i class="<?php echo $heartClass; ?>"></i>
-                            </button>
-                            <span class="like-count-detail font-weight-bold mt-1" style="color: #ee225b; font-size: 14px;" id="like-count-detail-<?php echo $product->id; ?>">
-                                <?php echo number_format($product->likes ?? 0); ?>
-                            </span>
-                        </div>
+                        <div class="col-md-5 text-center mb-4 mb-md-0 position-relative">
+                            
+                            <!-- Wrapper for Image and Sold Out Overlay -->
+                            <div class="position-relative d-inline-block w-100 <?php echo ((int)($product->stock ?? 0) <= 0) ? 'sold-out-container' : ''; ?>" style="border-radius: 15px; overflow: hidden;">
+                                
+                                <!-- Wishlist Heart -->
+                                <?php
+                                $isFav = isset($wishlistItems) && is_array($wishlistItems) && in_array($product->id, $wishlistItems);
+                                $heartClass = $isFav ? 'fas fa-heart' : 'far fa-heart';
+                                ?>
+                                <div class="like-wrapper-detail position-absolute d-flex flex-column align-items-center" style="top: 15px; right: 25px; z-index: 10;">
+                                    <button class="btn btn-light rounded-circle shadow-sm wishlist-btn-toggle" data-id="<?php echo $product->id; ?>" style="width: 45px; height: 45px; color: #ee225b; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; border: none;">
+                                        <i class="<?php echo $heartClass; ?>"></i>
+                                    </button>
+                                    <span class="like-count-detail font-weight-bold mt-1" style="color: #ee225b; font-size: 14px;" id="like-count-detail-<?php echo $product->id; ?>">
+                                        <?php echo number_format($product->likes ?? 0); ?>
+                                    </span>
+                                </div>
 
-                        <?php if (!empty($product->image)): ?>
-                            <?php
-                            $prodImg = $product->image;
-                            $finalProdImg = (strpos($prodImg, 'public/') === false) ?
-                                ((strpos($prodImg, 'uploads/') !== false) ? 'public/' . $prodImg : 'public/uploads/' . $prodImg) :
-                                $prodImg;
-                            ?>
-                            <img src="<?php echo BASE_URL . htmlspecialchars($finalProdImg, ENT_QUOTES, 'UTF-8'); ?>" class="img-fluid rounded shadow-sm" alt="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>" style="max-height: 400px; object-fit: contain;">
-                        <?php else: ?>
-                            <div class="bg-light d-flex flex-column align-items-center justify-content-center rounded shadow-sm mx-auto p-4" style="height: 350px; width: 100%;">
-                                <img src="<?php echo BASE_URL; ?>public/images/logolen.jpg" style="height: 60px; opacity: 0.2; margin-bottom: 20px;">
-                                <i class="fas fa-image text-muted mb-3" style="font-size: 4rem; opacity: 0.5;"></i>
-                                <span class="text-muted">Chưa có hình ảnh</span>
+                                <?php if (((int)($product->stock ?? 0) <= 0)): ?>
+                                    <div class="sold-out-overlay">
+                                        <img src="<?php echo BASE_URL; ?>public/images/sold_out.png" alt="Hết hàng" style="width: 80%;">
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($product->image)): ?>
+                                    <?php
+                                    $prodImg = $product->image;
+                                    $finalProdImg = (strpos($prodImg, 'public/') === false) ?
+                                        ((strpos($prodImg, 'uploads/') !== false) ? 'public/' . $prodImg : 'public/uploads/' . $prodImg) :
+                                        $prodImg;
+                                    ?>
+                                    <img id="mainProductImage" src="<?php echo BASE_URL . htmlspecialchars($finalProdImg, ENT_QUOTES, 'UTF-8'); ?>" 
+                                         class="img-fluid rounded shadow-sm <?php echo ((int)($product->stock ?? 0) <= 0) ? 'product-img-sold-out' : ''; ?>" 
+                                         alt="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>" 
+                                         style="max-height: 400px; object-fit: contain; width: 100%;">
+                                <?php else: ?>
+                                    <div class="bg-light d-flex flex-column align-items-center justify-content-center rounded shadow-sm mx-auto p-4" style="height: 350px; width: 100%;">
+                                        <img src="<?php echo BASE_URL; ?>public/images/logolen.jpg" style="height: 60px; opacity: 0.2; margin-bottom: 20px;">
+                                        <i class="fas fa-image text-muted mb-3" style="font-size: 4rem; opacity: 0.5;"></i>
+                                        <span class="text-muted">Chưa có hình ảnh</span>
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                        <?php endif; ?>
-                    </div>
+
+                            <!-- SELLER INFO BLOCK -->
+                            <div class="mt-4 p-4 bg-white shadow-sm border rounded" style="border-radius: 15px; border-left: 5px solid var(--primary-color) !important;">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="mr-3">
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 55px; height: 55px; border: 2px solid #f0f0f0; overflow: hidden;">
+                                            <?php if (!empty($product->shop_logo)): ?>
+                                                <img src="<?php echo BASE_URL . $product->shop_logo; ?>" alt="Logo" style="width: 100%; height: 100%; object-fit: cover;">
+                                            <?php else: ?>
+                                                <i class="fas fa-store text-muted" style="font-size: 1.6rem;"></i>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <div class="text-left flex-grow-1">
+                                        <div class="font-weight-bold mb-0" style="font-size: 1.4rem; color: var(--primary-color); line-height: 1.2;">
+                                            <?php echo !empty($product->shop_name) ? htmlspecialchars($product->shop_name) : 'GÌ CŨNG MÓC'; ?>
+                                        </div>
+                                        <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                                            <div class="text-info small mt-1" style="font-size: 0.85rem;">
+                                                <i class="fas <?php echo ($product->seller_role === 'admin') ? 'fa-user-shield' : 'fa-user-tag'; ?> mr-1"></i>
+                                                <?php echo ($product->seller_role === 'admin') ? 'Admin:' : 'Seller:'; ?> 
+                                                <span class="badge badge-info font-weight-normal"><?php echo htmlspecialchars($product->seller_username ?? 'Hệ thống'); ?></span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex" style="gap: 10px;">
+                                    <?php 
+                                        $prodData = [
+                                            'id' => $product->id,
+                                            'name' => $product->name,
+                                            'price' => number_format($product->price, 0, ',', '.') . '₫',
+                                            'image' => $finalProdImg
+                                        ];
+                                    ?>
+                                    <?php if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] != $product->user_id): ?>
+                                    <button class="btn btn-outline-primary btn-sm flex-fill py-2 open-chat-with-product" 
+                                            data-seller-id="<?php echo $product->user_id; ?>"
+                                            data-product='<?php echo htmlspecialchars(json_encode($prodData), ENT_QUOTES, 'UTF-8'); ?>'
+                                            style="border-radius: 8px; font-weight: 600; transition: all 0.2s;">
+                                        <i class="fab fa-facebook-messenger mr-2"></i> Chat ngay
+                                    </button>
+                                    <?php endif; ?>
+                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/index&seller_id=<?php echo $product->user_id; ?>" 
+                                       class="btn btn-light btn-sm flex-fill py-2" 
+                                       style="border-radius: 8px; font-weight: 600; border: 1px solid #ddd;">
+                                        <i class="fas fa-home mr-2"></i> Xem Shop
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
 
                     <!-- DETAILS COLUMN -->
                     <div class="col-md-7 border-left pl-md-5">
@@ -263,16 +328,6 @@ include 'app/views/shares/header.php';
                                     </div>
                                 <?php endif; ?>
 
-                                <button class="btn btn-outline-info px-4 py-3 shadow-sm flex-grow-1 text-center open-chat-with-product mt-3"
-                                    style="border-radius: 30px; font-weight: bold; font-size: 1.1rem; white-space: nowrap; border: 2px solid #17a2b8; color: #17a2b8;"
-                                    data-id="<?php echo $product->id; ?>"
-                                    data-seller-id="<?php echo (isset($product->seller_role) && $product->seller_role === 'admin') ? 0 : ($product->user_id ?? 0); ?>"
-                                    data-name="<?php echo htmlspecialchars($product->name ?? ''); ?>"
-                                    data-price="<?php echo number_format($newPrice ?? 0, 0, ',', '.'); ?>₫"
-                                    data-old-price="<?php echo ($discount > 0) ? number_format($displayBasePrice ?? 0, 0, ',', '.') . '₫' : ''; ?>"
-                                    data-image="<?php echo BASE_URL . $finalProdImg; ?>">
-                                    <i class="fas fa-comment-dots mr-2"></i> Chat với người bán
-                                </button>
 
                                 <?php if ($isAdmin): // Admin vẫn có quyền sửa mọi sản phẩm 
                                 ?>
@@ -582,14 +637,52 @@ include 'app/views/shares/header.php';
                     btnBuyNow.setAttribute('href', url.pathname + url.search);
                 }
 
-                // Handle out of stock for specific variant
-                const btnContainer = document.querySelector('.d-flex.align-items-center.flex-wrap');
+                // Update Sold Out Overlay
+                const imgContainer = mainImage.parentElement;
                 if (vStock <= 0) {
-                    // Cảnh báo hết hàng mẫu này
+                    mainImage.classList.add('product-img-sold-out');
+                    imgContainer.classList.add('sold-out-container');
+                    // Add overlay if not exists
+                    if (!imgContainer.querySelector('.sold-out-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'sold-out-overlay';
+                        overlay.innerHTML = '<img src="<?php echo BASE_URL; ?>public/images/sold_out.png" alt="Hết hàng" style="width: 80%;">';
+                        imgContainer.appendChild(overlay);
+                    }
+                } else {
+                    mainImage.classList.remove('product-img-sold-out');
+                    imgContainer.classList.remove('sold-out-container');
+                    const overlay = imgContainer.querySelector('.sold-out-overlay');
+                    if (overlay) overlay.remove();
+                }
+
+                // Handle out of stock for specific variant
+                const btnArea = document.querySelector('.d-flex.align-items-center.flex-wrap');
+                const qtySelector = document.querySelector('.d-flex.align-items-center.mb-4'); // Quantity selector area
+                
+                if (vStock <= 0) {
                     stockEl.classList.add('text-danger');
                     stockEl.innerText = 'Hết hàng';
+                    if (qtySelector) qtySelector.style.display = 'none';
+                    
+                    // Show out of stock alert instead of buttons
+                    let alertMsg = document.getElementById('variantOutOfStockAlert');
+                    if (!alertMsg) {
+                        alertMsg = document.createElement('div');
+                        alertMsg.id = 'variantOutOfStockAlert';
+                        alertMsg.className = 'alert alert-danger w-100 p-3 shadow-sm mb-4';
+                        alertMsg.style.borderRadius = '10px';
+                        alertMsg.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Hết hàng! Mẫu này hiện không khả dụng.';
+                        btnArea.parentElement.insertBefore(alertMsg, btnArea);
+                    }
+                    btnArea.style.display = 'none';
                 } else {
                     stockEl.classList.remove('text-danger');
+                    stockEl.innerText = vStock;
+                    if (qtySelector) qtySelector.style.display = 'flex';
+                    const alertMsg = document.getElementById('variantOutOfStockAlert');
+                    if (alertMsg) alertMsg.remove();
+                    btnArea.style.display = 'flex';
                 }
             });
         });

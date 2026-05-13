@@ -93,11 +93,13 @@ class ChatController
                     $c->display_name = "GÌ CŨNG MÓC SHOP";
                     $c->display_avatar_url = BASE_URL . 'public/images/logolen.jpg';
                 } else {
-                    $c->display_name = $c->seller_name;
-                    if ($c->seller_avatar) {
+                    $c->display_name = !empty($c->shop_name) ? $c->shop_name : 'GÌ CŨNG MÓC SHOP';
+                    if (!empty($c->shop_logo)) {
+                        $c->display_avatar_url = BASE_URL . $c->shop_logo;
+                    } elseif (!empty($c->seller_avatar)) {
                         $c->display_avatar_url = BASE_URL . 'public/uploads/avatars/' . $c->seller_avatar;
                     } else {
-                        $c->display_avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($c->seller_name) . '&background=2563eb&color=fff';
+                        $c->display_avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($c->display_name) . '&background=2563eb&color=fff';
                     }
                 }
             } else {
@@ -131,21 +133,25 @@ class ChatController
         header('Content-Type: application/json');
         $userId = $this->userId();
 
-        $convId = isset($_GET['conv_id']) ? (int)$_GET['conv_id'] : null;
-        $sellerId = isset($_GET['seller_id']) ? (int)$_GET['seller_id'] : 0;
-        $customerId = isset($_GET['customer_id']) ? (int)$_GET['customer_id'] : null;
-        $since  = $_GET['since'] ?? null;   // timestamp ISO / MySQL
-        $isFullReload = (isset($_GET['full']) && $_GET['full'] == '1');
+        $convId     = isset($_GET['conv_id'])    ? (int)$_GET['conv_id']    : null;
+        $sellerId   = isset($_GET['seller_id'])  ? (int)$_GET['seller_id']  : 0;
+        $customerId = isset($_GET['customer_id'])? (int)$_GET['customer_id']: null;
+        $since      = $_GET['since'] ?? null;
 
-        // Customer: lấy conv của mình với seller cụ thể
-        if (!$convId && !$this->isAdmin() && $sellerId !== null) {
+        // Customer → lấy conv với seller cụ thể (seller_id > 0 mới là hợp lệ)
+        if (!$convId && !$this->isAdmin() && $sellerId > 0) {
             $conv   = $this->chatModel->getOrCreateConversation($userId, $sellerId);
             $convId = $conv ? $conv->id : null;
         }
-        
+
+        // Customer → không truyền seller_id thì lấy conv mặc định (với admin/shop)
+        if (!$convId && !$this->isAdmin() && $sellerId === 0 && !$customerId) {
+            $conv   = $this->chatModel->getOrCreateConversation($userId, 0);
+            $convId = $conv ? $conv->id : null;
+        }
+
         // Admin/Seller: lấy conv với customer cụ thể
         if (!$convId && $customerId !== null) {
-            // Ở đây $userId là người đang đăng nhập (seller/admin)
             $conv   = $this->chatModel->getOrCreateConversation($customerId, $userId);
             $convId = $conv ? $conv->id : null;
         }
@@ -165,19 +171,30 @@ class ChatController
 
         $conv = $this->chatModel->getConversationById($convId);
         if ($conv) {
-             if ($userId == $conv->customer_id) {
-                if ($conv->seller_id == 0 || (isset($conv->seller_name) && $conv->seller_name == 'Admin')) {
-                    $conv->display_name = "GÌ CŨNG MÓC SHOP";
+            if ($userId == $conv->customer_id) {
+                // Tôi là khách hàng → hiện thông tin người bán
+                if ($conv->seller_id == 0) {
+                    $conv->display_name       = 'GÌ CŨNG MÓC SHOP';
                     $conv->display_avatar_url = BASE_URL . 'public/images/logolen.jpg';
                 } else {
-                    $conv->display_name = $conv->seller_name;
-                    $conv->display_avatar_url = $conv->seller_avatar ? BASE_URL . 'public/uploads/avatars/' . $conv->seller_avatar : 'https://ui-avatars.com/api/?name=' . urlencode($conv->seller_name) . '&background=2563eb&color=fff';
+                    $conv->display_name = !empty($conv->shop_name) ? $conv->shop_name : 'GÌ CŨNG MÓC SHOP';
+                    if (!empty($conv->shop_logo)) {
+                        $conv->display_avatar_url = BASE_URL . $conv->shop_logo;
+                    } elseif (!empty($conv->seller_avatar)) {
+                        $conv->display_avatar_url = BASE_URL . 'public/uploads/avatars/' . $conv->seller_avatar;
+                    } else {
+                        $conv->display_avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($conv->display_name) . '&background=2563eb&color=fff';
+                    }
                 }
             } else {
-                $conv->display_name = $conv->customer_name;
-                $conv->display_avatar_url = $conv->customer_avatar ? BASE_URL . 'public/uploads/avatars/' . $conv->customer_avatar : 'https://ui-avatars.com/api/?name=' . urlencode($conv->customer_name) . '&background=2563eb&color=fff';
+                // Tôi là người bán / admin → hiện thông tin khách hàng
+                $conv->display_name = $conv->customer_name ?? 'Khách hàng';
+                $conv->display_avatar_url = !empty($conv->customer_avatar)
+                    ? BASE_URL . 'public/uploads/avatars/' . $conv->customer_avatar
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($conv->display_name) . '&background=2563eb&color=fff';
             }
         }
+
 
         echo json_encode([
             'success'         => true,
@@ -279,33 +296,49 @@ class ChatController
         $this->requireLogin();
         header('Content-Type: application/json');
 
-        $userId  = $this->userId();
-        $keyword = $_GET['q'] ?? '';
+        $userId   = $this->userId();
+        $sellerId = isset($_GET['seller_id']) ? (int)$_GET['seller_id'] : 0;
+        $keyword  = $_GET['q'] ?? '';
 
         $cartModel    = new CartModel($this->db);
         $productModel = new ProductModel($this->db);
 
-        // Ưu tiên lấy từ giỏ hàng
-        $cartItems = $cartModel->getItems($userId);
         $results = [];
 
-        foreach ($cartItems as $item) {
-            if (empty($keyword) || mb_stripos($item['name'], $keyword) !== false) {
-                $discount = isset($item['discount_percent']) ? (int)$item['discount_percent'] : 0;
-                $price = $item['price'];
-                $oldPrice = '';
-                if ($discount > 0) {
-                    $oldPrice = number_format($price, 0, ',', '.') . '₫';
-                    $price = $price * (1 - $discount / 100);
-                }
+        // Lấy sản phẩm của Seller này
+        if ($sellerId > 0) {
+            $shopProducts = $productModel->getProductsBySeller($sellerId);
+            foreach ($shopProducts as $p) {
+                if (empty($keyword) || mb_stripos($p->name, $keyword) !== false) {
+                    $discount = isset($p->discount_percent) ? (int)$p->discount_percent : 0;
+                    $price = $p->price;
+                    $oldPrice = '';
+                    if ($discount > 0) {
+                        $oldPrice = number_format($price, 0, ',', '.') . '₫';
+                        $price = $price * (1 - $discount / 100);
+                    }
 
-                $results[] = [
-                    'id'    => $item['id'],
-                    'name'  => $item['name'],
-                    'price' => number_format($price, 0, ',', '.') . '₫',
-                    'old_price' => $oldPrice,
-                    'image' => (strpos($item['image'], 'http') === 0) ? $item['image'] : BASE_URL . 'public/uploads/' . $item['image']
-                ];
+                    $results[] = [
+                        'id'    => $p->id,
+                        'name'  => $p->name,
+                        'price' => number_format($price, 0, ',', '.') . '₫',
+                        'old_price' => $oldPrice,
+                        'image' => (strpos($p->image, 'http') === 0) ? $p->image : BASE_URL . (strpos($p->image, 'public/') === 0 ? '' : 'public/uploads/') . $p->image
+                    ];
+                }
+            }
+        } else {
+            // Fallback nếu không có seller_id (lấy từ giỏ hàng)
+            $cartItems = $cartModel->getItems($userId);
+            foreach ($cartItems as $item) {
+                if (empty($keyword) || mb_stripos($item['name'], $keyword) !== false) {
+                    $results[] = [
+                        'id'    => $item['id'],
+                        'name'  => $item['name'],
+                        'price' => number_format($item['price'], 0, ',', '.') . '₫',
+                        'image' => (strpos($item['image'], 'http') === 0) ? $item['image'] : BASE_URL . (strpos($item['image'], 'public/') === 0 ? '' : 'public/uploads/') . $item['image']
+                    ];
+                }
             }
         }
 

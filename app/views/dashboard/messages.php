@@ -219,6 +219,57 @@
             display: none;
         }
     }
+
+    /* Product card in admin chat */
+    .admin-product-card {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        text-decoration: none !important;
+        color: inherit;
+        width: 200px;
+        transition: transform 0.2s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .admin-product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .admin-product-card img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+    .admin-product-info {
+        padding: 8px 10px;
+        overflow: hidden;
+    }
+    .admin-product-name {
+        font-weight: 600;
+        font-size: 12px;
+        color: #333;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 4px;
+    }
+    .admin-product-price {
+        color: #ee4d2d;
+        font-weight: bold;
+        font-size: 13px;
+    }
+    .msg-bubble-product {
+        padding: 4px !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+    .msg-bubble-product .msg-time {
+        color: #999 !important;
+        padding: 0 4px;
+    }
 </style>
 
 <div class="admin-chat-container">
@@ -351,17 +402,47 @@
         let html = '';
         msgs.forEach(m => {
             const isSent = m.sender_id == ADMIN_ID;
+            const dir = isSent ? 'sent' : 'received';
             const time = m.created_at.substring(11, 16);
+
+            let content = '';
+            if (m.message_type === 'product') {
+                try {
+                    const p = JSON.parse(m.content);
+                    const imgSrc = p.image || '';
+                    content = `
+                        <a href="${BASE_URL}index.php?url=Product/show/${p.id}" target="_blank" class="admin-product-card">
+                            <img src="${imgSrc}" alt="" onerror="this.style.display='none'">
+                            <div class="admin-product-info">
+                                <div class="admin-product-name">${escHtml(p.name)}</div>
+                                <div class="admin-product-price">${p.price || ''}</div>
+                            </div>
+                        </a>`;
+                } catch(e) {
+                    content = m.content;
+                }
+            } else if (m.message_type === 'image') {
+                content = `<img src="${BASE_URL}${m.attachment_url}" style="max-width:200px; border-radius:8px; cursor:pointer;" onclick="window.open(this.src)" alt="Ảnh">`;
+            } else {
+                content = escHtml(m.content || '').replace(/\n/g, '<br>');
+            }
+
             html += `
                 <div class="msg-row ${isSent ? 'sent' : 'received'}">
-                    <div class="msg-bubble">
-                        ${m.content}
+                    <div class="msg-bubble ${m.message_type === 'product' ? 'msg-bubble-product' : ''}">
+                        ${content}
                         <div class="msg-time">${time}</div>
                     </div>
                 </div>
             `;
         });
         $('#chatMessages').html(html);
+    }
+
+    function escHtml(str) {
+        const d = document.createElement('div');
+        d.appendChild(document.createTextNode(str));
+        return d.innerHTML;
     }
 
     function sendMsg() {

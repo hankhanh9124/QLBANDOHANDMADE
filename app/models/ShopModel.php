@@ -38,4 +38,22 @@ class ShopModel {
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }
+
+    public function getAllShops() {
+        $query = "SELECT s.*, u.name as seller_name, u.email as seller_email 
+                  FROM " . $this->table_name . " s
+                  JOIN user u ON s.seller_id = u.id
+                  ORDER BY s.created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
+
+    public function updateShopStatus($id, $status) {
+        $query = "UPDATE " . $this->table_name . " SET status = :status WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
 }

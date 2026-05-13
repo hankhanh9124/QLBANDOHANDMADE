@@ -321,7 +321,7 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                                         <span class="font-weight-bold" style="color: #666;"><?php echo number_format($subtotal, 0, ',', '.'); ?> ₫</span>
                                     </div>
                                     <a href="<?php echo BASE_URL; ?>index.php?url=Cart/index" class="btn btn-success btn-block mb-2 py-2" style="background-color: var(--primary-color); border: none; font-weight: bold; border-radius: 4px;">Xem giỏ hàng</a>
-                                    <a href="<?php echo BASE_URL; ?>index.php?url=Cart/checkout" class="btn btn-info btn-block py-2" style="background-color: var(--nav-dark-green); border: none; font-weight: bold; border-radius: 4px;">Thanh toán</a>
+                                    <a href="<?php echo BASE_URL; ?>index.php?url=Cart/checkout" id="btnMiniCheckout" class="btn btn-info btn-block py-2" style="background-color: var(--nav-dark-green); border: none; font-weight: bold; border-radius: 4px;">Thanh toán</a>
                                 </div>
                             <?php endif; ?>
                         </div>

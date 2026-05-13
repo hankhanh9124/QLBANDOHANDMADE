@@ -8,6 +8,7 @@ require_once 'app/models/OrderModel.php';
 require_once 'app/models/SellerRequestModel.php';
 require_once 'app/models/ShopModel.php';
 require_once 'app/models/ChatModel.php';
+require_once 'app/models/ShopUpdateModel.php';
 
 class DashboardController
 {
@@ -20,6 +21,7 @@ class DashboardController
     private $sellerRequestModel;
     private $shopModel;
     private $chatModel;
+    private $shopUpdateModel;
     public $unreadChatCount = 0;
 
     public function __construct()
@@ -34,6 +36,7 @@ class DashboardController
         $this->sellerRequestModel = new SellerRequestModel($this->db);
         $this->shopModel = new ShopModel($this->db);
         $this->chatModel = new ChatModel($this->db);
+        $this->shopUpdateModel = new ShopUpdateModel($this->db);
 
         // Security check: Only admins can access the dashboard
         if (session_status() === PHP_SESSION_NONE) {
@@ -491,5 +494,101 @@ class DashboardController
     {
         $action = 'messages';
         include 'app/views/dashboard/messages.php';
+    }
+
+    public function shopUpdates()
+    {
+        $this->requireAdmin();
+        $updates = $this->shopUpdateModel->getAllPending();
+        $action = 'shop_updates';
+        include 'app/views/dashboard/shop_updates.php';
+    }
+
+    public function approveShopUpdate($id)
+    {
+        $this->requireAdmin();
+        $update = $this->shopUpdateModel->getById($id);
+        
+        if ($update && $update->status === 'pending') {
+            // Update the shop
+            $shopData = [
+                'name' => $update->new_name,
+                'description' => $update->new_description,
+                'logo' => $update->new_logo,
+                'banner' => $update->new_banner
+            ];
+            $this->shopModel->update($update->shop_id, $shopData);
+            
+            // Mark as approved
+            $this->shopUpdateModel->updateStatus($id, 'approved');
+
+            // Notify Seller
+            require_once 'app/models/NotificationModel.php';
+            $notif = new NotificationModel($this->db);
+            $notif->create(
+                $update->seller_id,
+                'Cập nhật thông tin Shop thành công',
+                'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.',
+                'success',
+                'index.php?url=Seller/settings'
+            );
+
+            $_SESSION['success_message'] = "Đã phê duyệt thông tin Shop mới.";
+        } else {
+            $_SESSION['error_message'] = "Yêu cầu không hợp lệ.";
+        }
+        header('Location: ' . BASE_URL . 'index.php?url=Dashboard/shopUpdates');
+        exit;
+    }
+
+    public function rejectShopUpdate($id)
+    {
+        $this->requireAdmin();
+        $update = $this->shopUpdateModel->getById($id);
+        
+        if ($update && $update->status === 'pending') {
+            $this->shopUpdateModel->updateStatus($id, 'rejected');
+
+            // Notify Seller
+            require_once 'app/models/NotificationModel.php';
+            $notif = new NotificationModel($this->db);
+            $notif->create(
+                $update->seller_id,
+                'Cập nhật thông tin Shop bị từ chối',
+                'Yêu cầu cập nhật thông tin cửa hàng của bạn đã bị Admin từ chối.',
+                'danger',
+                'index.php?url=Seller/settings'
+            );
+
+            $_SESSION['success_message'] = "Đã từ chối yêu cầu cập nhật thông tin Shop.";
+        } else {
+            $_SESSION['error_message'] = "Yêu cầu không hợp lệ.";
+        }
+        header('Location: ' . BASE_URL . 'index.php?url=Dashboard/shopUpdates');
+        exit;
+    }
+    public function manageShops()
+    {
+        $this->requireAdmin();
+        $shops = $this->shopModel->getAllShops();
+        $action = 'manage_shops';
+        include 'app/views/dashboard/manage_shops.php';
+    }
+
+    public function updateShopStatus($id, $status)
+    {
+        $this->requireAdmin();
+        $allowed = ['active', 'inactive', 'suspended'];
+        if (!in_array($status, $allowed)) {
+            $_SESSION['error_message'] = "Trạng thái không hợp lệ.";
+        } else {
+            if ($this->shopModel->updateShopStatus($id, $status)) {
+                $_SESSION['success_message'] = "Đã cập nhật trạng thái cửa hàng.";
+            } else {
+                $_SESSION['error_message'] = "Có lỗi xảy ra.";
+            }
+        }
+        header('Location: ' . BASE_URL . 'index.php?url=Dashboard/manageShops');
+        exit;
     }
 }

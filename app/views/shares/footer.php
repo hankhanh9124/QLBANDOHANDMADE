@@ -60,6 +60,35 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="<?php echo BASE_URL; ?>public/js/orders.js?v=<?php echo time(); ?>"></script>
 
+<!-- LogIn Reminder Modal (Global) -->
+<div class="modal fade" id="loginReminderModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <div class="modal-header border-0 bg-light p-4">
+                <h5 class="modal-title font-weight-bold" style="color: var(--primary-color); font-size: 1.4rem;">
+                    <i class="fas fa-shopping-bag mr-2"></i> Thông báo mua hàng
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="outline: none;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <i class="fas fa-user-circle fa-5x" style="color: #e0e0e0; background: linear-gradient(135deg, var(--primary-color) 0%, #427e59 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                </div>
+                <h4 class="font-weight-bold mb-3" style="color: #333;">Bạn cần đăng nhập để đặt hàng!</h4>
+                <p class="text-muted mb-0" style="font-size: 1.1rem;">Vui lòng đăng nhập hoặc đăng ký tài khoản mới để tiếp tục đặt hàng và nhận nhiều ưu đãi hơn từ cửa hàng.</p>
+            </div>
+            <div class="modal-footer border-0 p-4 bg-light d-flex justify-content-center">
+                <button type="button" class="btn btn-secondary px-4 py-2 mr-2" data-dismiss="modal" style="border-radius: 10px; font-weight: 600;">Để sau</button>
+                <a href="<?php echo BASE_URL; ?>index.php?url=Page/login" class="btn px-5 py-2" style="background-color: #ff9800; border: 2px solid var(--primary-color); border-radius: 10px; font-weight: 600; box-shadow: 0 4px 15px rgba(255,152,0,0.3); color: white; text-decoration: none;">
+                    Đăng nhập ngay
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 window.onscroll = function() {
     var btn = document.getElementById("socialBackToTop");
@@ -75,6 +104,20 @@ window.onscroll = function() {
         }
     }
 };
+
+// Global Checkout Login Check for mini-cart
+document.addEventListener('DOMContentLoaded', function() {
+    const miniCheckoutBtn = document.getElementById('btnMiniCheckout');
+    if (miniCheckoutBtn) {
+        miniCheckoutBtn.addEventListener('click', function(e) {
+            const isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
+            if (!isLoggedIn) {
+                e.preventDefault();
+                $('#loginReminderModal').modal('show');
+            }
+        });
+    }
+});
 </script>
 </body>
 </html>

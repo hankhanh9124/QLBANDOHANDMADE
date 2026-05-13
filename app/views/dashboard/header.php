@@ -194,6 +194,12 @@
                     <li class="<?php echo $action == 'manage_sellers' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/manageSellers"><i class="fas fa-user-check mr-2"></i> Duyệt người bán</a>
                     </li>
+                    <li class="<?php echo $action == 'shop_updates' ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/shopUpdates"><i class="fas fa-store-slash mr-2"></i> Duyệt thông tin Shop</a>
+                    </li>
+                    <li class="<?php echo $action == 'manage_shops' ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/manageShops"><i class="fas fa-store mr-2"></i> Quản lý Shop</a>
+                    </li>
                     <li class="<?php echo $action == 'returns' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/returns"><i class="fas fa-undo mr-2"></i> Trả hàng / Hoàn tiền</a>
                     </li>
@@ -209,6 +215,9 @@
                     <!-- Seller Menu -->
                     <li class="<?php echo $action == 'index' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Seller"><i class="fas fa-chart-line mr-2"></i> Tổng quan</a>
+                    </li>
+                    <li class="<?php echo $action == 'settings' ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>index.php?url=Seller/settings"><i class="fas fa-store mr-2"></i> Thông tin Shop</a>
                     </li>
                     <li class="<?php echo $action == 'add_product' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Product/add"><i class="fas fa-plus-circle mr-2"></i> Đăng sản phẩm</a>

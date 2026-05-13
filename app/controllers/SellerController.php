@@ -5,6 +5,8 @@ require_once 'app/models/NotificationModel.php';
 require_once 'app/models/OrderModel.php';
 require_once 'app/models/ProductModel.php';
 require_once 'app/models/CategoryModel.php';
+require_once 'app/models/ShopModel.php';
+require_once 'app/models/ShopUpdateModel.php';
 
 class SellerController {
     private $db;
@@ -13,6 +15,8 @@ class SellerController {
     private $orderModel;
     private $productModel;
     private $categoryModel;
+    private $shopModel;
+    private $shopUpdateModel;
 
     public function __construct() {
         if (session_status() === PHP_SESSION_NONE) session_start();
@@ -29,6 +33,8 @@ class SellerController {
         $this->orderModel = new OrderModel($this->db);
         $this->productModel = new ProductModel($this->db);
         $this->categoryModel = new CategoryModel($this->db);
+        $this->shopModel = new ShopModel($this->db);
+        $this->shopUpdateModel = new ShopUpdateModel($this->db);
     }
 
     public function register() {
@@ -287,5 +293,103 @@ class SellerController {
         
         header('Location: ' . $_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'index.php?url=Seller/orders'));
         exit;
+    }
+
+    public function settings() {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL . 'index.php?url=Dashboard');
+            exit;
+        }
+
+        $userId = $_SESSION['user_id'];
+        $shop = $this->shopModel->getBySellerId($userId);
+        
+        if (!$shop) {
+            $_SESSION['error_message'] = "Không tìm thấy thông tin shop.";
+            header('Location: ' . BASE_URL . 'index.php?url=Seller');
+            exit;
+        }
+
+        // Check for pending updates
+        $pendingUpdate = $this->shopUpdateModel->getPendingByShopId($shop->id);
+
+        $action = 'settings';
+        require_once 'app/views/dashboard/header.php';
+        require_once 'app/views/seller/settings.php';
+        require_once 'app/views/dashboard/footer.php';
+    }
+
+    public function submitShopUpdate() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SESSION['user_role'] === 'seller') {
+            $userId = $_SESSION['user_id'];
+            $shop = $this->shopModel->getBySellerId($userId);
+            if (!$shop) {
+                $_SESSION['error_message'] = "Không tìm thấy shop.";
+                header('Location: ' . BASE_URL . 'index.php?url=Seller/settings');
+                exit;
+            }
+
+            // check if there's already a pending request
+            $pending = $this->shopUpdateModel->getPendingByShopId($shop->id);
+            if ($pending) {
+                $_SESSION['error_message'] = "Bạn đang có yêu cầu chờ duyệt, vui lòng đợi.";
+                header('Location: ' . BASE_URL . 'index.php?url=Seller/settings');
+                exit;
+            }
+
+            $newName = $_POST['name'] ?? $shop->name;
+            $newDesc = $_POST['description'] ?? $shop->description;
+            
+            $newLogo = $shop->logo;
+            $newBanner = $shop->banner;
+
+            $targetDir = "public/uploads/shops/";
+            if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
+
+            if (isset($_FILES['logo']) && $_FILES['logo']['error'] === 0) {
+                $fileName = time() . '_logo_' . $_FILES['logo']['name'];
+                if (move_uploaded_file($_FILES['logo']['tmp_name'], $targetDir . $fileName)) {
+                    $newLogo = $targetDir . $fileName;
+                }
+            }
+
+            if (isset($_FILES['banner']) && $_FILES['banner']['error'] === 0) {
+                $fileName = time() . '_banner_' . $_FILES['banner']['name'];
+                if (move_uploaded_file($_FILES['banner']['tmp_name'], $targetDir . $fileName)) {
+                    $newBanner = $targetDir . $fileName;
+                }
+            }
+
+            $data = [
+                'shop_id' => $shop->id,
+                'new_name' => $newName,
+                'new_description' => $newDesc,
+                'new_logo' => $newLogo,
+                'new_banner' => $newBanner
+            ];
+
+            if ($this->shopUpdateModel->create($data)) {
+                // Notify Admins
+                $query = "SELECT id FROM user WHERE role = 'admin'";
+                $stmt = $this->db->prepare($query);
+                $stmt->execute();
+                $admins = $stmt->fetchAll(PDO::FETCH_OBJ);
+                foreach ($admins as $admin) {
+                    $this->notificationModel->create(
+                        $admin->id,
+                        'Yêu cầu cập nhật thông tin Shop',
+                        'Cửa hàng ' . $shop->name . ' yêu cầu cập nhật thông tin.',
+                        'system',
+                        'index.php?url=Dashboard/shopUpdates'
+                    );
+                }
+
+                $_SESSION['success_message'] = "Yêu cầu cập nhật đã được gửi và đang chờ Admin duyệt.";
+            } else {
+                $_SESSION['error_message'] = "Có lỗi xảy ra khi gửi yêu cầu.";
+            }
+            header('Location: ' . BASE_URL . 'index.php?url=Seller/settings');
+            exit;
+        }
     }
 }

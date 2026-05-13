@@ -78,10 +78,12 @@ class ChatModel {
         
         $query = "SELECT c.*, 
                          u_c.name AS customer_name, u_c.avatar AS customer_avatar,
-                         u_s.name AS seller_name, u_s.avatar AS seller_avatar
+                         u_s.name AS seller_name, u_s.avatar AS seller_avatar,
+                         s.name AS shop_name, s.logo AS shop_logo
                   FROM conversations c
                   JOIN user u_c ON c.customer_id = u_c.id
                   LEFT JOIN user u_s ON c.seller_id = u_s.id
+                  LEFT JOIN shops s ON c.seller_id = s.seller_id
                   WHERE $where
                   ORDER BY c.is_pinned DESC, c.updated_at DESC";
         
@@ -100,10 +102,12 @@ class ChatModel {
         // Tìm hội thoại hiện có giữa 2 người này
         $stmt = $this->conn->prepare(
             "SELECT c.*, u_c.name AS customer_name, u_c.avatar AS customer_avatar,
-                         u_s.name AS seller_name, u_s.avatar AS seller_avatar
+                         u_s.name AS seller_name, u_s.avatar AS seller_avatar,
+                         s.name AS shop_name, s.logo AS shop_logo
              FROM conversations c
              JOIN user u_c ON c.customer_id = u_c.id
              LEFT JOIN user u_s ON c.seller_id = u_s.id
+             LEFT JOIN shops s ON c.seller_id = s.seller_id
              WHERE c.customer_id = :cid AND c.seller_id = :sid LIMIT 1"
         );
         $stmt->bindParam(':cid', $customerId, PDO::PARAM_INT);
@@ -137,10 +141,12 @@ class ChatModel {
     public function getConversationById($convId) {
         $stmt = $this->conn->prepare(
             "SELECT c.*, u_c.name AS customer_name, u_c.avatar AS customer_avatar,
-                         u_s.name AS seller_name, u_s.avatar AS seller_avatar
+                         u_s.name AS seller_name, u_s.avatar AS seller_avatar,
+                         s.name AS shop_name, s.logo AS shop_logo
              FROM conversations c
              JOIN user u_c ON c.customer_id = u_c.id
              LEFT JOIN user u_s ON c.seller_id = u_s.id
+             LEFT JOIN shops s ON c.seller_id = s.seller_id
              WHERE c.id = :id LIMIT 1"
         );
         $stmt->bindParam(':id', $convId, PDO::PARAM_INT);

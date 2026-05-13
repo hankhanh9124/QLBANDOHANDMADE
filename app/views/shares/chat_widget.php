@@ -47,11 +47,27 @@ $shopAvatar = BASE_URL . 'public/images/logolen.jpg';
             </div>
 
             <!-- Messages Area (Active Pane) -->
-            <div id="wgtChatPane" style="display: flex; flex-direction: column; flex: 1; overflow: hidden;">
+            <div id="wgtChatPane" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative;">
                 <div class="chat-messages-area" id="wgtMessages" style="flex: 1; overflow-y: auto;">
                     <!-- Messages will be loaded here -->
                     <div class="text-center p-5 text-muted">
                         <i class="fas fa-spinner fa-spin mr-2"></i> Đang tải tin nhắn...
+                    </div>
+                </div>
+
+                <!-- Product Preview Sticky Bar (Now at the bottom of messages area) -->
+                <div id="wgtProductSticky" style="display: none; background: #fff; border-top: 1px solid #eee; padding: 10px 15px; z-index: 10;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="text-muted small">Bạn đang trao đổi về sản phẩm này</span>
+                        <i class="fas fa-times text-muted cursor-pointer" id="wgtCloseSticky" style="font-size: 14px;"></i>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <img id="stickyProdImg" src="" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; margin-right: 12px;">
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div id="stickyProdName" class="font-weight-bold text-truncate" style="font-size: 0.95rem; color: #333;"></div>
+                            <div id="stickyProdPrice" class="text-danger font-weight-bold" style="font-size: 0.9rem;"></div>
+                        </div>
+                        <button class="btn btn-light btn-sm ml-2 border" id="wgtChangeProd" style="border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap;">Thay đổi</button>
                     </div>
                 </div>
             </div>
@@ -75,20 +91,21 @@ $shopAvatar = BASE_URL . 'public/images/logolen.jpg';
 
         </div><!-- /.wgt-window -->
 
-        <!-- Product Selector Modal -->
+        <!-- Product Selector Modal (Centered on Screen) -->
         <div class="wgt-selector-overlay" id="wgtProductSelector" style="display:none">
-            <div class="wgt-selector-modal">
+            <div class="wgt-selector-modal shadow-lg">
                 <div class="wgt-selector-header">
                     <span>Chọn sản phẩm</span>
-                    <i class="fas fa-times" onclick="document.getElementById('wgtProductSelector').style.display='none'"></i>
+                    <i class="fas fa-times cursor-pointer" onclick="document.getElementById('wgtProductSelector').style.display='none'"></i>
                 </div>
                 <div class="wgt-selector-search">
-                    <div class="chat-search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="wgtSelectorSearchInput" placeholder="Tìm tên sản phẩm">
+                    <div class="chat-search-box" style="position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999;"></i>
+                        <input type="text" id="wgtSelectorSearchInput" placeholder="Tìm tên sản phẩm" 
+                               style="width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 10px 10px 10px 35px; outline: none; font-size: 14px;">
                     </div>
                 </div>
-                <div class="wgt-selector-list" id="wgtSelectorList">
+                <div class="wgt-selector-list" id="wgtSelectorList" style="flex: 1; overflow-y: auto; max-height: 400px; padding-bottom: 10px;">
                     <!-- Products loaded here -->
                 </div>
             </div>

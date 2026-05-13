@@ -284,10 +284,11 @@ class ProductModel
     }
     public function getProductById($id)
     {
-        $query = "SELECT p.*, c.name as category_name, u.role as seller_role
+        $query = "SELECT p.*, c.name as category_name, u.role as seller_role, u.name as seller_username, s.name as shop_name, s.logo as shop_logo
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
         LEFT JOIN user u ON p.user_id = u.id
+        LEFT JOIN shops s ON p.user_id = s.seller_id
         WHERE p.id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);

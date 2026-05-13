@@ -279,7 +279,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                         foreach (array_slice($sec['products'], 0, $limit) as $product): ?>
                             <div class="col-lg-3 col-md-4 col-6 p-2">
                                 <div class="handmade-card-unique w-100 h-100 m-0">
-                                    <div class="card-img-wrapper">
+                                    <div class="card-img-wrapper <?php echo ((int)($product->stock ?? 0) <= 0) ? 'sold-out-container' : ''; ?>">
                                         <?php
                                         $discount = isset($product->discount_percent) ? (int)$product->discount_percent : 0;
                                         $newPrice = ($discount > 0) ? $product->price * (1 - $discount / 100) : $product->price;
@@ -292,13 +292,14 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                                             <div class="card-badge-sale">-<?php echo $discount; ?>%</div>
                                         <?php endif; ?>
 
-
                                         <?php if (((int)($product->stock ?? 0) <= 0)): ?>
-                                            <div class="card-badge-out-of-stock">HẾT HÀNG</div>
+                                            <div class="sold-out-overlay">
+                                                <img src="<?php echo BASE_URL; ?>public/images/sold_out.png" alt="Hết hàng">
+                                            </div>
                                         <?php endif; ?>
 
                                         <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>">
-                                            <img src="<?php echo BASE_URL . $finalPImg; ?>" alt="<?php echo htmlspecialchars($product->name); ?>" <?php echo ((int)($product->stock ?? 0) <= 0) ? 'style="filter: grayscale(1) opacity(0.7);"' : ''; ?>>
+                                            <img src="<?php echo BASE_URL . $finalPImg; ?>" alt="<?php echo htmlspecialchars($product->name); ?>" class="<?php echo ((int)($product->stock ?? 0) <= 0) ? 'product-img-sold-out' : ''; ?>">
                                         </a>
                                     </div>
                                     <div class="handmade-card-body d-flex flex-column" style="padding: 12px; min-height: 170px;">
@@ -463,7 +464,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                         <?php foreach ($products as $product): ?>
                             <div class="col-lg-3 col-md-4 col-6 p-2">
                                 <div class="handmade-card-unique w-100 h-100 m-0">
-                                    <div class="card-img-wrapper">
+                                    <div class="card-img-wrapper <?php echo ((int)($product->stock ?? 0) <= 0) ? 'sold-out-container' : ''; ?>">
                                         <?php
                                         $discount = isset($product->discount_percent) ? (int)$product->discount_percent : 0;
                                         $newPrice = ($discount > 0) ? $product->price * (1 - $discount / 100) : $product->price;
@@ -477,11 +478,13 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                                         <?php endif; ?>
 
                                         <?php if (((int)($product->stock ?? 0) <= 0)): ?>
-                                            <div class="card-badge-out-of-stock">HẾT HÀNG</div>
+                                            <div class="sold-out-overlay">
+                                                <img src="<?php echo BASE_URL; ?>public/images/sold_out.png" alt="Hết hàng">
+                                            </div>
                                         <?php endif; ?>
 
                                         <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>">
-                                            <img src="<?php echo BASE_URL . $finalPImg; ?>" alt="<?php echo htmlspecialchars($product->name); ?>" <?php echo ((int)($product->stock ?? 0) <= 0) ? 'style="filter: grayscale(1) opacity(0.7);"' : ''; ?>>
+                                            <img src="<?php echo BASE_URL . $finalPImg; ?>" alt="<?php echo htmlspecialchars($product->name); ?>" class="<?php echo ((int)($product->stock ?? 0) <= 0) ? 'product-img-sold-out' : ''; ?>">
                                         </a>
                                     </div>
                                     <div class="handmade-card-body d-flex flex-column" style="padding: 12px; min-height: 170px;">
