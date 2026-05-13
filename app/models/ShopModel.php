@@ -1,0 +1,41 @@
+<?php
+class ShopModel {
+    private $conn;
+    private $table_name = "shops";
+
+    public function __construct($db) {
+        $this->conn = $db;
+    }
+
+    public function create($data) {
+        $query = "INSERT INTO " . $this->table_name . " 
+                  (seller_id, name, description, status) 
+                  VALUES (:seller_id, :name, :description, 'active')";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':seller_id', $data['seller_id']);
+        $stmt->bindParam(':name', $data['name']);
+        $stmt->bindParam(':description', $data['description']);
+        return $stmt->execute();
+    }
+
+    public function getBySellerId($seller_id) {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE seller_id = :seller_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':seller_id', $seller_id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function update($id, $data) {
+        $query = "UPDATE " . $this->table_name . " 
+                  SET name = :name, description = :description, logo = :logo, banner = :banner 
+                  WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':name', $data['name']);
+        $stmt->bindParam(':description', $data['description']);
+        $stmt->bindParam(':logo', $data['logo']);
+        $stmt->bindParam(':banner', $data['banner']);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
+}

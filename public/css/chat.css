@@ -1,0 +1,219 @@
+/* public/css/chat.css — Messenger Style Redesign */
+:root {
+    --primary-chat: #16e665;
+    --bg-received: #e4e6eb;
+    --text-received: #050505;
+    --text-sent: #ffffff;
+}
+
+/* ══ Widget Wrapper ══ */
+.chat-widget-wrap {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Floating Button */
+.wgt-floating-btn {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-chat);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s;
+}
+.wgt-floating-btn:hover { transform: scale(1.05); }
+
+/* Window */
+.wgt-window {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 360px;
+    height: 500px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.wgt-window.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* ── Header ── */
+.wgt-pane-header {
+    padding: 12px 15px;
+    background: #fff;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.wgt-header-left { display: flex; align-items: center; }
+.wgt-header-left img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.wgt-header-info h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+.wgt-header-info span {
+    font-size: 12px;
+    color: #31a24c;
+}
+
+/* ── Messages Area ── */
+.chat-messages-area {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Khoảng cách giữa các tin nhắn */
+}
+
+/* Date Separator */
+.wgt-date-sep {
+    text-align: center;
+    margin: 15px 0;
+    font-size: 11px;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Message Row */
+.wgt-msg-row {
+    display: flex;
+    width: 100%;
+    margin-bottom: 2px;
+}
+.wgt-msg-row.sent { justify-content: flex-end; }
+.wgt-msg-row.received { justify-content: flex-start; }
+
+.wgt-msg-row .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    align-self: flex-end;
+    margin-right: 8px;
+}
+
+.wgt-msg-body {
+    max-width: 75%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Messenger Bubbles (Inside Messages Area) */
+.chat-messages-area .wgt-bubble {
+    width: auto;
+    height: auto;
+    padding: 8px 12px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    box-shadow: none;
+    position: relative;
+    z-index: 1;
+}
+
+.wgt-msg-row.received .wgt-bubble {
+    background: var(--bg-received);
+    color: var(--text-received);
+    border-bottom-left-radius: 4px;
+}
+
+.wgt-msg-row.sent .wgt-bubble {
+    background: var(--primary-chat);
+    color: var(--text-sent);
+    border-bottom-right-radius: 4px;
+}
+
+.wgt-msg-time {
+    font-size: 10px;
+    color: #bcc0c4;
+    margin-top: 2px;
+    padding: 0 4px;
+}
+.wgt-msg-row.sent .wgt-msg-time { text-align: right; }
+
+/* ── Input Area ── */
+.chat-input-bar {
+    padding: 10px 15px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    background: #fff;
+}
+.chat-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.chat-input-field {
+    flex: 1;
+    background: #f0f2f5;
+    border-radius: 20px;
+    padding: 8px 15px;
+}
+.chat-input-field textarea {
+    width: 100%;
+    border: none;
+    background: transparent;
+    resize: none;
+    outline: none;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.btn-send-msg {
+    background: none;
+    border: none;
+    color: var(--primary-chat);
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.1s;
+    padding: 0;
+}
+.btn-send-msg:hover { transform: scale(1.1); }
+
+/* Product Cards in Chat */
+.msg-product-card {
+    display: block;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    text-decoration: none !important;
+    color: inherit;
+    margin-top: 5px;
+    width: 200px;
+}
+.msg-product-body img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+.msg-product-info { padding: 10px; }
+.msg-product-name { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+.msg-product-price { color: var(--primary-chat); font-weight: bold; font-size: 14px; }

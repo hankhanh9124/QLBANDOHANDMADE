@@ -1,0 +1,123 @@
+{
+    "section_titles": {
+        "handmade_products": "SẢN PHẨM HANDMADE",
+        "all_products": "TẤT CẢ SẢN PHẨM",
+        "tools": "DỤNG CỤ ĐAN - MÓC",
+        "flowers": "MÓC KHÓA",
+        "yarn": "LEN - SỢI CAO CẤP",
+        "handmade": "HOA LEN"
+    },
+    "section_categories": {
+        "all_products": [
+            "Kim móc các loại",
+            "Phụ kiện hỗ trợ đan móc len",
+            "Búp bê len",
+            "Thú bông len",
+            "Túi len",
+            "Nón, khăn len",
+            "Đồ gia dụng",
+            "Hoa lẻ",
+            "Hoa bó",
+            "Hoa mix ngẫu nhiên",
+            "Sợi tự nhiên",
+            "Sợi tổng hợp",
+            "Sợi chuyên móc thú bông",
+            "Móc khóa"
+        ],
+        "handmade": [
+            "Hoa lẻ",
+            "Hoa bó",
+            "Hoa mix ngẫu nhiên"
+        ],
+        "tools": [
+            "Kim móc các loại",
+            "Phụ kiện hỗ trợ đan móc len"
+        ],
+        "flowers": [
+            "Móc khóa"
+        ],
+        "yarn": [
+            "Sợi tự nhiên",
+            "Sợi tổng hợp"
+        ]
+    },
+    "section_featured": {
+        "handmade": {
+            "ids": [
+                "27",
+                "26",
+                "25",
+                "24",
+                "23"
+            ],
+            "orders": {
+                "27": 5,
+                "26": 4,
+                "25": 1,
+                "24": 2,
+                "23": 3,
+                "17": 4
+            }
+        },
+        "all_products": {
+            "ids": [
+                "35",
+                "27",
+                "26",
+                "8",
+                "7"
+            ],
+            "orders": {
+                "35": 5,
+                "27": 2,
+                "26": 3,
+                "8": 1,
+                "7": 4
+            }
+        },
+        "tools": {
+            "ids": [
+                "34",
+                "33",
+                "30",
+                "29",
+                "28"
+            ],
+            "orders": {
+                "34": 4,
+                "33": 5,
+                "30": 1,
+                "29": 2,
+                "28": 3
+            }
+        },
+        "flowers": {
+            "ids": [
+                "36",
+                "35",
+                "5"
+            ],
+            "orders": {
+                "36": 3,
+                "35": 2,
+                "5": 1
+            }
+        },
+        "yarn": {
+            "ids": [
+                "43",
+                "42",
+                "41",
+                "40",
+                "39"
+            ],
+            "orders": {
+                "43": 5,
+                "42": 4,
+                "41": 3,
+                "40": 2,
+                "39": 1
+            }
+        }
+    }
+}

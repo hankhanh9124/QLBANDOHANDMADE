@@ -1,0 +1,291 @@
+<?php
+require_once 'app/config/database.php';
+require_once 'app/models/SellerRequestModel.php';
+require_once 'app/models/NotificationModel.php';
+require_once 'app/models/OrderModel.php';
+require_once 'app/models/ProductModel.php';
+require_once 'app/models/CategoryModel.php';
+
+class SellerController {
+    private $db;
+    private $sellerRequestModel;
+    private $notificationModel;
+    private $orderModel;
+    private $productModel;
+    private $categoryModel;
+
+    public function __construct() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . 'index.php?url=Page/login');
+            exit;
+        }
+
+        $database = new Database();
+        $this->db = $database->getConnection();
+        $this->sellerRequestModel = new SellerRequestModel($this->db);
+        $this->notificationModel = new NotificationModel($this->db);
+        $this->orderModel = new OrderModel($this->db);
+        $this->productModel = new ProductModel($this->db);
+        $this->categoryModel = new CategoryModel($this->db);
+    }
+
+    public function register() {
+        $userId = $_SESSION['user_id'];
+        $existingRequest = $this->sellerRequestModel->getLatestRequestByUserId($userId);
+        
+        // If already a seller, redirect to their products
+        if ($_SESSION['user_role'] === 'seller') {
+            header('Location: ' . BASE_URL . 'index.php?url=Product/myProducts');
+            exit;
+        }
+
+        require_once 'app/views/shares/header.php';
+        require_once 'app/views/account/seller_onboarding.php';
+        require_once 'app/views/shares/footer.php';
+    }
+
+    public function submitRegistration() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $userId = $_SESSION['user_id'];
+            
+            // Handle file upload for identity proof
+            $identityProof = '';
+            if (isset($_FILES['identity_proof']) && $_FILES['identity_proof']['error'] === 0) {
+                $targetDir = "public/uploads/verification/";
+                if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
+                
+                $fileName = time() . '_' . $_FILES['identity_proof']['name'];
+                $targetFile = $targetDir . $fileName;
+                if (move_uploaded_file($_FILES['identity_proof']['tmp_name'], $targetFile)) {
+                    $identityProof = $fileName;
+                }
+            }
+
+            $data = [
+                'user_id' => $userId,
+                'shop_name' => $_POST['shop_name'],
+                'shop_description' => $_POST['shop_description'],
+                'product_types' => $_POST['product_types'],
+                'portfolio_links' => $_POST['portfolio_links'],
+                'bank_account' => $_POST['bank_account'],
+                'identity_proof' => $identityProof
+            ];
+
+            if ($this->sellerRequestModel->create($data)) {
+                // Notify Admins
+                $query = "SELECT id FROM user WHERE role = 'admin'";
+                $stmt = $this->db->prepare($query);
+                $stmt->execute();
+                $admins = $stmt->fetchAll(PDO::FETCH_OBJ);
+                foreach ($admins as $admin) {
+                    $this->notificationModel->create(
+                        $admin->id,
+                        'Yêu cầu đăng ký Seller mới',
+                        'Người dùng ' . $_SESSION['user_name'] . ' vừa gửi yêu cầu mở shop: ' . $data['shop_name'],
+                        'seller_request',
+                        'index.php?url=Admin/manageSellers'
+                    );
+                }
+
+                $_SESSION['success_message'] = "Yêu cầu của bạn đã được gửi và đang chờ xét duyệt!";
+            } else {
+                $_SESSION['error_message'] = "Có lỗi xảy ra, vui lòng thử lại sau.";
+            }
+        }
+        header('Location: ' . BASE_URL . 'index.php?url=Seller/register');
+        exit;
+    }
+
+    public function index() {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL . 'index.php?url=Seller/register');
+            exit;
+        }
+
+        $sellerId = $_SESSION['user_id'];
+
+        // 1. Total Products
+        $stmtProducts = $this->db->prepare("SELECT COUNT(*) as total FROM product WHERE user_id = :seller_id");
+        $stmtProducts->bindParam(':seller_id', $sellerId);
+        $stmtProducts->execute();
+        $totalProducts = $stmtProducts->fetch(PDO::FETCH_OBJ)->total ?? 0;
+
+        // 2. Total Sold (sum of 'sold' column in product table)
+        $stmtSold = $this->db->prepare("SELECT SUM(sold) as total_sold FROM product WHERE user_id = :seller_id");
+        $stmtSold->bindParam(':seller_id', $sellerId);
+        $stmtSold->execute();
+        $totalSold = $stmtSold->fetch(PDO::FETCH_OBJ)->total_sold ?? 0;
+
+        // 3. Total Orders (distinct orders containing seller's products)
+        $stmtOrders = $this->db->prepare("SELECT COUNT(DISTINCT od.order_id) as total_orders 
+                                         FROM order_detail od 
+                                         JOIN product p ON od.product_id = p.id 
+                                         WHERE p.user_id = :seller_id");
+        $stmtOrders->bindParam(':seller_id', $sellerId);
+        $stmtOrders->execute();
+        $totalOrders = $stmtOrders->fetch(PDO::FETCH_OBJ)->total_orders ?? 0;
+
+        // 4. Total Revenue (sum of items price * quantity for non-cancelled orders)
+        $stmtRevenue = $this->db->prepare("SELECT SUM(od.price * od.quantity) as total_revenue 
+                                          FROM order_detail od 
+                                          JOIN product p ON od.product_id = p.id 
+                                          JOIN orders o ON od.order_id = o.id 
+                                          WHERE p.user_id = :seller_id AND o.status != 'cancelled'");
+        $stmtRevenue->bindParam(':seller_id', $sellerId);
+        $stmtRevenue->execute();
+        $totalRevenue = $stmtRevenue->fetch(PDO::FETCH_OBJ)->total_revenue ?? 0;
+
+        $action = 'index';
+        require_once 'app/views/seller/index.php';
+    }
+
+    public function orders() {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+        $sellerId = $_SESSION['user_id'];
+        $orders = $this->orderModel->getOrdersBySellerId($sellerId);
+        $action = 'orders';
+        require_once 'app/views/seller/orders.php';
+    }
+
+    public function pendingProducts() {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+        $sellerId = $_SESSION['user_id'];
+        // Use common my_products view but filter by status in controller
+        $allProducts = $this->productModel->getProductsBySeller($sellerId);
+        $products = array_filter($allProducts, function($p) {
+            return $p->status === 'pending';
+        });
+        $action = 'pending_products';
+        require_once 'app/views/product/my_products.php';
+    }
+
+    public function soldProducts() {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+        $sellerId = $_SESSION['user_id'];
+        
+        $query = "SELECT od.*, p.name as product_name, p.image, o.created_at as sale_date, o.id as order_id, u.name as buyer_name
+                  FROM order_detail od 
+                  JOIN product p ON od.product_id = p.id 
+                  JOIN orders o ON od.order_id = o.id 
+                  LEFT JOIN user u ON o.user_id = u.id
+                  WHERE p.user_id = :seller_id AND o.status = 'completed'
+                  ORDER BY o.created_at DESC";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':seller_id', $sellerId);
+        $stmt->execute();
+        $soldItems = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $action = 'sold_products';
+        require_once 'app/views/seller/sold_products.php';
+    }
+
+    public function categories() {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+        $categories = $this->categoryModel->getCategories();
+        $action = 'categories';
+        require_once 'app/views/seller/categories.php';
+    }
+
+    public function orderDetail($id) {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+        $sellerId = $_SESSION['user_id'];
+        
+        // Security check: Does this order contain at least one product from this seller?
+        $query = "SELECT COUNT(*) FROM order_detail od 
+                  JOIN product p ON od.product_id = p.id 
+                  WHERE od.order_id = :order_id AND p.user_id = :seller_id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':order_id', $id);
+        $stmt->bindParam(':seller_id', $sellerId);
+        $stmt->execute();
+        if ($stmt->fetchColumn() == 0) {
+            die('Access Denied: You do not have permission to view this order.');
+        }
+
+        // Fetch order basic info
+        $query = "SELECT o.*, u.name as user_name, u.email, 
+                  COALESCE(o.recipient_name, u.name) as display_name, 
+                  COALESCE(o.recipient_phone, u.phone) as display_phone, 
+                  COALESCE(o.recipient_address, u.address) as display_address 
+                  FROM orders o 
+                  LEFT JOIN user u ON o.user_id = u.id 
+                  WHERE o.id = :id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $order = $stmt->fetch(PDO::FETCH_OBJ);
+
+        // Fetch order items (only show items from this seller for privacy, or all? Usually all)
+        // I'll show all for now to maintain order integrity
+        $query = "SELECT od.*, p.name as product_name, p.image 
+                  FROM order_detail od 
+                  JOIN product p ON od.product_id = p.id 
+                  WHERE od.order_id = :id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $items = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $action = 'orders';
+        require_once 'app/views/seller/order_detail.php';
+    }
+
+    public function updateOrderStatus($id, $status) {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+        $sellerId = $_SESSION['user_id'];
+        
+        // Security check: Does this order contain at least one product from this seller?
+        $query = "SELECT COUNT(*) FROM order_detail od 
+                  JOIN product p ON od.product_id = p.id 
+                  WHERE od.order_id = :order_id AND p.user_id = :seller_id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':order_id', $id);
+        $stmt->bindParam(':seller_id', $sellerId);
+        $stmt->execute();
+        if ($stmt->fetchColumn() == 0) {
+            die('Access Denied: You do not have permission to update this order.');
+        }
+
+        if ($this->orderModel->updateStatus($id, $status)) {
+            // Update 'sold' count in product table if status is completed
+            if ($status === 'completed') {
+                $stmtItems = $this->db->prepare("SELECT product_id, quantity FROM order_detail WHERE order_id = :id");
+                $stmtItems->bindParam(':id', $id);
+                $stmtItems->execute();
+                $items = $stmtItems->fetchAll(PDO::FETCH_OBJ);
+                
+                foreach ($items as $item) {
+                    $this->db->prepare("UPDATE product SET sold = sold + :qty WHERE id = :pid")
+                             ->execute([':qty' => $item->quantity, ':pid' => $item->product_id]);
+                }
+            }
+
+            $_SESSION['success_message'] = "Cập nhật trạng thái đơn hàng thành công.";
+        } else {
+            $_SESSION['error_message'] = "Có lỗi xảy ra khi cập nhật.";
+        }
+        
+        header('Location: ' . $_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'index.php?url=Seller/orders'));
+        exit;
+    }
+}
