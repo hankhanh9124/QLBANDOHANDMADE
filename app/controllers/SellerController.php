@@ -8,7 +8,8 @@ require_once 'app/models/CategoryModel.php';
 require_once 'app/models/ShopModel.php';
 require_once 'app/models/ShopUpdateModel.php';
 
-class SellerController {
+class SellerController
+{
     private $db;
     private $sellerRequestModel;
     private $notificationModel;
@@ -18,9 +19,10 @@ class SellerController {
     private $shopModel;
     private $shopUpdateModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        
+
         if (!isset($_SESSION['user_id'])) {
             header('Location: ' . BASE_URL . 'index.php?url=Page/login');
             exit;
@@ -37,10 +39,11 @@ class SellerController {
         $this->shopUpdateModel = new ShopUpdateModel($this->db);
     }
 
-    public function register() {
+    public function register()
+    {
         $userId = $_SESSION['user_id'];
         $existingRequest = $this->sellerRequestModel->getLatestRequestByUserId($userId);
-        
+
         // If already a seller, redirect to their products
         if ($_SESSION['user_role'] === 'seller') {
             header('Location: ' . BASE_URL . 'index.php?url=Product/myProducts');
@@ -52,16 +55,17 @@ class SellerController {
         require_once 'app/views/shares/footer.php';
     }
 
-    public function submitRegistration() {
+    public function submitRegistration()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = $_SESSION['user_id'];
-            
+
             // Handle file upload for identity proof
             $identityProof = '';
             if (isset($_FILES['identity_proof']) && $_FILES['identity_proof']['error'] === 0) {
                 $targetDir = "public/uploads/verification/";
                 if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
-                
+
                 $fileName = time() . '_' . $_FILES['identity_proof']['name'];
                 $targetFile = $targetDir . $fileName;
                 if (move_uploaded_file($_FILES['identity_proof']['tmp_name'], $targetFile)) {
@@ -104,7 +108,42 @@ class SellerController {
         exit;
     }
 
-    public function index() {
+    public function quickRequestPermission()
+    {
+        header('Content-Type: application/json');
+
+        $userId = $_SESSION['user_id'];
+        $userName = $_SESSION['user_name'];
+
+        // 1. Notify Admins
+        $query = "SELECT id FROM user WHERE role = 'admin'";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $admins = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $success = true;
+        foreach ($admins as $admin) {
+            if (!$this->notificationModel->create(
+                $admin->id,
+                'Yêu cầu phân quyền Seller',
+                'Người dùng ' . $userName . ' muốn trở thành người bán (Seller).',
+                'seller_request',
+                'index.php?url=Admin/manageSellers'
+            )) {
+                $success = false;
+            }
+        }
+
+        if ($success) {
+            echo json_encode(['success' => true, 'message' => 'Yêu cầu của bạn đã được gửi tới Quản trị viên!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi gửi yêu cầu.']);
+        }
+        exit;
+    }
+
+    public function index()
+    {
         if ($_SESSION['user_role'] !== 'seller') {
             header('Location: ' . BASE_URL . 'index.php?url=Seller/register');
             exit;
@@ -147,7 +186,8 @@ class SellerController {
         require_once 'app/views/seller/index.php';
     }
 
-    public function orders() {
+    public function orders()
+    {
         if ($_SESSION['user_role'] !== 'seller') {
             header('Location: ' . BASE_URL);
             exit;
@@ -158,7 +198,8 @@ class SellerController {
         require_once 'app/views/seller/orders.php';
     }
 
-    public function pendingProducts() {
+    public function pendingProducts()
+    {
         if ($_SESSION['user_role'] !== 'seller') {
             header('Location: ' . BASE_URL);
             exit;
@@ -166,20 +207,21 @@ class SellerController {
         $sellerId = $_SESSION['user_id'];
         // Use common my_products view but filter by status in controller
         $allProducts = $this->productModel->getProductsBySeller($sellerId);
-        $products = array_filter($allProducts, function($p) {
+        $products = array_filter($allProducts, function ($p) {
             return $p->status === 'pending';
         });
         $action = 'pending_products';
         require_once 'app/views/product/my_products.php';
     }
 
-    public function soldProducts() {
+    public function soldProducts()
+    {
         if ($_SESSION['user_role'] !== 'seller') {
             header('Location: ' . BASE_URL);
             exit;
         }
         $sellerId = $_SESSION['user_id'];
-        
+
         $query = "SELECT od.*, p.name as product_name, p.image, o.created_at as sale_date, o.id as order_id, u.name as buyer_name
                   FROM order_detail od 
                   JOIN product p ON od.product_id = p.id 
@@ -196,7 +238,8 @@ class SellerController {
         require_once 'app/views/seller/sold_products.php';
     }
 
-    public function categories() {
+    public function categories()
+    {
         if ($_SESSION['user_role'] !== 'seller') {
             header('Location: ' . BASE_URL);
             exit;
@@ -206,13 +249,14 @@ class SellerController {
         require_once 'app/views/seller/categories.php';
     }
 
-    public function orderDetail($id) {
+    public function orderDetail($id)
+    {
         if ($_SESSION['user_role'] !== 'seller') {
             header('Location: ' . BASE_URL);
             exit;
         }
         $sellerId = $_SESSION['user_id'];
-        
+
         // Security check: Does this order contain at least one product from this seller?
         $query = "SELECT COUNT(*) FROM order_detail od 
                   JOIN product p ON od.product_id = p.id 
@@ -253,13 +297,14 @@ class SellerController {
         require_once 'app/views/seller/order_detail.php';
     }
 
-    public function updateOrderStatus($id, $status) {
+    public function updateOrderStatus($id, $status)
+    {
         if ($_SESSION['user_role'] !== 'seller') {
             header('Location: ' . BASE_URL);
             exit;
         }
         $sellerId = $_SESSION['user_id'];
-        
+
         // Security check: Does this order contain at least one product from this seller?
         $query = "SELECT COUNT(*) FROM order_detail od 
                   JOIN product p ON od.product_id = p.id 
@@ -279,10 +324,10 @@ class SellerController {
                 $stmtItems->bindParam(':id', $id);
                 $stmtItems->execute();
                 $items = $stmtItems->fetchAll(PDO::FETCH_OBJ);
-                
+
                 foreach ($items as $item) {
                     $this->db->prepare("UPDATE product SET sold = sold + :qty WHERE id = :pid")
-                             ->execute([':qty' => $item->quantity, ':pid' => $item->product_id]);
+                        ->execute([':qty' => $item->quantity, ':pid' => $item->product_id]);
                 }
             }
 
@@ -290,12 +335,13 @@ class SellerController {
         } else {
             $_SESSION['error_message'] = "Có lỗi xảy ra khi cập nhật.";
         }
-        
+
         header('Location: ' . $_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'index.php?url=Seller/orders'));
         exit;
     }
 
-    public function settings() {
+    public function settings()
+    {
         if ($_SESSION['user_role'] !== 'seller') {
             header('Location: ' . BASE_URL . 'index.php?url=Dashboard');
             exit;
@@ -303,7 +349,7 @@ class SellerController {
 
         $userId = $_SESSION['user_id'];
         $shop = $this->shopModel->getBySellerId($userId);
-        
+
         if (!$shop) {
             $_SESSION['error_message'] = "Không tìm thấy thông tin shop.";
             header('Location: ' . BASE_URL . 'index.php?url=Seller');
@@ -319,7 +365,8 @@ class SellerController {
         require_once 'app/views/dashboard/footer.php';
     }
 
-    public function submitShopUpdate() {
+    public function submitShopUpdate()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SESSION['user_role'] === 'seller') {
             $userId = $_SESSION['user_id'];
             $shop = $this->shopModel->getBySellerId($userId);
@@ -339,7 +386,7 @@ class SellerController {
 
             $newName = $_POST['name'] ?? $shop->name;
             $newDesc = $_POST['description'] ?? $shop->description;
-            
+
             $newLogo = $shop->logo;
             $newBanner = $shop->banner;
 
@@ -379,7 +426,7 @@ class SellerController {
                         $admin->id,
                         'Yêu cầu cập nhật thông tin Shop',
                         'Cửa hàng ' . $shop->name . ' yêu cầu cập nhật thông tin.',
-                        'system',
+                        'shop_update',
                         'index.php?url=Dashboard/shopUpdates'
                     );
                 }

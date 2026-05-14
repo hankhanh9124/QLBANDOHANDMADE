@@ -30,16 +30,16 @@ $allCategories = $categoryModel->getCategories();
 if (isset($_SESSION['user_id'])) {
     require_once 'app/models/WishlistModel.php';
     require_once 'app/models/UserModel.php';
-    
+
     $userModel = new UserModel($db);
     $wishlistModel = new WishlistModel($db);
-    
+
     // Refresh role in case it was changed (e.g. seller approval)
     $currUser = $userModel->getUserById($_SESSION['user_id']);
     if ($currUser) {
         $_SESSION['user_role'] = $currUser->role;
     }
-    
+
     $_SESSION['wishlist_items'] = $wishlistModel->getUserWishlistIds($_SESSION['user_id']);
 }
 $wishlistItems = $_SESSION['wishlist_items'] ?? [];
@@ -277,13 +277,15 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                                     <?php if (isset($_SESSION['user_role'])): ?>
                                         <?php if ($_SESSION['user_role'] === 'admin'): ?>
                                             <div class="filter-chip" data-filter="seller_request">Yêu cầu phân quyền</div>
-                                            <div class="filter-chip" data-filter="review">Bình luận</div>
+                                            <div class="filter-chip" data-filter="order">Đơn hàng</div>
+                                            <div class="filter-chip" data-filter="review">Đánh giá</div>
                                             <div class="filter-chip" data-filter="wishlist">Yêu thích sản phẩm</div>
                                         <?php elseif ($_SESSION['user_role'] === 'seller'): ?>
-                                            <div class="filter-chip" data-filter="review">Bình luận</div>
+                                            <div class="filter-chip" data-filter="order">Đơn hàng</div>
+                                            <div class="filter-chip" data-filter="review">Đánh giá</div>
                                             <div class="filter-chip" data-filter="wishlist">Yêu thích sản phẩm</div>
-                                        <?php elseif ($_SESSION['user_role'] === 'user'): ?>
-                                            <div class="filter-chip" data-filter="follow">Người mà bạn theo dõi</div>
+                                        <?php else: ?>
+                                            <div class="filter-chip" data-filter="order">Đơn hàng</div>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
@@ -462,6 +464,7 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
             // Notification Polling System
             const notificationBadge = document.getElementById('notification-badge');
             const notificationDropdown = document.getElementById('notification-dropdown');
+            let currentFilter = 'all';
 
             function fetchNotifications() {
                 $.ajax({
@@ -474,14 +477,14 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                             if (response.count > 0) {
                                 notificationBadge.textContent = response.count;
                                 notificationBadge.classList.remove('d-none');
-                                
+
                                 let html = '';
                                 html += '<div class="notification-section-title">Mới nhất</div>';
 
                                 response.notifications.forEach(item => {
                                     const link = item.link ? '<?php echo BASE_URL; ?>' + item.link : '#';
                                     const unreadClass = (item.is_read == 0 || item.is_read == '0') ? 'unread' : '';
-                                    
+
                                     // Icon Mapping Logic
                                     const type = item.type || 'system';
                                     const iconMapping = {
@@ -495,6 +498,7 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                                         'promotion': 'fa-tag',
                                         'review': 'fa-star',
                                         'seller_request': 'fa-store-alt',
+                                        'shop_update': 'fa-store-alt',
                                         'shipping': 'fa-truck',
                                         'wishlist': 'fa-heart',
                                         'inventory': 'fa-warehouse',
@@ -503,12 +507,17 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                                     };
                                     const iconClass = iconMapping[type] || 'fa-bell';
 
-                                    const avatarUrl = item.sender_avatar ? 
+                                    const avatarUrl = item.sender_avatar ?
                                         '<?php echo BASE_URL; ?>public/uploads/avatars/' + item.sender_avatar :
                                         'https://ui-avatars.com/api/?name=System&background=random';
 
+                                    const isMatch = (currentFilter === 'all') ||
+                                        (currentFilter === type) ||
+                                        (currentFilter === 'seller_request' && (type === 'seller_request' || type === 'shop_update')) ||
+                                        (currentFilter === 'order' && ['order', 'shipping', 'cancel', 'payment'].includes(type));
+
                                     html += `
-                                        <a href="${link}" class="notification-item ${unreadClass} mark-read-btn" data-id="${item.id}" data-type="${type}">
+                                        <a href="${link}" class="notification-item ${unreadClass} mark-read-btn" data-id="${item.id}" data-type="${type}" ${!isMatch ? 'style="display:none;"' : ''}>
                                             <div class="noti-avatar-wrapper">
                                                 <img src="${avatarUrl}" class="noti-avatar" alt="User">
                                                 <div class="noti-type-icon ${type}">
@@ -524,6 +533,11 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                                     `;
                                 });
                                 notificationList.innerHTML = html;
+
+                                // Check if current filter has results, if not show empty message
+                                if (currentFilter !== 'all' && $(`.notification-item[data-type="${currentFilter}"]`).length === 0 && (currentFilter !== 'seller_request' || $(`.notification-item[data-type="shop_update"]`).length === 0)) {
+                                    notificationList.innerHTML += '<div class="p-4 text-center text-muted no-filter-results">Không có thông báo nào thuộc mục này</div>';
+                                }
                             } else {
                                 notificationBadge.classList.add('d-none');
                                 notificationList.innerHTML = '<div class="p-5 text-center text-muted"><i class="fas fa-bell-slash d-block mb-3" style="font-size: 2rem; opacity: 0.3;"></i>Không có thông báo mới</div>';
@@ -563,14 +577,31 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                 // Filter logic
                 $(document).on('click', '.filter-chip', function() {
                     const filter = $(this).data('filter');
+                    currentFilter = filter;
                     $('.filter-chip').removeClass('active');
                     $(this).addClass('active');
 
+                    $('.no-filter-results').remove();
                     if (filter === 'all') {
                         $('.notification-item').show();
                     } else {
                         $('.notification-item').hide();
-                        $(`.notification-item[data-type="${filter}"]`).show();
+
+                        let types = [filter];
+                        if (filter === 'seller_request') {
+                            types = ['seller_request', 'shop_update'];
+                        } else if (filter === 'order') {
+                            types = ['order', 'shipping', 'cancel', 'payment'];
+                        }
+
+                        let selector = types.map(t => `.notification-item[data-type="${t}"]`).join(', ');
+                        const filteredItems = $(selector);
+
+                        if (filteredItems.length > 0) {
+                            filteredItems.show();
+                        } else {
+                            $('#notification-list').append('<div class="p-4 text-center text-muted no-filter-results">Không có thông báo nào thuộc mục này</div>');
+                        }
                     }
                 });
             }
@@ -610,6 +641,8 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                 });
             });
         });
+    </script>
+
     </script>
 
     <div class="container">

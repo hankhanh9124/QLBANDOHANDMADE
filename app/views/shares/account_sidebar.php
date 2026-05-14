@@ -20,7 +20,7 @@ if (!isset($user) || empty($user)) {
             $avatar = !empty($user->avatar) ?
                 BASE_URL . 'public/uploads/avatars/' . $user->avatar :
                 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random&color=fff';
-        ?> 
+        ?>
             <img src="<?php echo $avatar; ?>" alt="Avatar" class="sidebar-avatar">
             <div class="sidebar-username-group">
                 <span class="sidebar-username"><?php echo htmlspecialchars($user->name); ?></span>
@@ -88,14 +88,49 @@ if (!isset($user) || empty($user)) {
         <?php endif; ?>
 
         <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'user'): ?>
-            <li class="sidebar-menu-item">
-                <a href="<?php echo BASE_URL; ?>index.php?url=Seller/register" class="sidebar-menu-link <?php echo $activePage === 'Seller/register' ? 'active' : ''; ?>">
-                    <i class="fas fa-hand-holding-heart" style="color: #c2255c;"></i> Trở thành người bán
-                </a>
+            <li class="sidebar-menu-item mt-2">
+                <button id="btnRequestPermission" class="btn-request-permission">
+                    Yêu cầu phân quyền
+                </button>
             </li>
         <?php endif; ?>
     </ul>
 </aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnRequest = document.getElementById('btnRequestPermission');
+        if (btnRequest) {
+            btnRequest.addEventListener('click', function() {
+                if (confirm('Bạn có chắc chắn muốn gửi yêu cầu trở thành người bán (Seller) không?')) {
+                    btnRequest.disabled = true;
+                    btnRequest.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+
+                    fetch('<?php echo BASE_URL; ?>index.php?url=Seller/quickRequestPermission')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                btnRequest.innerHTML = '<i class="fas fa-check"></i> Đã gửi yêu cầu';
+                                btnRequest.style.background = '#d1e7dd';
+                                btnRequest.style.color = '#0f5132';
+                            } else {
+                                alert(data.message);
+                                btnRequest.disabled = false;
+                                btnRequest.innerHTML = 'Yêu cầu phân quyền';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Có lỗi xảy ra kết nối tới hệ thống.');
+                            btnRequest.disabled = false;
+                            btnRequest.innerHTML = 'Yêu cầu phân quyền';
+                        });
+                }
+            });
+        }
+    });
+</script>
 
 <style>
     .sidebar-submenu {
@@ -127,7 +162,7 @@ if (!isset($user) || empty($user)) {
         cursor: pointer;
         text-decoration: none !important;
     }
-    
+
     .sidebar-menu-parent:hover .parent-text {
         color: #ee225b;
     }
@@ -194,5 +229,39 @@ if (!isset($user) || empty($user)) {
     .sidebar-menu-link:hover,
     .sidebar-menu-link.active {
         color: #ee225b;
+    }
+
+    .btn-request-permission {
+        background: #f0f2f5;
+        color: #1c1e21;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .btn-request-permission:hover {
+        background: #e4e6eb;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-request-permission:active {
+        transform: translateY(0);
+    }
+
+    .btn-request-permission:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
     }
 </style>

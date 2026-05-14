@@ -203,14 +203,7 @@
                     <li class="<?php echo $action == 'returns' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/returns"><i class="fas fa-undo mr-2"></i> Trả hàng / Hoàn tiền</a>
                     </li>
-                    <li class="<?php echo $action == 'messages' ? 'active' : ''; ?>">
-                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/messages" class="d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-comments mr-2"></i> Tin nhắn</span>
-                            <?php if (isset($this->unreadChatCount) && $this->unreadChatCount > 0): ?>
-                                <span class="badge badge-danger badge-pill"><?php echo $this->unreadChatCount; ?></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
+
                 <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'seller'): ?>
                     <!-- Seller Menu -->
                     <li class="<?php echo $action == 'index' ? 'active' : ''; ?>">
@@ -237,14 +230,7 @@
                     <li class="<?php echo $action == 'orders' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Seller/orders"><i class="fas fa-shopping-bag mr-2"></i> Quản lý đơn hàng</a>
                     </li>
-                    <li class="<?php echo $action == 'messages' ? 'active' : ''; ?>">
-                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/messages" class="d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-comments mr-2"></i> Tin nhắn</span>
-                            <?php if (isset($this->unreadChatCount) && $this->unreadChatCount > 0): ?>
-                                <span class="badge badge-danger badge-pill"><?php echo $this->unreadChatCount; ?></span>
-                            <?php endif; ?>
-                        </a>
-                    </li>
+
                 <?php endif; ?>
 
                 <li>

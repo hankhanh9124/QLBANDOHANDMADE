@@ -50,6 +50,23 @@ class WishlistController
                 // Update session wishlist cache
                 $_SESSION['wishlist_items'] = $this->wishlistModel->getUserWishlistIds($userId);
                 
+                // Get product and seller info to notify
+                $productModel = new ProductModel($this->db);
+                $product = $productModel->getProductById($productId);
+                
+                if ($action === 'added' && $product && $product->user_id != $userId) {
+                    require_once 'app/models/NotificationModel.php';
+                    $notificationModel = new NotificationModel($this->db);
+                    $userName = $_SESSION['user_name'] ?? 'Một người dùng';
+                    $notificationModel->create(
+                        $product->user_id,
+                        'Yêu thích sản phẩm',
+                        "$userName đã thích sản phẩm: " . $product->name,
+                        'wishlist',
+                        'index.php?url=Product/show/' . $productId
+                    );
+                }
+
                 echo json_encode([
                     'success' => true, 
                     'action' => $action, 
