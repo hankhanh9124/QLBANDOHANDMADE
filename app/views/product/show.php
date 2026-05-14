@@ -104,11 +104,16 @@ include 'app/views/shares/header.php';
                                         <div class="font-weight-bold mb-0" style="font-size: 1.4rem; color: var(--primary-color); line-height: 1.2;">
                                             <?php echo !empty($product->shop_name) ? htmlspecialchars($product->shop_name) : 'GÌ CŨNG MÓC'; ?>
                                         </div>
+                                        <div class="text-muted" style="font-size: 0.85rem; margin-top: 2px;">
+                                            <i class="fas fa-user mr-1"></i>Người đăng: <strong><?php echo htmlspecialchars($product->seller_display_name ?? 'Thành viên'); ?></strong>
+                                            <?php if (!empty($product->seller_handle)): ?>
+                                                <span class="text-secondary" style="font-size: 0.8rem;">(@<?php echo htmlspecialchars($product->seller_handle); ?>)</span>
+                                            <?php endif; ?>
+                                        </div>
                                         <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-                                            <div class="text-info small mt-1" style="font-size: 0.85rem;">
+                                            <div class="text-info small mt-1" style="font-size: 0.8rem; opacity: 0.8;">
                                                 <i class="fas <?php echo ($product->seller_role === 'admin') ? 'fa-user-shield' : 'fa-user-tag'; ?> mr-1"></i>
-                                                <?php echo ($product->seller_role === 'admin') ? 'Admin:' : 'Seller:'; ?> 
-                                                <span class="badge badge-info font-weight-normal"><?php echo htmlspecialchars($product->seller_username ?? 'Hệ thống'); ?></span>
+                                                <?php echo ($product->seller_role === 'admin') ? 'Quyền Admin' : 'Quyền Seller'; ?> 
                                             </div>
                                         <?php endif; ?>
                                     </div>
@@ -131,7 +136,7 @@ include 'app/views/shares/header.php';
                                         <i class="fab fa-facebook-messenger mr-2"></i> Chat ngay
                                     </button>
                                     <?php endif; ?>
-                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/index&seller_id=<?php echo $product->user_id; ?>" 
+                                    <a href="<?php echo BASE_URL; ?>index.php?url=Shop/profile/<?php echo $product->shop_id ?: $product->user_id; ?>" 
                                        class="btn btn-light btn-sm flex-fill py-2" 
                                        style="border-radius: 8px; font-weight: 600; border: 1px solid #ddd;">
                                         <i class="fas fa-home mr-2"></i> Xem Shop

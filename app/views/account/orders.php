@@ -55,7 +55,7 @@
                     <div class="order-card-header">
                         <div class="shop-info">
                             <span class="shop-label">Yêu thích+</span>
-                            <span class="shop-name">GÌ CŨNG MÓC Shop</span>
+                            <span class="shop-name"><?php echo htmlspecialchars($order->shop_name ?? 'GÌ CŨNG MÓC Shop'); ?></span>
                             <?php 
                             $firstItem = $order->items[0] ?? null;
                             $pImg = $firstItem ? $firstItem->image : '';
@@ -72,7 +72,7 @@
                                     data-image="<?php echo BASE_URL . $finalPImg; ?>">
                                 <i class="fas fa-comment"></i> Chat
                             </button>
-                            <a href="<?php echo BASE_URL; ?>" class="btn btn-sm btn-outline-secondary ml-1" style="font-size: 11px;"><i class="fas fa-store"></i> Xem Shop</a>
+                            <a href="<?php echo BASE_URL; ?>index.php?url=Shop/profile/<?php echo $order->shop_id ?: ($order->items[0]->seller_id ?? 0); ?>" class="btn btn-sm btn-outline-secondary ml-1" style="font-size: 11px;"><i class="fas fa-store"></i> Xem Shop</a>
                         </div>
                         <div class="order-status-group">
                             <?php if ($order->status == 'completed'): ?>

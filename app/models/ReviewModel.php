@@ -51,5 +51,21 @@ class ReviewModel
 
         return $stmt->rowCount() > 0;
     }
+
+    public function getReviewsByShopId($shopId)
+    {
+        $query = "SELECT r.*, u.name as user_name, p.name as product_name, p.image as product_image
+                  FROM " . $this->table_name . " r 
+                  LEFT JOIN user u ON r.user_id = u.id 
+                  JOIN product p ON r.product_id = p.id
+                  JOIN shops s ON p.user_id = s.seller_id
+                  WHERE s.id = :shop_id 
+                  ORDER BY r.created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':shop_id', $shopId);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
 }
 ?>

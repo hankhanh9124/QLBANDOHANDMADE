@@ -107,9 +107,10 @@ class ProductModel
     }
     public function getProducts($minPrice = null, $maxPrice = null, $sort = 'id')
     {
-        $query = "SELECT p.*, c.name as category_name
+        $query = "SELECT p.*, c.name as category_name, u.name as seller_name
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
+        LEFT JOIN user u ON p.user_id = u.id
         WHERE p.status = 'approved'";
 
         if ($minPrice !== null) {
@@ -180,9 +181,10 @@ class ProductModel
 
     public function searchProducts($keyword)
     {
-        $query = "SELECT p.*, c.name as category_name
+        $query = "SELECT p.*, c.name as category_name, u.name as seller_name
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
+        LEFT JOIN user u ON p.user_id = u.id
         WHERE p.name LIKE :keyword 
            OR p.description LIKE :keyword 
            OR c.name LIKE :keyword";
@@ -284,7 +286,7 @@ class ProductModel
     }
     public function getProductById($id)
     {
-        $query = "SELECT p.*, c.name as category_name, u.role as seller_role, u.name as seller_username, s.name as shop_name, s.logo as shop_logo
+        $query = "SELECT p.*, c.name as category_name, u.role as seller_role, u.name as seller_display_name, u.username as seller_handle, s.id as shop_id, s.name as shop_name, s.logo as shop_logo
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
         LEFT JOIN user u ON p.user_id = u.id
@@ -592,11 +594,13 @@ class ProductModel
                     COALESCE(o.recipient_phone, u.phone) as recipient_phone, 
                     COALESCE(o.recipient_address, u.address) as recipient_address, 
                     o.created_at as sale_date,
-                    o.id as order_id
+                    o.id as order_id,
+                    u_s.name as seller_name
                   FROM order_detail od
                   JOIN product p ON od.product_id = p.id
                   JOIN orders o ON od.order_id = o.id
                   LEFT JOIN user u ON o.user_id = u.id
+                  LEFT JOIN user u_s ON p.user_id = u_s.id
                   ORDER BY o.created_at DESC";
 
         $stmt = $this->conn->prepare($query);
@@ -615,11 +619,13 @@ class ProductModel
                     COALESCE(o.recipient_phone, u.phone) as recipient_phone, 
                     COALESCE(o.recipient_address, u.address) as recipient_address, 
                     o.created_at as sale_date,
-                    o.id as order_id
+                    o.id as order_id,
+                    u_s.name as seller_name
                   FROM order_detail od
                   JOIN product p ON od.product_id = p.id
                   JOIN orders o ON od.order_id = o.id
                   LEFT JOIN user u ON o.user_id = u.id
+                  LEFT JOIN user u_s ON p.user_id = u_s.id
                   WHERE p.user_id = :seller_id
                   ORDER BY o.created_at DESC";
 
@@ -683,5 +689,20 @@ class ProductModel
         $stmt->bindParam(':user_id', $userId);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    public function getProductsByShop($shopId)
+    {
+        $query = "SELECT p.*, c.name as category_name
+        FROM " . $this->table_name . " p
+        LEFT JOIN category c ON p.category_id = c.id
+        JOIN shops s ON p.user_id = s.seller_id
+        WHERE s.id = :shop_id AND p.status = 'approved'
+        ORDER BY p.id DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':shop_id', $shopId);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 }

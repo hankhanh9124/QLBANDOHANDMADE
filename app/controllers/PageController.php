@@ -185,7 +185,7 @@ class PageController
             header('Location: ' . BASE_URL . 'index.php?url=Product/index');
             exit;
         }
-        
+
         header('Location: ' . BASE_URL . 'index.php?url=Page/login');
         exit;
     }
@@ -202,7 +202,7 @@ class PageController
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
             $user_id = $_SESSION['user_id'];
             $file = $_FILES['avatar'];
-            
+
             $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
             if (!in_array($file['type'], $allowed_types)) {
                 $_SESSION['error_message'] = "Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WEBP).";
@@ -213,11 +213,11 @@ class PageController
                 if (!is_dir($target_dir)) {
                     mkdir($target_dir, 0777, true);
                 }
-                
+
                 $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
                 $file_name = "avatar_" . $user_id . "_" . time() . "." . $extension;
                 $target_file = $target_dir . $file_name;
-                
+
                 if (move_uploaded_file($file['tmp_name'], $target_file)) {
                     $db = (new Database())->getConnection();
                     $userModel = new UserModel($db);
@@ -250,10 +250,10 @@ class PageController
         $db = (new Database())->getConnection();
         $orderModel = new OrderModel($db);
         $userModel = new UserModel($db);
-        
+
         $status = $_GET['status'] ?? null;
         if ($status === 'all') $status = null;
-        
+
         $orders = $orderModel->getOrdersByUserId($userId, $status);
         $user = $userModel->getUserById($userId);
 
@@ -286,7 +286,7 @@ class PageController
 
             $db = (new Database())->getConnection();
             $orderModel = new OrderModel($db);
-            
+
             // Verify order belongs to user and is pending
             $query = "SELECT status FROM orders WHERE id = :id AND user_id = :user_id";
             $stmt = $db->prepare($query);
@@ -324,41 +324,44 @@ class PageController
         }
         if (!isset($_SESSION['user_id'])) {
             header("Location: " . BASE_URL . "index.php?url=Page/login");
-            return;
+            exit();
         }
 
         $orderId = $_GET['id'] ?? null;
         if (!$orderId) {
             header("Location: " . BASE_URL . "index.php?url=Page/orders");
-            return;
+            exit();
         }
 
         $db = (new Database())->getConnection();
         $orderModel = new OrderModel($db);
         $userModel = new UserModel($db);
-        
+
         $order = $orderModel->getOrderById($orderId);
         $userId = $_SESSION['user_id'];
         $user = $userModel->getUserById($userId);
 
         if (!$order || $order->user_id != $userId || $order->status != 'cancelled') {
             header("Location: " . BASE_URL . "index.php?url=Page/orders");
-            return;
+            exit();
         }
 
-        require_once 'app/views/shares/header.php';
-        require_once 'app/views/account/cancel_order_detail.php';
-        require_once 'app/views/shares/footer.php';
+        require 'app/views/shares/header.php';
+        require 'app/views/account/cancel_order_detail.php';
+        require 'app/views/shares/footer.php';
     }
     public function profile()
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'index.php?url=Page/login'); exit; }
-        
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . 'index.php?url=Page/login');
+            exit;
+        }
+
         $db = (new Database())->getConnection();
         $userModel = new UserModel($db);
         $user = $userModel->getUserById($_SESSION['user_id']);
-        
+
         require_once 'app/views/shares/header.php';
         require_once 'app/views/account/profile_details.php';
         require_once 'app/views/shares/footer.php';
@@ -367,12 +370,15 @@ class PageController
     public function bank()
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'index.php?url=Page/login'); exit; }
-        
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . 'index.php?url=Page/login');
+            exit;
+        }
+
         $db = (new Database())->getConnection();
         $userModel = new UserModel($db);
         $user = $userModel->getUserById($_SESSION['user_id']);
-        
+
         require_once 'app/views/shares/header.php';
         require_once 'app/views/account/bank.php';
         require_once 'app/views/shares/footer.php';
@@ -387,12 +393,15 @@ class PageController
     public function password()
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
-        if (!isset($_SESSION['user_id'])) { header('Location: ' . BASE_URL . 'index.php?url=Page/login'); exit; }
-        
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . BASE_URL . 'index.php?url=Page/login');
+            exit;
+        }
+
         $db = (new Database())->getConnection();
         $userModel = new UserModel($db);
         $user = $userModel->getUserById($_SESSION['user_id']);
-        
+
         require_once 'app/views/shares/header.php';
         require_once 'app/views/account/change_password.php';
         require_once 'app/views/shares/footer.php';
@@ -525,7 +534,7 @@ class PageController
 
             // Mock sending OTP - in real case, use Mailer or SMS API
             // For demo purposes, we return success. You could also log it or send via email here.
-            
+
             echo json_encode(['success' => true, 'message' => 'Mã xác minh đã được gửi! (Demo: ' . $otp . ')']);
         }
     }
@@ -576,7 +585,7 @@ class PageController
                 unset($_SESSION['reset_identifier']);
                 unset($_SESSION['otp_time']);
                 unset($_SESSION['otp_verified']);
-                
+
                 echo json_encode(['success' => true, 'message' => 'Đặt lại mật khẩu thành công!']);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Lỗi khi cập nhật mật khẩu.']);

@@ -357,7 +357,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                                         $isOwner = ($currentUserId > 0 && $ownerId > 0 && (int)$currentUserId === $ownerId);
                                         ?>
                                         <?php if ($isOwner): ?>
-                                            <div class="owner-badge-mini" style="position: absolute; top: 10px; right: 10px; background: #00bfa5; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10;">BẠN ĐĂNG BÁN</div>
+
                                             <div class="admin-actions-mini d-flex mt-2 justify-content-end">
                                                 <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn-admin-edit mx-1" title="Chỉnh sửa sản phẩm của bạn" style="background: #00bfa5; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; text-decoration: none;">
                                                     <i class="fas fa-edit mr-1"></i> Chỉnh sửa sản phẩm
@@ -537,7 +537,6 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                                             $isOwner = ($currentUserId > 0 && $ownerId > 0 && (int)$currentUserId === $ownerId);
                                             ?>
                                             <?php if ($isOwner): ?>
-                                                <div class="owner-badge-mini" style="position: absolute; top: 10px; right: 10px; background: #00bfa5; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; z-index: 10;">BẠN ĐĂNG BÁN</div>
                                                 <div class="admin-actions-mini d-flex mt-2 justify-content-end">
                                                     <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn-admin-edit mx-1" title="Chỉnh sửa sản phẩm của bạn" style="background: #00bfa5; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; text-decoration: none;">
                                                         <i class="fas fa-edit mr-1"></i> Chỉnh sửa sản phẩm

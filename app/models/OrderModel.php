@@ -81,11 +81,12 @@ class OrderModel {
         $query = "SELECT o.*, 
                          od.product_id, od.variant_id, od.quantity, od.price as item_price,
                           p.name as product_name, p.image as product_image, p.user_id as product_user_id,
-                          pv.name as variant_name
+                          pv.name as variant_name, s.id as shop_id, s.name as shop_name
                   FROM orders o
                   LEFT JOIN order_detail od ON o.id = od.order_id
                   LEFT JOIN product p ON od.product_id = p.id
                   LEFT JOIN product_variants pv ON od.variant_id = pv.id
+                  LEFT JOIN shops s ON p.user_id = s.seller_id
                   WHERE o.user_id = :user_id";
         
         if ($status) {
@@ -116,6 +117,8 @@ class OrderModel {
                     'payment_method' => $row->payment_method,
                     'shipping_fee' => $row->shipping_fee,
                     'created_at' => $row->created_at,
+                    'shop_id' => $row->shop_id,
+                    'shop_name' => $row->shop_name,
                     'items' => []
                 ];
             }
@@ -147,12 +150,13 @@ class OrderModel {
         $query = "SELECT o.*, 
                          od.product_id, od.variant_id, od.quantity, od.price as item_price,
                          p.name as product_name, p.image as product_image, p.user_id as product_user_id, u_s.role as seller_role,
-                         u.name as user_name
+                         u.name as user_name, s.id as shop_id, s.name as shop_name
                   FROM orders o
                   LEFT JOIN order_detail od ON o.id = od.order_id
                   LEFT JOIN product p ON od.product_id = p.id
                   LEFT JOIN user u ON o.user_id = u.id
                   LEFT JOIN user u_s ON p.user_id = u_s.id
+                  LEFT JOIN shops s ON p.user_id = s.seller_id
                   WHERE o.id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -173,6 +177,8 @@ class OrderModel {
             'shipping_fee' => $results[0]->shipping_fee,
             'created_at' => $results[0]->created_at,
             'cancel_reason' => $results[0]->cancel_reason,
+            'shop_id' => $results[0]->shop_id,
+            'shop_name' => $results[0]->shop_name,
             'items' => []
         ];
 

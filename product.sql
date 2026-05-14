@@ -121,9 +121,9 @@ CREATE TABLE IF NOT EXISTS `chat_messages` (
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=138 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=146 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.chat_messages: ~114 rows (approximately)
+-- Dumping data for table handmade_shop.chat_messages: ~116 rows (approximately)
 INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message_type`, `content`, `attachment_url`, `is_read`, `created_at`) VALUES
 	(1, 1, 3, 'text', 'e', NULL, 1, '2026-04-30 10:01:47'),
 	(2, 1, 3, 'text', 'r', NULL, 1, '2026-04-30 10:01:52'),
@@ -170,10 +170,10 @@ INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message_type
 	(66, 8, 7, 'text', 'e', NULL, 1, '2026-05-12 04:48:17'),
 	(67, 8, 7, 'text', 'ưerfasfasf', NULL, 1, '2026-05-12 04:48:22'),
 	(68, 8, 3, 'text', 'gì', NULL, 1, '2026-05-12 04:58:16'),
-	(69, 1, 3, 'text', 'ágfasfg', NULL, 0, '2026-05-12 04:58:27'),
+	(69, 1, 3, 'text', 'ágfasfg', NULL, 1, '2026-05-12 04:58:27'),
 	(70, 8, 3, 'text', 'asfasfasfdas\\', NULL, 1, '2026-05-12 04:59:00'),
 	(71, 8, 7, 'text', 'ádasd', NULL, 1, '2026-05-12 05:00:51'),
-	(72, 6, 3, 'text', 'ád', NULL, 0, '2026-05-12 05:02:31'),
+	(72, 6, 3, 'text', 'ád', NULL, 1, '2026-05-12 05:02:31'),
 	(73, 8, 7, 'text', 'ok', NULL, 1, '2026-05-12 05:02:47'),
 	(74, 8, 3, 'text', 'gì', NULL, 1, '2026-05-12 05:06:00'),
 	(75, 8, 3, 'text', 'ádf', NULL, 1, '2026-05-12 05:06:04'),
@@ -238,7 +238,9 @@ INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message_type
 	(134, 9, 7, 'product', '{"id":39,"name":"Len sợi Acrylic Paintbox Yarns Simply DK","price":"30.000₫","image":"public/uploads/prod_69f30741ba86a_1777534785.jpg"}', NULL, 1, '2026-05-13 09:41:25'),
 	(135, 9, 7, 'text', 'ss', NULL, 1, '2026-05-13 09:41:26'),
 	(136, 15, 18, 'product', '{"id":44,"name":"Len sợi Acrylic Paintbox Yarns Simply DK","price":"50.000₫","image":"public/uploads/prod_69fee9beb3cbf_1778313662.jpg"}', NULL, 1, '2026-05-13 10:12:59'),
-	(137, 13, 18, 'product', '{"id":8,"name":"Thú bông len hình thỏ","price":"280.000₫","image":"public/uploads/d07933460b5dedc29a720c19381eaf76.jpg"}', NULL, 1, '2026-05-13 10:15:33');
+	(137, 13, 18, 'product', '{"id":8,"name":"Thú bông len hình thỏ","price":"280.000₫","image":"public/uploads/d07933460b5dedc29a720c19381eaf76.jpg"}', NULL, 1, '2026-05-13 10:15:33'),
+	(138, 13, 5, 'text', 'hi', NULL, 1, '2026-05-13 13:07:29'),
+	(139, 16, 11, 'text', 'kkk', NULL, 1, '2026-05-13 13:07:51');
 
 -- Dumping structure for table handmade_shop.conversations
 CREATE TABLE IF NOT EXISTS `conversations` (
@@ -256,9 +258,9 @@ CREATE TABLE IF NOT EXISTS `conversations` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.conversations: ~13 rows (approximately)
+-- Dumping data for table handmade_shop.conversations: ~16 rows (approximately)
 INSERT INTO `conversations` (`id`, `customer_id`, `seller_id`, `last_message`, `last_message_type`, `last_message_at`, `is_pinned`, `is_muted`, `unread_admin`, `unread_customer`, `created_at`, `updated_at`, `deleted_at`) VALUES
 	(1, 3, 3, 'ágfasfg', 'text', '2026-05-12 11:58:27', 0, 0, 0, 0, '2026-04-30 10:01:43', '2026-05-12 04:58:27', NULL),
 	(4, 6, 0, 'sao', 'text', '2026-05-01 12:53:56', 0, 0, 0, 0, '2026-05-01 04:05:07', '2026-05-01 05:53:56', NULL),
@@ -270,9 +272,12 @@ INSERT INTO `conversations` (`id`, `customer_id`, `seller_id`, `last_message`, `
 	(10, 19, 0, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 06:16:05', '2026-05-13 06:16:05', NULL),
 	(11, 19, 3, 'Msg 3', 'text', '2026-05-13 13:49:57', 0, 0, 0, 0, '2026-05-13 06:17:37', '2026-05-13 06:49:57', NULL),
 	(12, 19, 6, '[product]', 'product', '2026-05-13 13:26:31', 0, 0, 0, 0, '2026-05-13 06:26:30', '2026-05-13 06:26:31', NULL),
-	(13, 18, 3, '[product]', 'product', '2026-05-13 17:15:33', 0, 0, 0, 0, '2026-05-13 06:28:28', '2026-05-13 10:15:33', NULL),
+	(13, 18, 3, 'hi', 'text', '2026-05-13 20:07:29', 0, 0, 0, 0, '2026-05-13 06:28:28', '2026-05-13 13:07:29', NULL),
 	(14, 7, 3, '[product]', 'product', '2026-05-13 16:40:57', 0, 0, 0, 0, '2026-05-13 09:20:00', '2026-05-13 09:40:57', NULL),
-	(15, 18, 18, '[product]', 'product', '2026-05-13 17:12:59', 0, 0, 0, 0, '2026-05-13 10:12:56', '2026-05-13 10:12:59', NULL);
+	(15, 18, 18, '[product]', 'product', '2026-05-13 17:12:59', 0, 0, 0, 0, '2026-05-13 10:12:56', '2026-05-13 10:12:59', NULL),
+	(16, 11, 0, 'kkk', 'text', '2026-05-13 20:07:51', 0, 0, 0, 0, '2026-05-13 13:07:46', '2026-05-13 13:07:51', NULL),
+	(17, 20, 0, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 14:16:26', '2026-05-13 14:16:26', NULL),
+	(18, 20, 3, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 14:16:26', '2026-05-13 14:16:26', NULL);
 
 -- Dumping structure for table handmade_shop.notifications
 CREATE TABLE IF NOT EXISTS `notifications` (
@@ -285,7 +290,7 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.notifications: ~48 rows (approximately)
 INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `link`, `is_read`, `created_at`) VALUES
@@ -334,9 +339,20 @@ INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `link`
 	(43, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-13 10:10:56'),
 	(44, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-13 10:11:03'),
 	(45, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-13 10:11:40'),
-	(46, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-13 10:11:40'),
+	(46, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 1, '2026-05-13 10:11:40'),
 	(47, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-13 10:11:54'),
-	(48, 3, 'Thông báo hệ thống', 'Đơn hàng #34 của bạn đã được cập nhật thành: Đã giao thành công', 'system', 'index.php?url=Page/orders', 0, '2026-05-13 10:17:27');
+	(48, 3, 'Thông báo hệ thống', 'Đơn hàng #34 của bạn đã được cập nhật thành: Đã giao thành công', 'system', 'index.php?url=Page/orders', 0, '2026-05-13 10:17:27'),
+	(49, 1, 'Thông báo hệ thống', 'Sản phẩm mới \'Len sợi A\' từ người bán đang chờ phê duyệt.', 'system', 'index.php?url=Dashboard/products', 0, '2026-05-14 03:42:48'),
+	(50, 1, 'Thông báo hệ thống', 'Sản phẩm mới \'Lục Lạc Vòng Gỗ \' từ người bán đang chờ phê duyệt.', 'system', 'index.php?url=Dashboard/products', 0, '2026-05-14 03:57:42'),
+	(51, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:02:27'),
+	(52, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:02:27'),
+	(53, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:09:00'),
+	(54, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:37:36'),
+	(55, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:37:36'),
+	(56, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:38:00'),
+	(57, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shoppp yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:53:57'),
+	(58, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shoppp yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:53:57'),
+	(59, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:54:04');
 
 -- Dumping structure for table handmade_shop.orders
 CREATE TABLE IF NOT EXISTS `orders` (
@@ -458,7 +474,7 @@ CREATE TABLE IF NOT EXISTS `password_resets` (
   KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.password_resets: ~1 rows (approximately)
+-- Dumping data for table handmade_shop.password_resets: ~0 rows (approximately)
 INSERT INTO `password_resets` (`id`, `email`, `otp_code`, `expires_at`, `created_at`) VALUES
 	(1, 'hankhanh0901@gmail.com', '537854', '2026-05-12 04:42:23', '2026-05-12 04:37:23');
 
@@ -486,52 +502,53 @@ CREATE TABLE IF NOT EXISTS `product` (
   PRIMARY KEY (`id`),
   KEY `category_id` (`category_id`),
   CONSTRAINT `product_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.product: ~42 rows (approximately)
 INSERT INTO `product` (`id`, `name`, `description`, `price`, `image`, `stock`, `category_id`, `sold`, `rating`, `rating_count`, `is_featured`, `display_order`, `discount_percent`, `location`, `user_id`, `status`, `created_at`, `rejection_reason`, `likes`) VALUES
-	(1, 'Lục Lạc Vòng Gỗ Handmade đồ chơi an toàn cho Bé', 'chiều cao 10cm\r\nchất liệu từ sợi cotton cao cấp, bền đẹp và an toàn cho bé,\r\nbên trong nhồi bông gòn nhân tạo không gây dị ứng cho bé yêu\r\nMắt được khâu thủ công đảm bảo an toàn', 180000.00, 'luc-lac-vong-go-handmade-do-choi-an-toan-cho-be-11-510x383.jpg', 0, 4, 5, 4.0, 1, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(2, 'Búp bê handmade Autumn', 'chiều cao 30cm\r\nchất liệu từ sợi cotton cao cấp, bền đẹp và an toàn cho bé, không gây dị ứng cho bé yêu\r\nmắt búp bê bằng nhựa, được gắn chốt, đẹp bền và an toàn cho bé trong quá trình sử dụng\r\nváy áo và mũ cũng được làm thủ công có thể tháo rời cho các tự do thay đổi', 400000.00, '61340911_1261004000732867_6425604364278169600_n-510x510.jpg', 0, 4, 1, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(3, 'Gấu bông len handmade nhỏ xinh', 'chiều cao 15cm\r\nchất liệu sợi cotton mềm mại, an toàn cho bé\r\nnhồi bông gòn nhân tạo không gây dị ứng', 150000.00, 'Gấu bông len handmade nhỏ xinh.jpg', 10, 5, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(4, 'Túi xách len handmade vintage', 'kích thước 25cm\r\nchất liệu len đan tay chắc chắn\r\nphong cách vintage thời trang', 250000.00, '65f1236083c7b91075b8d7ca0f5653c4.png', 5, 6, 0, 5.0, 1, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(5, 'Móc khóa thú len handmade', 'kích thước nhỏ gọn\r\nlen mềm nhiều màu sắc\r\nphù hợp làm quà tặng', 100000.00, 'vn-11134207-820l4-mhs7hbm2vwg209.png', 16, 15, 4, 5.0, 1, 1, 3, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(6, 'Nón len handmade mùa đông', 'giữ ấm tốt\r\nlen dày dặn cao cấp\r\nthiết kế dễ thương', 120000.00, 'OIP.png', 12, 7, 12, 0.0, 0, 1, 2, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(7, 'Búp bê len handmade bé gái', 'chiều cao 25cm\r\nváy áo tháo rời\r\nan toàn cho trẻ em', 400000.00, 'Búp bê len handmade bé gái.jpg', 3, 4, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(8, 'Thú bông len hình thỏ', 'cao 20cm\r\nmềm mại dễ thương\r\nphù hợp cho bé', 280000.00, 'd07933460b5dedc29a720c19381eaf76.jpg', 3, 5, 10, 5.0, 1, 1, 1, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 1),
-	(9, ' Khăn len quàng cổ phối màu Pastel KH1', 'kích thước lớn\r\nchất liệu vải bố bền\r\ndùng đi học tiện lợi', 500000.00, '.png', 12, 7, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(10, 'Khăn len handmade', 'chiều dài 150cm\r\ngiữ ấm tốt\r\nlen cao cấp không xù', 660000.00, 'khan_len_pastel_4.jpg', 15, 7, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(11, 'Bộ kim móc len 8 cây', 'nhiều kích thước khác nhau\r\nkim nhẹ dễ sử dụng\r\nphù hợp người mới', 120000.00, 'OIP .png', 24, 1, 1, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(12, 'Kéo cắt len mini', 'thiết kế nhỏ gọn\r\nlưỡi kéo sắc bén\r\ntiện mang theo', 10000.00, 'prod_69e6ee466409f_1776741958.png', 30, 3, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 1),
-	(13, 'Búp bê len handmade cặp đôi', 'gồm 2 búp bê\r\nthiết kế đáng yêu\r\nphù hợp làm quà', 600000.00, 'a77764815a5da21ca06e0c81a6a10c59.jpg', 2, 4, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 1),
-	(14, 'Gấu bông len size lớn', 'chiều cao 40cm\r\nôm siêu thích\r\nlen mềm mại', 650000.00, 'giantshepe.png', 4, 5, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(15, 'Túi đeo chéo len unisex cỡ lớn họa tiết con mắt', 'dây đeo chắc chắn\r\nthiết kế trẻ trung\r\nphù hợp đi chơi', 270000.00, 'vn-11134201-7qukw-lhnet8bb1tc19f.png', 7, 6, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(16, 'Nón bucket handmade', 'phong cách thời trang\r\nlen mềm thoáng\r\nhot trend hiện nay', 150000.00, '1.png', 9, 7, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(17, 'Thảm lót ly handmade', 'đan len thủ công\r\nchịu nhiệt tốt\r\ntrang trí đẹp', 200000.00, '601fe975d579a5635ddb7579077cd6dd.jpg', 18, 8, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(18, 'Giỏ đựng đồ handmade', 'dùng trang trí\r\nđựng đồ tiện lợi\r\nthiết kế đẹp mắt', 220000.00, '8.png', 6, 8, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(20, 'Thú len hình mèo', 'thiết kế mèo dễ thương\r\nlen mềm mại\r\nphù hợp mọi lứa tuổi', 160000.00, 'OIP (1).png', 11, 5, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(21, 'Túi xách len mini', 'kích thước nhỏ gọn\r\nphong cách xinh xắn\r\ndễ phối đồ', 180000.00, 'OIP (2).png', 10, 6, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(22, 'Combo 3 búp bê len handmade Noel', 'chủ đề Giáng sinh\r\ntrang phục đặc biệt\r\nphù hợp trang trí', 450000.00, '0f14f6e3f5bff0be7cb56259a097f13b.jpg', 4, 4, 1, 5.0, 1, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 1),
-	(23, 'Bó hoa len mix ngẫu nhiên tone xanh pastel', 'Shop phối màu ngẫu nhiên nhưng đảm bảo đẹp như hình', 335000.00, 'hoabo.jpg', 3, 11, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(24, 'Hoa bó mix ngẫu nhiên', 'Shop mix ngẫu nhiên như ảnh.', 350000.00, 'prod_69dcad81661ef_1776070017.png', 1, 11, 0, 0.0, 0, 1, 4, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(25, 'Hoa bó mix ngẫu nhiên', 'Shop mix hoa như trong ảnh.', 310000.00, 'prod_69dcadd11494d_1776070097.png', 1, 11, 0, 0.0, 0, 0, 0, 10, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(26, 'Hoa Hồng', '1 cành như mẫu', 20000.00, 'prod_69ddc68b96ca1_1776141963.jpg', 66, 9, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(27, 'Hoa hồng đơn', 'Bán theo cành như ảnh.', 75000.00, 'prod_69e702664c008_1776747110.jpg', 55, 9, 1, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 1),
-	(28, 'Đếm dòng', 'Kim đếm số hàng len\r\n', 2000.00, 'prod_69e6edda09704_1776741850.png', 1022, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(29, 'Kéo cắt len kiểu', '', 33330.00, 'prod_69e6eec20affe_1776742082.png', 33, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(30, 'Thước dây', '', 20000.00, 'prod_69e6ef8807e32_1776742280.png', 56, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(31, 'Mát thú, mắt nhựa', 'Combo 1 hộp', 35000.00, 'prod_69e6f0d5c6f67_1776742613.png', 45, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(32, 'Bông gòn nhồi thú', '', 33333.00, 'prod_69e6f31a0cd3c_1776743194.png', 0, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(33, 'Kẽm - phụ kiện móc hoa len', '50 que, tặng kèm băng keo quấn kẽm', 45555.00, 'prod_69e6f39fd4557_1776743327.jpg', 0, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(34, 'Nhíp nhồi bông', '', 5000.00, 'prod_69e6f4ce73d3b_1776743630.png', 654, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(35, 'Thú treo xe, cặp', '', 45000.00, 'prod_69e6f8ae5ccd3_1776744622.jpg', 81, 15, 3, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(36, 'Hướng dương', 'Sản phẩm như ảnh', 25000.00, 'prod_69e7317f1e843_1776759167.png', 54, 15, 2, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 06:38:36', NULL, 0),
-	(39, 'Len sợi Acrylic Paintbox Yarns Simply DK', 'so beautiful ', 30000.00, 'prod_69f30741ba86a_1777534785.jpg', 4, 13, 6, 5.0, 0, 0, 0, 3, 'Bình Định', 6, 'approved', '2026-04-30 07:39:45', NULL, 0),
-	(40, 'Cuộn Len Sợi Microp Polyester 100% 100g', '', 40000.00, 'prod_69f31845ac951_1777539141.jpg', 0, 13, 6, 5.0, 0, 0, 0, 4, 'Tp. Hồ Chí Minh', 6, 'approved', '2026-04-30 08:52:21', NULL, 1),
-	(41, 'Sợi Ni lông 70D - Salud Style', '', 60000.00, 'prod_69f318905070f_1777539216.jpg', 5, 12, 0, 5.0, 0, 0, 0, 6, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 08:53:36', NULL, 0),
-	(42, 'len sợi pha', '', 25000.00, 'prod_69f318ae6d5da_1777539246.jpg', 7, 12, 0, 5.0, 0, 0, 0, 3, 'Tp. Hồ Chí Minh', 3, 'approved', '2026-04-30 08:54:06', NULL, 0),
-	(43, 'Len Milk Cotton 2mm 50g', '', 15000.00, 'prod_69f318ceaba30_1777539278.jpg', 5, 12, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 6, 'approved', '2026-04-30 08:54:38', NULL, 1),
-	(44, 'Len sợi Acrylic Paintbox Yarns Simply DK', 'so beautiful', 50000.00, 'prod_69fee9beb3cbf_1778313662.jpg', 6, 13, 1, 5.0, 0, 0, 0, 6, 'Tp. Hồ Chí Minh', 18, 'approved', '2026-05-09 08:01:02', NULL, 0),
-	(45, ' lấy trễ hơn giù', 'ss', 65555.00, 'prod_69feee72bc994_1778314866.jpg', 6, 13, 0, 5.0, 0, 0, 0, 2, 'Tp. Hồ Chí Minh', 18, 'rejected', '2026-05-09 08:21:06', 'no', 0);
+	(1, 'Lục Lạc Vòng Gỗ Handmade đồ chơi an toàn cho Bé', 'chiều cao 10cm\r\nchất liệu từ sợi cotton cao cấp, bền đẹp và an toàn cho bé,\r\nbên trong nhồi bông gòn nhân tạo không gây dị ứng cho bé yêu\r\nMắt được khâu thủ công đảm bảo an toàn', 180000.00, 'luc-lac-vong-go-handmade-do-choi-an-toan-cho-be-11-510x383.jpg', 0, 4, 5, 4.0, 1, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(2, 'Búp bê handmade Autumn', 'chiều cao 30cm\r\nchất liệu từ sợi cotton cao cấp, bền đẹp và an toàn cho bé, không gây dị ứng cho bé yêu\r\nmắt búp bê bằng nhựa, được gắn chốt, đẹp bền và an toàn cho bé trong quá trình sử dụng\r\nváy áo và mũ cũng được làm thủ công có thể tháo rời cho các tự do thay đổi', 400000.00, '61340911_1261004000732867_6425604364278169600_n-510x510.jpg', 0, 4, 1, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(3, 'Gấu bông len handmade nhỏ xinh', 'chiều cao 15cm\r\nchất liệu sợi cotton mềm mại, an toàn cho bé\r\nnhồi bông gòn nhân tạo không gây dị ứng', 150000.00, 'Gấu bông len handmade nhỏ xinh.jpg', 10, 5, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(4, 'Túi xách len handmade vintage', 'kích thước 25cm\r\nchất liệu len đan tay chắc chắn\r\nphong cách vintage thời trang', 250000.00, '65f1236083c7b91075b8d7ca0f5653c4.png', 5, 6, 0, 5.0, 1, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(5, 'Móc khóa thú len handmade', 'kích thước nhỏ gọn\r\nlen mềm nhiều màu sắc\r\nphù hợp làm quà tặng', 100000.00, 'vn-11134207-820l4-mhs7hbm2vwg209.png', 16, 15, 4, 5.0, 1, 1, 3, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(6, 'Nón len handmade mùa đông', 'giữ ấm tốt\r\nlen dày dặn cao cấp\r\nthiết kế dễ thương', 120000.00, 'OIP.png', 12, 7, 12, 0.0, 0, 1, 2, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(7, 'Búp bê len handmade bé gái', 'chiều cao 25cm\r\nváy áo tháo rời\r\nan toàn cho trẻ em', 400000.00, 'Búp bê len handmade bé gái.jpg', 3, 4, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(8, 'Thú bông len hình thỏ', 'cao 20cm\r\nmềm mại dễ thương\r\nphù hợp cho bé', 280000.00, 'd07933460b5dedc29a720c19381eaf76.jpg', 3, 5, 10, 3.0, 2, 1, 1, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 1),
+	(9, ' Khăn len quàng cổ phối màu Pastel KH1', 'kích thước lớn\r\nchất liệu vải bố bền\r\ndùng đi học tiện lợi', 500000.00, '.png', 12, 7, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(10, 'Khăn len handmade', 'chiều dài 150cm\r\ngiữ ấm tốt\r\nlen cao cấp không xù', 660000.00, 'khan_len_pastel_4.jpg', 15, 7, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(11, 'Bộ kim móc len 8 cây', 'nhiều kích thước khác nhau\r\nkim nhẹ dễ sử dụng\r\nphù hợp người mới', 120000.00, 'OIP .png', 24, 1, 1, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(12, 'Kéo cắt len mini', 'thiết kế nhỏ gọn\r\nlưỡi kéo sắc bén\r\ntiện mang theo', 10000.00, 'prod_69e6ee466409f_1776741958.png', 30, 3, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 1),
+	(13, 'Búp bê len handmade cặp đôi', 'gồm 2 búp bê\r\nthiết kế đáng yêu\r\nphù hợp làm quà', 600000.00, 'a77764815a5da21ca06e0c81a6a10c59.jpg', 2, 4, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 1),
+	(14, 'Gấu bông len size lớn', 'chiều cao 40cm\r\nôm siêu thích\r\nlen mềm mại', 650000.00, 'giantshepe.png', 4, 5, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(15, 'Túi đeo chéo len unisex cỡ lớn họa tiết con mắt', 'dây đeo chắc chắn\r\nthiết kế trẻ trung\r\nphù hợp đi chơi', 270000.00, 'vn-11134201-7qukw-lhnet8bb1tc19f.png', 7, 6, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(16, 'Nón bucket handmade', 'phong cách thời trang\r\nlen mềm thoáng\r\nhot trend hiện nay', 150000.00, '1.png', 9, 7, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(17, 'Thảm lót ly handmade', 'đan len thủ công\r\nchịu nhiệt tốt\r\ntrang trí đẹp', 200000.00, '601fe975d579a5635ddb7579077cd6dd.jpg', 18, 8, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(18, 'Giỏ đựng đồ handmade', 'dùng trang trí\r\nđựng đồ tiện lợi\r\nthiết kế đẹp mắt', 220000.00, '8.png', 6, 8, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(20, 'Thú len hình mèo', 'thiết kế mèo dễ thương\r\nlen mềm mại\r\nphù hợp mọi lứa tuổi', 160000.00, 'OIP (1).png', 11, 5, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(21, 'Túi xách len mini', 'kích thước nhỏ gọn\r\nphong cách xinh xắn\r\ndễ phối đồ', 180000.00, 'OIP (2).png', 10, 6, 0, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(22, 'Combo 3 búp bê len handmade Noel', 'chủ đề Giáng sinh\r\ntrang phục đặc biệt\r\nphù hợp trang trí', 450000.00, '0f14f6e3f5bff0be7cb56259a097f13b.jpg', 4, 4, 1, 5.0, 1, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 1),
+	(23, 'Bó hoa len mix ngẫu nhiên tone xanh pastel', 'Shop phối màu ngẫu nhiên nhưng đảm bảo đẹp như hình', 335000.00, 'hoabo.jpg', 3, 11, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(24, 'Hoa bó mix ngẫu nhiên', 'Shop mix ngẫu nhiên như ảnh.', 350000.00, 'prod_69dcad81661ef_1776070017.png', 1, 11, 0, 0.0, 0, 1, 4, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(25, 'Hoa bó mix ngẫu nhiên', 'Shop mix hoa như trong ảnh.', 310000.00, 'prod_69dcadd11494d_1776070097.png', 1, 11, 0, 0.0, 0, 0, 0, 10, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(26, 'Hoa Hồng', '1 cành như mẫu', 20000.00, 'prod_69ddc68b96ca1_1776141963.jpg', 66, 9, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(27, 'Hoa hồng đơn', 'Bán theo cành như ảnh.', 75000.00, 'prod_69e702664c008_1776747110.jpg', 55, 9, 1, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 1),
+	(28, 'Đếm dòng', 'Kim đếm số hàng len\r\n', 2000.00, 'prod_69e6edda09704_1776741850.png', 1022, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(29, 'Kéo cắt len kiểu', '', 33330.00, 'prod_69e6eec20affe_1776742082.png', 33, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(30, 'Thước dây', '', 20000.00, 'prod_69e6ef8807e32_1776742280.png', 56, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(31, 'Mát thú, mắt nhựa', 'Combo 1 hộp', 35000.00, 'prod_69e6f0d5c6f67_1776742613.png', 45, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(32, 'Bông gòn nhồi thú', '', 33333.00, 'prod_69e6f31a0cd3c_1776743194.png', 0, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(33, 'Kẽm - phụ kiện móc hoa len', '50 que, tặng kèm băng keo quấn kẽm', 45555.00, 'prod_69e6f39fd4557_1776743327.jpg', 0, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(34, 'Nhíp nhồi bông', '', 5000.00, 'prod_69e6f4ce73d3b_1776743630.png', 654, 3, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(35, 'Thú treo xe, cặp', '', 45000.00, 'prod_69e6f8ae5ccd3_1776744622.jpg', 81, 15, 3, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(36, 'Hướng dương', 'Sản phẩm như ảnh', 25000.00, 'prod_69e7317f1e843_1776759167.png', 54, 15, 2, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
+	(39, 'Len sợi Acrylic Paintbox Yarns Simply DK', 'so beautiful ', 30000.00, 'prod_69f30741ba86a_1777534785.jpg', 4, 13, 6, 5.0, 0, 0, 0, 3, 'Bình Định', 5, 'approved', '2026-04-30 07:39:45', NULL, 0),
+	(40, 'Cuộn Len Sợi Microp Polyester 100% 100g', '', 40000.00, 'prod_69f31845ac951_1777539141.jpg', 0, 13, 6, 5.0, 0, 0, 0, 4, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 08:52:21', NULL, 1),
+	(41, 'Sợi Ni lông 70D - Salud Style', '', 60000.00, 'prod_69f318905070f_1777539216.jpg', 5, 12, 0, 5.0, 0, 0, 0, 6, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 08:53:36', NULL, 0),
+	(42, 'len sợi pha', '', 25000.00, 'prod_69f318ae6d5da_1777539246.jpg', 7, 12, 0, 5.0, 0, 0, 0, 3, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 08:54:06', NULL, 0),
+	(43, 'Len Milk Cotton 2mm 50g', '', 15000.00, 'prod_69f318ceaba30_1777539278.jpg', 5, 12, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 08:54:38', NULL, 1),
+	(44, 'Len sợi Acrylic Paintbox Yarns Simply DK', 'so beautiful', 50000.00, 'prod_69fee9beb3cbf_1778313662.jpg', 6, 13, 1, 5.0, 0, 0, 0, 6, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-05-09 08:01:02', NULL, 0),
+	(45, ' lấy trễ hơn giù', 'ss', 65555.00, 'prod_69feee72bc994_1778314866.jpg', 6, 13, 0, 5.0, 0, 0, 0, 2, 'Tp. Hồ Chí Minh', 5, 'rejected', '2026-05-09 08:21:06', 'no', 0),
+	(47, 'Lục Lạc Vòng Gỗ ', 'd', 55555.00, 'prod_6a05503a952d0_1778733114.jpg', 0, 13, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 18, 'approved', '2026-05-14 03:57:42', NULL, 0);
 
 -- Dumping structure for table handmade_shop.product_likes
 CREATE TABLE IF NOT EXISTS `product_likes` (
@@ -544,7 +561,7 @@ CREATE TABLE IF NOT EXISTS `product_likes` (
   KEY `product_id` (`product_id`),
   CONSTRAINT `product_likes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `product_likes_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.product_likes: ~7 rows (approximately)
 INSERT INTO `product_likes` (`id`, `user_id`, `product_id`, `created_at`) VALUES
@@ -569,7 +586,7 @@ CREATE TABLE IF NOT EXISTS `product_reviews` (
   KEY `fk_review_user` (`user_id`),
   CONSTRAINT `fk_review_product` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.product_reviews: ~5 rows (approximately)
 INSERT INTO `product_reviews` (`id`, `product_id`, `user_id`, `rating`, `comment`, `created_at`) VALUES
@@ -577,7 +594,8 @@ INSERT INTO `product_reviews` (`id`, `product_id`, `user_id`, `rating`, `comment
 	(2, 5, 5, 5, '100k 2 con mua cặp với người iu là hết sẫy lun', '2026-04-04 17:04:12'),
 	(3, 22, 5, 5, 'dễ thw nhaaa\r\n', '2026-04-11 15:38:11'),
 	(4, 1, 5, 4, 'cũng ok\r\n', '2026-04-13 10:19:52'),
-	(5, 8, 7, 5, 'đẹp', '2026-05-13 04:55:30');
+	(5, 8, 7, 5, 'đẹp', '2026-05-13 04:55:30'),
+	(6, 8, 18, 1, 'duyệt\r\n', '2026-05-14 04:30:37');
 
 -- Dumping structure for table handmade_shop.product_variants
 CREATE TABLE IF NOT EXISTS `product_variants` (
@@ -682,7 +700,7 @@ CREATE TABLE IF NOT EXISTS `return_media` (
   CONSTRAINT `return_media_ibfk_1` FOREIGN KEY (`return_id`) REFERENCES `returns` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.return_media: ~1 rows (approximately)
+-- Dumping data for table handmade_shop.return_media: ~0 rows (approximately)
 INSERT INTO `return_media` (`id`, `return_id`, `file_path`, `file_type`, `created_at`) VALUES
 	(1, 1, 'public/uploads/returns/return_1_0_1777536342.jpg', 'image', '2026-04-30 08:05:42');
 
@@ -724,11 +742,27 @@ CREATE TABLE IF NOT EXISTS `shops` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `seller_id` (`seller_id`),
   CONSTRAINT `shops_ibfk_1` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.shops: ~1 rows (approximately)
+-- Dumping data for table handmade_shop.shops: ~2 rows (approximately)
 INSERT INTO `shops` (`id`, `seller_id`, `name`, `description`, `logo`, `banner`, `rating`, `status`, `created_at`) VALUES
-	(1, 18, 'Han Shop', 'hehe', 'public/uploads/shops/1778667100_logo_z7772722283309_3c577827e8f56be8ad43f7b5d04768fb.jpg', NULL, 0, 'active', '2026-05-09 07:56:02');
+	(1, 18, 'Han Shoppp', 'hehehehehehehe\r\n', 'public/uploads/shops/1778667100_logo_z7772722283309_3c577827e8f56be8ad43f7b5d04768fb.jpg', NULL, 0, 'active', '2026-05-09 07:56:02'),
+	(2, 5, 'Nguyễn Lan Phương Shop', 'Cửa hàng chính thức của ban quản trị.', NULL, NULL, 0, 'active', '2026-05-14 04:29:25');
+
+-- Dumping structure for table handmade_shop.shop_followers
+CREATE TABLE IF NOT EXISTS `shop_followers` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `shop_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_shop_user` (`shop_id`,`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Dumping data for table handmade_shop.shop_followers: ~2 rows (approximately)
+INSERT INTO `shop_followers` (`id`, `shop_id`, `user_id`, `created_at`) VALUES
+	(2, 1, 3, '2026-05-14 04:24:59'),
+	(4, 2, 3, '2026-05-14 04:38:48');
 
 -- Dumping structure for table handmade_shop.shop_update_requests
 CREATE TABLE IF NOT EXISTS `shop_update_requests` (
@@ -743,12 +777,15 @@ CREATE TABLE IF NOT EXISTS `shop_update_requests` (
   PRIMARY KEY (`id`),
   KEY `shop_id` (`shop_id`),
   CONSTRAINT `shop_update_requests_ibfk_1` FOREIGN KEY (`shop_id`) REFERENCES `shops` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.shop_update_requests: ~2 rows (approximately)
+-- Dumping data for table handmade_shop.shop_update_requests: ~5 rows (approximately)
 INSERT INTO `shop_update_requests` (`id`, `shop_id`, `new_name`, `new_description`, `new_logo`, `new_banner`, `status`, `created_at`) VALUES
 	(1, 1, 'Han Shop', 'hehe', NULL, NULL, 'approved', '2026-05-13 10:10:56'),
-	(2, 1, 'Han Shop', 'hehe', 'public/uploads/shops/1778667100_logo_z7772722283309_3c577827e8f56be8ad43f7b5d04768fb.jpg', NULL, 'approved', '2026-05-13 10:11:40');
+	(2, 1, 'Han Shop', 'hehe', 'public/uploads/shops/1778667100_logo_z7772722283309_3c577827e8f56be8ad43f7b5d04768fb.jpg', NULL, 'approved', '2026-05-13 10:11:40'),
+	(3, 1, 'Han Shop', 'hehe', 'public/uploads/shops/1778667100_logo_z7772722283309_3c577827e8f56be8ad43f7b5d04768fb.jpg', NULL, 'approved', '2026-05-14 04:02:27'),
+	(4, 1, 'Han Shoppp', 'hehe', 'public/uploads/shops/1778667100_logo_z7772722283309_3c577827e8f56be8ad43f7b5d04768fb.jpg', NULL, 'approved', '2026-05-14 04:37:36'),
+	(5, 1, 'Han Shoppp', 'hehehehehehehe\r\n', 'public/uploads/shops/1778667100_logo_z7772722283309_3c577827e8f56be8ad43f7b5d04768fb.jpg', NULL, 'approved', '2026-05-14 04:53:57');
 
 -- Dumping structure for table handmade_shop.user
 CREATE TABLE IF NOT EXISTS `user` (
@@ -767,11 +804,11 @@ CREATE TABLE IF NOT EXISTS `user` (
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.user: ~14 rows (approximately)
+-- Dumping data for table handmade_shop.user: ~15 rows (approximately)
 INSERT INTO `user` (`id`, `name`, `username`, `email`, `password`, `phone`, `address`, `gender`, `dob`, `role`, `bank_name`, `bank_account`, `avatar`) VALUES
-	(3, 'Chu Hoàng Khánh Hân', 'hankhanh0901@gmail.com', 'hankhanh0901@gmail.com', '$2y$10$tRGWPCPINS5ipNXK75Olj.4oiX5SqXO7vd5xW71fbfQxz5FTdN/9y', '0964325348', '', 'nam', '2004-01-09', 'admin', NULL, NULL, 'avatar_3_1776425351.jpg'),
+	(3, 'Chu Hoàng Khánh Hân', 'hankhanh0901@gmail.com', 'hankhanh0901@gmail.com', '$2y$10$I2jEvFCw70Z.fcFeqEPp4.tcafRIc8RiB97l38OAJoiXsyfZwUNFS', '0964325348', '', 'nam', '2004-01-09', 'admin', NULL, NULL, 'avatar_3_1776425351.jpg'),
 	(5, 'Nguyễn Lan Phương', 'nguyenphuong2005b@gmail.com', 'nguyenphuong2005b@gmail.com', '$2y$10$NI81lET7vgHTCOZJ9F.EIOB92AyqaGO8pCJ69vSj4AxpDDCqL3WyO', '0382613031', '', 'nu', '2005-03-13', 'admin', NULL, NULL, 'avatar_5_1775829360.jpg'),
 	(6, 'Han Khanh', 'hankhanh9124@gmail.com', 'hankhanh9124@gmail.com', '$2y$10$FP0QGWo4vzba.zMHwhq6FeWcKz4tf7b9hjtvQ3m9e2WAcSjFT.IBS', '0964325344', NULL, 'khac', NULL, 'seller', NULL, NULL, NULL),
 	(7, 'Khánh Hân', 'hankhanh', NULL, '$2y$10$seVNssVMurk2j045nNcjyOPtJ1jptOQSmN61F6JQzm58NIaKA/Auq', '0964325331', '', 'nam', '2004-01-09', 'user', NULL, NULL, 'avatar_7_1778650063.jpg'),
@@ -780,11 +817,12 @@ INSERT INTO `user` (`id`, `name`, `username`, `email`, `password`, `phone`, `add
 	(10, 'Facebook User', NULL, 'fb_user@facebook.com', '$2y$10$hCdiKTN1YwjeWZprZNJe.ukp8hD0jVa12254/3vTUBdnNM1U1UhRi', NULL, NULL, 'khac', NULL, 'user', NULL, NULL, NULL),
 	(11, 'Nguyễn Huỳnh Minh Thư', NULL, 'minhthu@gmail.com', '$2y$10$u9mTY9j4l6gxze73e3gtnu9GSB4tBZ9gZbcG2Ze9jvfiTbwJmLRe.', NULL, '', 'khac', NULL, 'seller', NULL, NULL, 'avatar_11_1775830653.jpg'),
 	(13, 'Google User', NULL, 'google_user@gmail.com', '$2y$10$Wec5Ud6qYVPVY8Nu0gXiw.UlcPTdg8KzRPideKF1ic3shrgFj5mCy', NULL, NULL, 'khac', NULL, 'user', NULL, NULL, NULL),
-	(14, 'Chu Hoàng Khánh Hân', NULL, '', '$2y$10$06UtVBLi5o.f/v56UJKDS.CMwmKNN5jnKUKsBL70T.dd5mHRE.Sgq', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', 'khac', NULL, 'user', NULL, NULL, NULL),
+	(14, 'Chu Hoàng Khánh Hân', NULL, '', '$2y$10$I2jEvFCw70Z.fcFeqEPp4.tcafRIc8RiB97l38OAJoiXsyfZwUNFS', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', 'khac', NULL, 'user', NULL, NULL, NULL),
 	(16, 'Nguyen Van A', NULL, 'vana@gmail.com', '$2y$10$O3ohZ3kYMbGvAQJChl9ki.OVu5fZLvyDbP2JjIqbs0KQyt9DYoi2i', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
 	(17, 'Test User', NULL, 'test@gmail.com', '$2y$10$GEYky8d5ivk5V4Oul/jwAu9zPmD5HKlDHCNea51pFFztJppyYry/a', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
 	(18, 'Han Khanh', NULL, NULL, '$2y$10$O7G6x09oqk2RR0VFwjmuNuObK2vCBLs8LY2w4ZpbuN6dr/rayFhLy', '0964325321', '', 'khac', NULL, 'seller', NULL, NULL, NULL),
-	(19, 'Test User', NULL, 'testuser@gmail.com', '$2y$10$RsLRF8WEN.FMRmTEZ9UjWO4wpJMbONoxpDsANEiCjjPyhC.SAegCa', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL);
+	(19, 'Test User', NULL, 'testuser@gmail.com', '$2y$10$RsLRF8WEN.FMRmTEZ9UjWO4wpJMbONoxpDsANEiCjjPyhC.SAegCa', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
+	(20, 'phuong', NULL, 'phuong@gmail.com', '$2y$10$NUgg8WdXbT3lZcolECY7BuozyR31YxWHogjW3QfbO3.fHChPjUj52', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL);
 
 -- Dumping structure for table handmade_shop.wishlist
 CREATE TABLE IF NOT EXISTS `wishlist` (

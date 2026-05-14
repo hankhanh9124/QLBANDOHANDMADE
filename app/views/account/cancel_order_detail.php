@@ -1,5 +1,9 @@
 <?php
 // app/views/account/cancel_order_detail.php
+if (!isset($order) || !$order) {
+    echo "<div class='container my-5'><div class='alert alert-danger'>Không tìm thấy thông tin đơn hàng.</div></div>";
+    return;
+}
 ?>
 
 <div class="cancel-detail-container">
@@ -16,17 +20,17 @@
     <!-- Status Banner -->
     <div class="cancel-status-banner">
         <h3 class="status-title">Đã hủy đơn hàng</h3>
-        <p class="status-time">vào <?php echo date('H:i d-m-Y', strtotime($order->created_at)); ?></p>
+        <p class="status-time">vào <?php echo date('H:i d-m-Y', strtotime($order->created_at)); ?></p> 
     </div>
 
     <!-- Shop Info Block -->
     <div class="cancel-shop-block">
         <div class="shop-left">
             <span class="shop-badge">Mall</span>
-            <span class="shop-name">GÌ CŨNG MÓC Official Store</span>
+            <span class="shop-name"><?php echo htmlspecialchars($order->shop_name ?? 'GÌ CŨNG MÓC Official Store'); ?></span>
         </div>
         <div class="shop-right">
-            <a href="<?php echo BASE_URL; ?>" class="btn-view-shop" style="text-decoration: none; color: #555; display: inline-block;"><i class="fas fa-store"></i> Xem Shop</a>
+            <a href="<?php echo BASE_URL; ?>index.php?url=Shop/profile/<?php echo $order->shop_id ?: ($order->items[0]->seller_id ?? 0); ?>" class="btn-view-shop" style="text-decoration: none; color: #555; display: inline-block;"><i class="fas fa-store"></i> Xem Shop</a>
         </div>
     </div>
 

@@ -25,6 +25,7 @@ $shopAvatar = BASE_URL . 'public/images/logolen.jpg';
             <!-- ── Header ── -->
             <div class="wgt-pane-header">
                 <div class="wgt-header-left">
+                    <i class="fas fa-chevron-left wgt-back-btn" id="wgtBackBtn" title="Quay lại danh sách"></i>
                     <img src="<?php echo $shopAvatar; ?>" alt="Shop" id="wgtPaneAvatar">
                     <div class="wgt-header-info">
                         <h4 id="wgtPaneName"><?php echo $shopName; ?></h4>

@@ -55,12 +55,14 @@ include 'app/views/dashboard/header.php';
                                 <?php echo ($sort === 'sold_only') ? 'Sản phẩm' : 'Tên sản phẩm'; ?>
                             </th>
                             <?php if ($sort === 'sold_only'): ?>
+                                <th class="border-0">Người đăng</th>
                                 <th class="border-0">Người mua</th>
                                 <th class="border-0">Ngày bán</th>
                                 <th class="border-0 text-right">Đơn giá</th>
                                 <th class="border-0 text-center">SL</th>
                                 <th class="border-0" style="width: 250px;">Địa chỉ</th>
                             <?php else: ?>
+                                <th class="border-0">Người đăng</th>
                                 <th class="border-0">Giá</th>
                                 <th class="border-0">Tồn kho</th>
                                 <th class="border-0 text-danger"><i class="fas fa-fire mr-1"></i>Đã bán</th>
@@ -88,6 +90,9 @@ include 'app/views/dashboard/header.php';
                                     
                                     <?php if ($sort === 'sold_only'): ?>
                                         <td class="align-middle">
+                                            <div class="small font-weight-bold"><?php echo htmlspecialchars($product->seller_name ?? 'Hệ thống'); ?></div>
+                                        </td>
+                                        <td class="align-middle">
                                             <div class="font-weight-bold"><?php echo htmlspecialchars($product->recipient_name ?? ''); ?></div>
                                             <div class="small text-muted"><?php echo htmlspecialchars($product->recipient_phone ?? ''); ?></div>
                                         </td>
@@ -111,6 +116,9 @@ include 'app/views/dashboard/header.php';
                                             </div>
                                         </td>
                                     <?php else: ?>
+                                        <td class="align-middle">
+                                            <div class="small font-weight-bold text-primary"><?php echo htmlspecialchars($product->seller_name ?? 'Hệ thống'); ?></div>
+                                        </td>
                                         <td class="align-middle">
                                             <?php echo number_format($product->price, 0, ',', '.'); ?> ₫
                                             <?php if ((float)$product->price >= 55000): ?>

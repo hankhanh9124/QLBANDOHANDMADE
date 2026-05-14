@@ -9,6 +9,7 @@
     let isOpen = false;
     let convList = [];
     let isStartingNewChat = false; // Flag to prevent auto-select during specific chat start
+    let isListMode = false;        // Flag to prevent auto-select when showing conversation list in widget
 
     /* ── Elements ─────────────────────────────────────────────── */
     const isFullPage = document.querySelector('.chat-page-wrapper') !== null;
@@ -31,9 +32,12 @@
     const paneAvatar = document.getElementById(isFullPage ? 'active-conv-avatar' : 'wgtPaneAvatar');
     const paneName = document.getElementById(isFullPage ? 'active-conv-name' : 'wgtPaneName');
     
-    // Mobile Back Button
+    // Mobile/Widget Back Button
     const mobileBackBtn = document.getElementById('mobile-back-btn');
+    const wgtBackBtn = document.getElementById('wgtBackBtn');
     const sidebar = document.getElementById('full-chat-sidebar');
+    const wgtInputBar = document.querySelector('.chat-input-bar');
+    const wgtStatusText = document.querySelector('.wgt-header-info span');
 
     /* ── Initialization ──────────────────────────────────────── */
     if (isFullPage) {
@@ -50,6 +54,7 @@
         if (bubble) bubble.addEventListener('click', toggleWidget);
         if (widgetCloseBtn) widgetCloseBtn.addEventListener('click', closeWidget);
         if (minimizeBtn) minimizeBtn.addEventListener('click', closeWidget);
+        if (wgtBackBtn) wgtBackBtn.addEventListener('click', showConvList);
     }
 
     if (mobileBackBtn) {
@@ -69,6 +74,18 @@
         },
         close: function() {
             closeWidget();
+        },
+        showList: function() {
+            showConvList();
+        },
+        showConvOptions: function(e, id) {
+            e.stopPropagation();
+            showOptionsMenu(e.target, id);
+        },
+        deleteConversation: function(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa cuộc hội thoại này? Tất cả tin nhắn sẽ bị xóa vĩnh viễn.')) {
+                deleteConv(id);
+            }
         }
     };
 
@@ -86,7 +103,7 @@
     function openWidget() {
         isOpen = true;
         if (widgetWindow) widgetWindow.classList.add('open');
-        loadConversations();
+        showConvList();
     }
 
     function closeWidget() {
@@ -108,10 +125,11 @@
                 updateBubbleBadge(totalUnread);
 
                 // Auto-select first conversation for Widget (Customer)
-                if (!isFullPage && convList.length > 0 && !currentConvId && !isStartingNewChat) {
+                if (!isFullPage && convList.length > 0 && !currentConvId && !isStartingNewChat && !isListMode) {
                     selectConv(convList[0]);
                 }
                 isStartingNewChat = false; // Reset after first load
+                // isListMode stays true until a conversation is selected manually
             })
             .catch(err => console.error('Load conv error:', err));
     }
@@ -143,6 +161,9 @@
                     </div>
                     <div class="chat-conv-meta">
                         <div class="chat-conv-time">${time}</div>
+                        <div class="chat-conv-actions">
+                            <i class="fas fa-ellipsis-h btn-conv-more" data-id="${c.id}" onclick="event.stopPropagation(); window.chatAction.showConvOptions(event, ${c.id})"></i>
+                        </div>
                         ${unread}
                     </div>
                 </div>`;
@@ -156,9 +177,21 @@
         if (!conv) return;
         currentConvId = conv.id;
         lastTimestamp = null;
+        isListMode = false; // Exit list mode when a conversation is selected
 
         // UI Updates
         if (convEmpty) convEmpty.style.display = 'none';
+        
+        // Widget logic: Hide list, show pane
+        if (!isFullPage) {
+            if (convListEl) convListEl.style.display = 'none';
+            if (activePane) activePane.style.display = 'flex';
+            if (wgtInputBar) wgtInputBar.style.display = 'block';
+            if (wgtBackBtn) wgtBackBtn.style.display = 'block';
+            if (paneAvatar) paneAvatar.style.display = 'block';
+            if (wgtStatusText) wgtStatusText.style.display = 'block';
+        }
+
         if (activePane) activePane.style.display = 'flex';
         
         // Mobile Sidebar handling
@@ -181,6 +214,24 @@
 
         // Update seller ID for product selector
         currentSellerId = conv.seller_id || 0;
+    }
+
+    function showConvList() {
+        if (isFullPage) return;
+        
+        currentConvId = null;
+        isListMode = true; // Enter list mode
+        stopPolling();
+
+        if (convListEl) convListEl.style.display = 'block';
+        if (activePane) activePane.style.display = 'none';
+        if (wgtInputBar) wgtInputBar.style.display = 'none';
+        if (wgtBackBtn) wgtBackBtn.style.display = 'none';
+        if (paneAvatar) paneAvatar.style.display = 'none';
+        if (wgtStatusText) wgtStatusText.style.display = 'none';
+        if (paneName) paneName.textContent = 'Đoạn chat';
+        
+        loadConversations();
     }
 
     /* ── Messages ─────────────────────────────────────────────── */
@@ -460,7 +511,60 @@
         if (pollTimer) clearInterval(pollTimer);
     }
 
-    /* ── Helpers ──────────────────────────────────────────────── */
+    /* ── Options Menu ────────────────────────────────────────── */
+    function showOptionsMenu(btn, id) {
+        // Remove existing
+        const existing = document.getElementById('chatOptionsMenu');
+        if (existing) existing.remove();
+
+        const menu = document.createElement('div');
+        menu.id = 'chatOptionsMenu';
+        menu.className = 'chat-options-menu';
+        menu.innerHTML = `
+            <div class="menu-item delete" onclick="window.chatAction.deleteConversation(${id})">
+                <i class="fas fa-trash-alt mr-2"></i> Xóa đoạn chat
+            </div>
+        `;
+
+        document.body.appendChild(menu);
+
+        // Position
+        const rect = btn.getBoundingClientRect();
+        menu.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+        menu.style.left = (rect.right + window.scrollX - 140) + 'px';
+
+        // Close on click outside
+        setTimeout(() => {
+            const close = () => {
+                menu.remove();
+                document.removeEventListener('click', close);
+            };
+            document.addEventListener('click', close);
+        }, 0);
+    }
+
+    function deleteConv(id) {
+        const fd = new FormData();
+        fd.append('conv_id', id);
+        fd.append('action', 'delete');
+
+        fetch(`${BASE_URL}index.php?url=Chat/manage`, { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    if (currentConvId == id) {
+                        currentConvId = null;
+                        if (activePane) activePane.style.display = 'none';
+                        if (convEmpty) convEmpty.style.display = 'flex';
+                    }
+                    loadConversations();
+                } else {
+                    alert('Lỗi khi xóa hội thoại');
+                }
+            })
+            .catch(err => console.error('Delete conv error:', err));
+    }
+
     function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     function escAttr(s) { return escHtml(s); }
     function fixImageUrl(url) {

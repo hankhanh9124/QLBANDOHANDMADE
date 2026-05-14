@@ -267,7 +267,30 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                         </a>
                         <!-- Notification Dropdown -->
                         <div class="mini-notification-dropdown shadow" id="notification-dropdown">
-                            <div class="p-4 text-center text-muted">Không có thông báo mới</div>
+                            <div class="notification-header">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="notification-title">Thông báo</span>
+                                    <a href="#" class="mark-all-read small text-primary" style="font-weight: 600;">Đánh dấu tất cả đã đọc</a>
+                                </div>
+                                <div class="notification-filters" id="notification-filters">
+                                    <div class="filter-chip active" data-filter="all">Tất cả</div>
+                                    <?php if (isset($_SESSION['user_role'])): ?>
+                                        <?php if ($_SESSION['user_role'] === 'admin'): ?>
+                                            <div class="filter-chip" data-filter="seller_request">Yêu cầu phân quyền</div>
+                                            <div class="filter-chip" data-filter="review">Bình luận</div>
+                                            <div class="filter-chip" data-filter="wishlist">Yêu thích sản phẩm</div>
+                                        <?php elseif ($_SESSION['user_role'] === 'seller'): ?>
+                                            <div class="filter-chip" data-filter="review">Bình luận</div>
+                                            <div class="filter-chip" data-filter="wishlist">Yêu thích sản phẩm</div>
+                                        <?php elseif ($_SESSION['user_role'] === 'user'): ?>
+                                            <div class="filter-chip" data-filter="follow">Người mà bạn theo dõi</div>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="notification-items-container" id="notification-list">
+                                <div class="p-4 text-center text-muted">Không có thông báo mới</div>
+                            </div>
                         </div>
                     </div>
 
@@ -447,29 +470,63 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
+                            const notificationList = document.getElementById('notification-list');
                             if (response.count > 0) {
                                 notificationBadge.textContent = response.count;
                                 notificationBadge.classList.remove('d-none');
+                                
+                                let html = '';
+                                html += '<div class="notification-section-title">Mới nhất</div>';
 
-                                let html = '<div class="notification-header p-2 border-bottom font-weight-bold d-flex justify-content-between align-items-center"><span>Thông báo mới (' + response.count + ')</span><a href="#" class="mark-all-read small text-muted">Đánh dấu tất cả đã đọc</a></div>';
-                                html += '<div class="notification-items" style="max-height: 350px; overflow-y: auto;">';
                                 response.notifications.forEach(item => {
                                     const link = item.link ? '<?php echo BASE_URL; ?>' + item.link : '#';
+                                    const unreadClass = (item.is_read == 0 || item.is_read == '0') ? 'unread' : '';
+                                    
+                                    // Icon Mapping Logic
+                                    const type = item.type || 'system';
+                                    const iconMapping = {
+                                        'order': 'fa-shopping-basket',
+                                        'chat': 'fa-comment-dots',
+                                        'approved': 'fa-check-double',
+                                        'rejected': 'fa-times-circle',
+                                        'profile': 'fa-user-cog',
+                                        'payment': 'fa-credit-card',
+                                        'system': 'fa-info-circle',
+                                        'promotion': 'fa-tag',
+                                        'review': 'fa-star',
+                                        'seller_request': 'fa-store-alt',
+                                        'shipping': 'fa-truck',
+                                        'wishlist': 'fa-heart',
+                                        'inventory': 'fa-warehouse',
+                                        'cancel': 'fa-ban',
+                                        'voucher': 'fa-ticket-alt'
+                                    };
+                                    const iconClass = iconMapping[type] || 'fa-bell';
+
+                                    const avatarUrl = item.sender_avatar ? 
+                                        '<?php echo BASE_URL; ?>public/uploads/avatars/' + item.sender_avatar :
+                                        'https://ui-avatars.com/api/?name=System&background=random';
+
                                     html += `
-                                        <a href="${link}" class="notification-item d-flex p-3 border-bottom text-decoration-none mark-read-btn" data-id="${item.id}" style="transition: background-color 0.2s;">
-                                            <div class="notification-icon mr-3 text-primary"><i class="fas fa-bullhorn mt-1 pt-1"></i></div>
-                                            <div class="notification-content flex-grow-1">
-                                                <div class="text-dark small mb-1" style="line-height:1.4;">${item.message}</div>
-                                                <div class="text-muted" style="font-size: 0.75rem;">${item.created_at}</div>
+                                        <a href="${link}" class="notification-item ${unreadClass} mark-read-btn" data-id="${item.id}" data-type="${type}">
+                                            <div class="noti-avatar-wrapper">
+                                                <img src="${avatarUrl}" class="noti-avatar" alt="User">
+                                                <div class="noti-type-icon ${type}">
+                                                    <i class="fas ${iconClass}"></i>
+                                                </div>
                                             </div>
+                                            <div class="noti-details">
+                                                <div class="noti-message">${item.message}</div>
+                                                <div class="noti-time">${item.created_at}</div>
+                                            </div>
+                                            ${item.thumbnail ? `<img src="<?php echo BASE_URL; ?>public/uploads/products/${item.thumbnail}" class="noti-thumb" alt="P">` : ''}
                                         </a>
                                     `;
                                 });
-                                html += '</div>';
-                                notificationDropdown.innerHTML = html;
+                                notificationList.innerHTML = html;
                             } else {
                                 notificationBadge.classList.add('d-none');
-                                notificationDropdown.innerHTML = '<div class="p-4 text-center text-muted">Không có thông báo mới</div>';
+                                notificationList.innerHTML = '<div class="p-5 text-center text-muted"><i class="fas fa-bell-slash d-block mb-3" style="font-size: 2rem; opacity: 0.3;"></i>Không có thông báo mới</div>';
                             }
                         }
                     }
@@ -481,6 +538,41 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                 fetchNotifications();
                 // Poll every 15 seconds
                 setInterval(fetchNotifications, 15000);
+
+                // Toggle notification dropdown on click
+                $('.notification-wrapper > a').on('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(notificationDropdown).toggleClass('active');
+                    // Ensure cart dropdown doesn't conflict if it used the same system
+                    $('.mini-cart-dropdown').removeClass('active');
+                });
+
+                // Close when clicking outside
+                $(document).on('click', function(e) {
+                    if (!$(e.target).closest('.notification-wrapper').length) {
+                        $(notificationDropdown).removeClass('active');
+                    }
+                });
+
+                // Prevent closing when clicking inside the dropdown
+                $(notificationDropdown).on('click', function(e) {
+                    e.stopPropagation();
+                });
+
+                // Filter logic
+                $(document).on('click', '.filter-chip', function() {
+                    const filter = $(this).data('filter');
+                    $('.filter-chip').removeClass('active');
+                    $(this).addClass('active');
+
+                    if (filter === 'all') {
+                        $('.notification-item').show();
+                    } else {
+                        $('.notification-item').hide();
+                        $(`.notification-item[data-type="${filter}"]`).show();
+                    }
+                });
             }
 
             // Handle mark as read

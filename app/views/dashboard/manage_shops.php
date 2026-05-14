@@ -61,7 +61,7 @@
                                     <?php echo date('d/m/Y', strtotime($shop->created_at)); ?>
                                 </td>
                                 <td class="text-right">
-                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/index&seller_id=<?php echo $shop->seller_id; ?>" target="_blank" class="btn btn-sm btn-info" title="Xem Shop">
+                                    <a href="<?php echo BASE_URL; ?>index.php?url=Shop/profile/<?php echo $shop->id ?: $shop->seller_id; ?>" target="_blank" class="btn btn-sm btn-info" title="Xem Shop">
                                         <i class="fas fa-external-link-alt"></i>
                                     </a>
                                     
