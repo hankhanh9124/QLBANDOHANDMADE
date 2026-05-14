@@ -305,7 +305,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                                     <div class="handmade-card-body d-flex flex-column" style="padding: 12px; min-height: 170px;">
                                         <div class="card-cat-label text-truncate" style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;"><?php echo $product->category_name; ?></div>
                                         <h5 class="card-name-unique mb-2" style="margin: 0;">
-                                            <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" style="color: #222; text-decoration: none; font-size: 15px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 42px;">
+                                            <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" style="color: #222; text-decoration: none; font-size: 15px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 42px;">
                                                 <?php echo $product->name; ?>
                                             </a>
                                         </h5>
@@ -490,7 +490,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                                     <div class="handmade-card-body d-flex flex-column" style="padding: 12px; min-height: 170px;">
                                         <div class="card-cat-label text-truncate" style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;"><?php echo $product->category_name; ?></div>
                                         <h5 class="card-name-unique mb-2" style="margin: 0;">
-                                            <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" style="color: #222; text-decoration: none; font-size: 15px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 42px;">
+                                            <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" style="color: #222; text-decoration: none; font-size: 15px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 42px;">
                                                 <?php echo $product->name; ?>
                                             </a>
                                         </h5>

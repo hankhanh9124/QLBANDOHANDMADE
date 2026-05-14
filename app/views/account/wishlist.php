@@ -64,7 +64,7 @@
                                         <div class="handmade-card-body d-flex flex-column p-3 bg-white" style="height: calc(100% - 200px);">
                                             <div class="card-cat-label text-truncate text-muted text-uppercase mb-1" style="font-size: 11px;"><?php echo $product->category_name; ?></div>
                                             <h6 class="card-name-unique mb-2">
-                                                <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" class="text-dark" style="text-decoration: none; font-size: 14px; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                                <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" class="text-dark" style="text-decoration: none; font-size: 14px; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                                                     <?php echo $product->name; ?>
                                                 </a>
                                             </h6>

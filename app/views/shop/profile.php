@@ -109,7 +109,7 @@ $followerCount = $followerCount ?? 0;
                                     <?php endif; ?>
                                 </div>
                                 <div class="p-3">
-                                    <h3 class="product-title mb-1" style="font-size: 0.95rem; font-weight: 500; height: 2.4em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                    <h3 class="product-title mb-1" style="font-size: 0.95rem; font-weight: 500; height: 2.4em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;"> 
                                         <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $p->id; ?>" class="text-dark text-decoration-none"><?php echo htmlspecialchars($p->name); ?></a>
                                     </h3>
                                     <div class="d-flex align-items-center mb-2">
