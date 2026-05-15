@@ -33,7 +33,7 @@ class PageController
         echo "<h2 class='text-center mb-4' style='color: #ee225b;'>Liên Hệ Với Chúng Tôi</h2>";
         echo "<div class='row justify-content-center'><div class='col-md-6 text-center'>";
         echo "<p><strong>Hotline:</strong> 0964.325.348</p>";
-        echo "<p><strong>Email:</strong> heavenhandmade.vn@gmail.com</p>";
+        echo "<p><strong>Email:</strong> gicungmoc.vn@gmail.com</p>";
         echo "<p><strong>Địa chỉ:</strong> 9 Đường số 16, Linh Trung, Thủ Đức</p>";
         echo "</div></div></div>";
         require_once 'app/views/shares/footer.php';

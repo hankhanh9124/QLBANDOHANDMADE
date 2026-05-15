@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `cart_items` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_product_variant` (`user_id`,`product_id`,`variant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.cart_items: ~5 rows (approximately)
 INSERT INTO `cart_items` (`id`, `user_id`, `product_id`, `variant_id`, `quantity`, `updated_at`) VALUES
@@ -80,7 +80,8 @@ INSERT INTO `cart_items` (`id`, `user_id`, `product_id`, `variant_id`, `quantity
 	(5, 13, 5, 0, 1, '2026-04-17 12:21:08'),
 	(34, 18, 27, 0, 1, '2026-05-09 08:29:20'),
 	(41, 19, 5, 1, 1, '2026-05-13 06:14:26'),
-	(42, 18, 27, 2, 1, '2026-05-13 06:16:04');
+	(42, 18, 27, 2, 1, '2026-05-13 06:16:04'),
+	(43, 18, 42, 0, 1, '2026-05-14 06:23:13');
 
 -- Dumping structure for table handmade_shop.category
 CREATE TABLE IF NOT EXISTS `category` (
@@ -121,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `chat_messages` (
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=146 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.chat_messages: ~116 rows (approximately)
 INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message_type`, `content`, `attachment_url`, `is_read`, `created_at`) VALUES
@@ -200,16 +201,9 @@ INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message_type
 	(96, 9, 7, 'text', 'qư', NULL, 1, '2026-05-12 05:11:26'),
 	(97, 9, 7, 'text', 'e', NULL, 1, '2026-05-12 05:11:27'),
 	(98, 8, 3, 'text', '?', NULL, 1, '2026-05-13 04:44:52'),
-	(99, 7, 18, 'text', 'e', NULL, 1, '2026-05-13 05:46:36'),
-	(100, 7, 3, 'text', '?', NULL, 1, '2026-05-13 05:46:55'),
 	(101, 11, 19, 'product', '{"id":5,"name":"Móc khóa thú len handmade","price":"100.000₫","image":"public/uploads/vn-11134207-820l4-mhs7hbm2vwg209.png"}', NULL, 1, '2026-05-13 06:17:56'),
 	(102, 12, 19, 'product', '{"id":39,"name":"Len sợi Acrylic Paintbox Yarns Simply DK","price":"30.000₫","image":"public/uploads/prod_69f30741ba86a_1777534785.jpg"}', NULL, 1, '2026-05-13 06:26:31'),
-	(103, 13, 18, 'product', '{"id":1,"name":"Lục Lạc Vòng Gỗ Handmade đồ chơi an toàn cho Bé","price":"180.000₫","old_price":"","image":"http://localhost:8080/QLBANDOHANDMADE/public/uploads/luc-lac-vong-go-handmade-do-choi-an-toan-cho-be-11-510x383.jpg"}', NULL, 1, '2026-05-13 06:28:39'),
-	(104, 13, 18, 'product', '{"id":41,"name":"Sợi Ni lông 70D - Salud Style","price":"56.400₫","old_price":"60.000₫","image":"http://localhost:8080/QLBANDOHANDMADE/public/uploads/prod_69f318905070f_1777539216.jpg"}', NULL, 1, '2026-05-13 06:29:36'),
-	(105, 13, 18, 'text', 'ê', NULL, 1, '2026-05-13 06:29:49'),
 	(106, 11, 19, 'product', '{"id":42,"name":"len sợi pha","price":"24.250₫","old_price":"25.000₫","image":"http://localhost:8080/QLBANDOHANDMADE/public/uploads/prod_69f318ae6d5da_1777539246.jpg"}', NULL, 1, '2026-05-13 06:39:18'),
-	(107, 13, 18, 'product', '{"id":35,"name":"Thú treo xe, cặp","price":"45.000₫","old_price":"","image":"http://localhost:8080/QLBANDOHANDMADE/public/uploads/prod_69e6f8ae5ccd3_1776744622.jpg"}', NULL, 1, '2026-05-13 06:43:06'),
-	(108, 13, 3, 'product', '{"id":42,"name":"len sợi pha","price":"24.250₫","old_price":"25.000₫","image":"http://localhost:8080/QLBANDOHANDMADE/public/uploads/prod_69f318ae6d5da_1777539246.jpg"}', NULL, 1, '2026-05-13 06:44:47'),
 	(109, 11, 19, 'product', '{"id":41,"name":"Sợi Ni lông 70D - Salud Style","price":"56.400₫","old_price":"60.000₫","image":"http://localhost:8080/QLBANDOHANDMADE/public/uploads/prod_69f318905070f_1777539216.jpg"}', NULL, 1, '2026-05-13 06:44:58'),
 	(110, 11, 19, 'text', 'ee', NULL, 1, '2026-05-13 06:45:07'),
 	(111, 11, 19, 'text', 'e', NULL, 1, '2026-05-13 06:45:07'),
@@ -237,10 +231,10 @@ INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message_type
 	(133, 9, 7, 'product', '{"id":39,"name":"Len sợi Acrylic Paintbox Yarns Simply DK","price":"30.000₫","image":"public/uploads/prod_69f30741ba86a_1777534785.jpg"}', NULL, 1, '2026-05-13 09:41:19'),
 	(134, 9, 7, 'product', '{"id":39,"name":"Len sợi Acrylic Paintbox Yarns Simply DK","price":"30.000₫","image":"public/uploads/prod_69f30741ba86a_1777534785.jpg"}', NULL, 1, '2026-05-13 09:41:25'),
 	(135, 9, 7, 'text', 'ss', NULL, 1, '2026-05-13 09:41:26'),
-	(136, 15, 18, 'product', '{"id":44,"name":"Len sợi Acrylic Paintbox Yarns Simply DK","price":"50.000₫","image":"public/uploads/prod_69fee9beb3cbf_1778313662.jpg"}', NULL, 1, '2026-05-13 10:12:59'),
-	(137, 13, 18, 'product', '{"id":8,"name":"Thú bông len hình thỏ","price":"280.000₫","image":"public/uploads/d07933460b5dedc29a720c19381eaf76.jpg"}', NULL, 1, '2026-05-13 10:15:33'),
-	(138, 13, 5, 'text', 'hi', NULL, 1, '2026-05-13 13:07:29'),
-	(139, 16, 11, 'text', 'kkk', NULL, 1, '2026-05-13 13:07:51');
+	(139, 16, 11, 'text', 'kkk', NULL, 1, '2026-05-13 13:07:51'),
+	(147, 20, 18, 'text', 'alo', NULL, 1, '2026-05-14 06:21:34'),
+	(148, 21, 18, 'text', '.', NULL, 0, '2026-05-14 06:22:51'),
+	(149, 20, 3, 'text', 'sao', NULL, 1, '2026-05-14 06:27:35');
 
 -- Dumping structure for table handmade_shop.conversations
 CREATE TABLE IF NOT EXISTS `conversations` (
@@ -258,7 +252,7 @@ CREATE TABLE IF NOT EXISTS `conversations` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.conversations: ~16 rows (approximately)
 INSERT INTO `conversations` (`id`, `customer_id`, `seller_id`, `last_message`, `last_message_type`, `last_message_at`, `is_pinned`, `is_muted`, `unread_admin`, `unread_customer`, `created_at`, `updated_at`, `deleted_at`) VALUES
@@ -266,18 +260,17 @@ INSERT INTO `conversations` (`id`, `customer_id`, `seller_id`, `last_message`, `
 	(4, 6, 0, 'sao', 'text', '2026-05-01 12:53:56', 0, 0, 0, 0, '2026-05-01 04:05:07', '2026-05-01 05:53:56', NULL),
 	(5, 16, 0, '[order]', 'order', '2026-05-01 13:13:57', 0, 0, 0, 0, '2026-05-01 05:02:56', '2026-05-01 06:13:57', NULL),
 	(6, 17, 0, 'ád', 'text', '2026-05-12 12:02:31', 0, 0, 0, 0, '2026-05-01 06:28:56', '2026-05-12 05:02:31', NULL),
-	(7, 18, 0, '?', 'text', '2026-05-13 12:46:55', 0, 0, 0, 0, '2026-05-09 07:58:14', '2026-05-13 05:46:55', NULL),
 	(8, 7, 0, '?', 'text', '2026-05-13 11:44:52', 0, 0, 0, 0, '2026-05-12 04:46:56', '2026-05-13 04:44:52', NULL),
 	(9, 7, 6, 'ss', 'text', '2026-05-13 16:41:26', 0, 0, 0, 0, '2026-05-12 05:11:15', '2026-05-13 09:41:26', NULL),
 	(10, 19, 0, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 06:16:05', '2026-05-13 06:16:05', NULL),
 	(11, 19, 3, 'Msg 3', 'text', '2026-05-13 13:49:57', 0, 0, 0, 0, '2026-05-13 06:17:37', '2026-05-13 06:49:57', NULL),
 	(12, 19, 6, '[product]', 'product', '2026-05-13 13:26:31', 0, 0, 0, 0, '2026-05-13 06:26:30', '2026-05-13 06:26:31', NULL),
-	(13, 18, 3, 'hi', 'text', '2026-05-13 20:07:29', 0, 0, 0, 0, '2026-05-13 06:28:28', '2026-05-13 13:07:29', NULL),
 	(14, 7, 3, '[product]', 'product', '2026-05-13 16:40:57', 0, 0, 0, 0, '2026-05-13 09:20:00', '2026-05-13 09:40:57', NULL),
-	(15, 18, 18, '[product]', 'product', '2026-05-13 17:12:59', 0, 0, 0, 0, '2026-05-13 10:12:56', '2026-05-13 10:12:59', NULL),
 	(16, 11, 0, 'kkk', 'text', '2026-05-13 20:07:51', 0, 0, 0, 0, '2026-05-13 13:07:46', '2026-05-13 13:07:51', NULL),
 	(17, 20, 0, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 14:16:26', '2026-05-13 14:16:26', NULL),
-	(18, 20, 3, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 14:16:26', '2026-05-13 14:16:26', NULL);
+	(18, 20, 3, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 14:16:26', '2026-05-13 14:16:26', NULL),
+	(20, 18, 0, 'sao', 'text', '2026-05-14 13:27:35', 0, 0, 0, 0, '2026-05-14 06:21:30', '2026-05-14 06:27:35', NULL),
+	(21, 18, 5, '.', 'text', '2026-05-14 13:22:51', 0, 0, 0, 0, '2026-05-14 06:22:48', '2026-05-14 06:22:51', NULL);
 
 -- Dumping structure for table handmade_shop.notifications
 CREATE TABLE IF NOT EXISTS `notifications` (
@@ -290,7 +283,7 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.notifications: ~48 rows (approximately)
 INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `link`, `is_read`, `created_at`) VALUES
@@ -352,7 +345,9 @@ INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `link`
 	(56, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:38:00'),
 	(57, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shoppp yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:53:57'),
 	(58, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shoppp yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:53:57'),
-	(59, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:54:04');
+	(59, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:54:04'),
+	(60, 3, 'Yêu cầu phân quyền Seller', 'Người dùng Khánh Hân muốn trở thành người bán (Seller).', 'seller_request', 'index.php?url=Admin/manageSellers', 0, '2026-05-14 07:58:38'),
+	(61, 5, 'Yêu cầu phân quyền Seller', 'Người dùng Khánh Hân muốn trở thành người bán (Seller).', 'seller_request', 'index.php?url=Admin/manageSellers', 0, '2026-05-14 07:58:38');
 
 -- Dumping structure for table handmade_shop.orders
 CREATE TABLE IF NOT EXISTS `orders` (
@@ -757,12 +752,12 @@ CREATE TABLE IF NOT EXISTS `shop_followers` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_shop_user` (`shop_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.shop_followers: ~2 rows (approximately)
 INSERT INTO `shop_followers` (`id`, `shop_id`, `user_id`, `created_at`) VALUES
 	(2, 1, 3, '2026-05-14 04:24:59'),
-	(4, 2, 3, '2026-05-14 04:38:48');
+	(8, 2, 3, '2026-05-14 06:27:26');
 
 -- Dumping structure for table handmade_shop.shop_update_requests
 CREATE TABLE IF NOT EXISTS `shop_update_requests` (
@@ -804,7 +799,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.user: ~15 rows (approximately)
 INSERT INTO `user` (`id`, `name`, `username`, `email`, `password`, `phone`, `address`, `gender`, `dob`, `role`, `bank_name`, `bank_account`, `avatar`) VALUES
@@ -822,7 +817,8 @@ INSERT INTO `user` (`id`, `name`, `username`, `email`, `password`, `phone`, `add
 	(17, 'Test User', NULL, 'test@gmail.com', '$2y$10$GEYky8d5ivk5V4Oul/jwAu9zPmD5HKlDHCNea51pFFztJppyYry/a', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
 	(18, 'Han Khanh', NULL, NULL, '$2y$10$O7G6x09oqk2RR0VFwjmuNuObK2vCBLs8LY2w4ZpbuN6dr/rayFhLy', '0964325321', '', 'khac', NULL, 'seller', NULL, NULL, NULL),
 	(19, 'Test User', NULL, 'testuser@gmail.com', '$2y$10$RsLRF8WEN.FMRmTEZ9UjWO4wpJMbONoxpDsANEiCjjPyhC.SAegCa', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
-	(20, 'phuong', NULL, 'phuong@gmail.com', '$2y$10$NUgg8WdXbT3lZcolECY7BuozyR31YxWHogjW3QfbO3.fHChPjUj52', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL);
+	(20, 'phuong', NULL, 'phuong@gmail.com', '$2y$10$NUgg8WdXbT3lZcolECY7BuozyR31YxWHogjW3QfbO3.fHChPjUj52', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
+	(21, 'Test User', NULL, 'test@example.com', '$2y$10$mWhrzqfOLqiDqT8kwzPm4ukwE8LDphEYxhz5pqfZc3Lfg672CJ.9.', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL);
 
 -- Dumping structure for table handmade_shop.wishlist
 CREATE TABLE IF NOT EXISTS `wishlist` (
