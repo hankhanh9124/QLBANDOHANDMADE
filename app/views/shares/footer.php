@@ -46,14 +46,11 @@
         <i class="fab fa-instagram"></i>
     </a>
 
-    </a>
     <a href="javascript:void(0)" class="social-btn back-to-top-btn" id="socialBackToTop" title="Lên đầu trang">
         <i class="fas fa-chevron-up"></i>
     </a>
 </div>
-        <i class="fas fa-chevron-up"></i>
-    </a>
-</div>
+
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
@@ -104,6 +101,16 @@ window.onscroll = function() {
         }
     }
 };
+
+document.addEventListener('DOMContentLoaded', function() {
+    var btn = document.getElementById('socialBackToTop');
+    if (btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+});
 
 // Global Checkout Login Check for mini-cart
 document.addEventListener('DOMContentLoaded', function() {

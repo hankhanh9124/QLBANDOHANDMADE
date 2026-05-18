@@ -781,8 +781,8 @@ class CartController
                     $admins = $stmtAdmins->fetchAll(PDO::FETCH_OBJ);
                     foreach ($admins as $admin) {
                         $msg = "Có đơn đặt hàng mới #" . $orderId . " trị giá " . number_format($total, 0, ',', '.') . " đ";
-                        $link = 'index.php?url=Dashboard/orders';
-                        $notificationModel->addNotification($admin->id, $msg, $link);
+                        $link = 'index.php?url=Dashboard/orderDetail/' . $orderId;
+                        $notificationModel->create($admin->id, 'Đơn hàng mới', $msg, 'order', $link);
                     }
 
                     // 8. Redirect đến trang success

@@ -23,6 +23,7 @@ class DashboardController
     private $chatModel;
     private $shopUpdateModel;
     public $unreadChatCount = 0;
+    public $pendingSellerRequestsCount = 0;
 
     public function __construct()
     {
@@ -49,6 +50,9 @@ class DashboardController
         }
 
         $this->unreadChatCount = $this->chatModel->getTotalUnread($_SESSION['user_id']);
+        if ($_SESSION['user_role'] === 'admin') {
+            $this->pendingSellerRequestsCount = count($this->sellerRequestModel->getAllPending());
+        }
     }
 
     private function requireAdmin()
@@ -256,6 +260,10 @@ class DashboardController
         $stmt->bindParam(':id', $id);
 
         if ($stmt->execute()) {
+            if ($status === 'completed') {
+                $this->orderModel->processOrderCommission($id);
+            }
+
             if ($order && $order->user_id) {
                 $statusLabels = [
                     'pending' => 'Chờ xử lý',
@@ -589,6 +597,150 @@ class DashboardController
             }
         }
         header('Location: ' . BASE_URL . 'index.php?url=Dashboard/manageShops');
+        exit;
+    }
+
+    public function adminRevenue()
+    {
+        $this->requireAdmin();
+
+        $stmt = $this->db->prepare("SELECT ar.*, u.name as seller_name FROM admin_revenue ar LEFT JOIN user u ON ar.seller_id = u.id ORDER BY ar.created_at DESC");
+        $stmt->execute();
+        $revenues = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $stmtTotal = $this->db->prepare("SELECT SUM(admin_fee) as total_revenue, SUM(gross_amount) as total_gross FROM admin_revenue WHERE status = 'settled'");
+        $stmtTotal->execute();
+        $totals = $stmtTotal->fetch(PDO::FETCH_OBJ);
+
+        $action = 'admin_revenue';
+        include 'app/views/dashboard/admin_revenue.php';
+    }
+
+    public function manageWithdrawals()
+    {
+        $this->requireAdmin();
+
+        $stmt = $this->db->prepare("SELECT wr.*, u.name as seller_name FROM withdrawal_requests wr LEFT JOIN user u ON wr.seller_id = u.id ORDER BY wr.created_at DESC");
+        $stmt->execute();
+        $withdrawals = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+        $action = 'manage_withdrawals';
+        include 'app/views/dashboard/manage_withdrawals.php';
+    }
+
+    public function approveWithdrawal($id)
+    {
+        $this->requireAdmin();
+
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Fetch request details
+            $stmt = $this->db->prepare("SELECT * FROM withdrawal_requests WHERE id = :id FOR UPDATE");
+            $stmt->bindParam(':id', $id);
+            $stmt->execute();
+            $wdr = $stmt->fetch(PDO::FETCH_OBJ);
+
+            if (!$wdr || $wdr->status !== 'pending') {
+                throw new Exception("Yêu cầu không hợp lệ hoặc đã được xử lý trước đó.");
+            }
+
+            // 2. Update withdrawal request status to 'approved'
+            $stmtUpdate = $this->db->prepare("UPDATE withdrawal_requests SET status = 'approved', updated_at = CURRENT_TIMESTAMP WHERE id = :id");
+            $stmtUpdate->bindParam(':id', $id);
+            $stmtUpdate->execute();
+
+            // 3. Update seller's wallet: increase total_withdrawn
+            $stmtWallet = $this->db->prepare("UPDATE seller_wallets SET total_withdrawn = total_withdrawn + :amount WHERE id = :id");
+            $stmtWallet->execute([
+                ':amount' => $wdr->amount,
+                ':id' => $wdr->wallet_id
+            ]);
+
+            // 4. Update the wallet_transactions status to 'completed'
+            $stmtTxn = $this->db->prepare("UPDATE wallet_transactions SET status = 'completed' WHERE seller_id = :seller_id AND type = 'withdrawal' AND note LIKE :note");
+            $notePattern = '%' . $wdr->request_code . '%';
+            $stmtTxn->execute([
+                ':seller_id' => $wdr->seller_id,
+                ':note' => $notePattern
+            ]);
+
+            // 5. Create notification for seller
+            require_once 'app/models/NotificationModel.php';
+            $notif = new NotificationModel($this->db);
+            $notif->create(
+                $wdr->seller_id,
+                'Yêu cầu rút tiền thành công',
+                'Yêu cầu rút tiền ' . $wdr->request_code . ' số tiền ' . number_format($wdr->amount, 0, ',', '.') . ' ₫ đã được duyệt và chuyển khoản thành công.',
+                'success',
+                'index.php?url=Seller/wallet'
+            );
+
+            $this->db->commit();
+            $_SESSION['success_message'] = "Đã duyệt và chuyển khoản thành công số tiền " . number_format($wdr->amount, 0, ',', '.') . " ₫ cho người bán.";
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            $_SESSION['error_message'] = $e->getMessage();
+        }
+        header('Location: ' . BASE_URL . 'index.php?url=Dashboard/manageWithdrawals');
+        exit;
+    }
+
+    public function rejectWithdrawal($id)
+    {
+        $this->requireAdmin();
+
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Fetch request details
+            $stmt = $this->db->prepare("SELECT * FROM withdrawal_requests WHERE id = :id FOR UPDATE");
+            $stmt->bindParam(':id', $id);
+            $stmt->execute();
+            $wdr = $stmt->fetch(PDO::FETCH_OBJ);
+
+            if (!$wdr || $wdr->status !== 'pending') {
+                throw new Exception("Yêu cầu không hợp lệ hoặc đã được xử lý trước đó.");
+            }
+
+            // 2. Update withdrawal request status to 'rejected'
+            $stmtUpdate = $this->db->prepare("UPDATE withdrawal_requests SET status = 'rejected', updated_at = CURRENT_TIMESTAMP WHERE id = :id");
+            $stmtUpdate->bindParam(':id', $id);
+            $stmtUpdate->execute();
+
+            // 3. REFUND seller's wallet balance
+            $stmtWallet = $this->db->prepare("UPDATE seller_wallets SET balance = balance + :amount WHERE id = :id");
+            $stmtWallet->execute([
+                ':amount' => $wdr->amount,
+                ':id' => $wdr->wallet_id
+            ]);
+
+            // 4. Update the wallet_transactions status to 'rejected'
+            $stmtTxn = $this->db->prepare("UPDATE wallet_transactions SET status = 'rejected' WHERE seller_id = :seller_id AND type = 'withdrawal' AND note LIKE :note");
+            $notePattern = '%' . $wdr->request_code . '%';
+            $stmtTxn->execute([
+                ':seller_id' => $wdr->seller_id,
+                ':note' => $notePattern
+            ]);
+
+            // 5. Create notification for seller
+            require_once 'app/models/NotificationModel.php';
+            $notif = new NotificationModel($this->db);
+            $notif->create(
+                $wdr->seller_id,
+                'Yêu cầu rút tiền bị từ chối',
+                'Yêu cầu rút tiền ' . $wdr->request_code . ' số tiền ' . number_format($wdr->amount, 0, ',', '.') . ' ₫ đã bị từ chối. Số tiền đã được hoàn trả lại vào ví của bạn.',
+                'danger',
+                'index.php?url=Seller/wallet'
+            );
+
+            $this->db->commit();
+            $_SESSION['success_message'] = "Đã từ chối yêu cầu rút tiền và hoàn trả số tiền " . number_format($wdr->amount, 0, ',', '.') . " ₫ vào ví người bán.";
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            $_SESSION['error_message'] = $e->getMessage();
+        }
+        header('Location: ' . BASE_URL . 'index.php?url=Dashboard/manageWithdrawals');
         exit;
     }
 }

@@ -21,9 +21,14 @@ class NotificationModel {
     }
 
     public function getByUserId($user_id, $limit = 10) {
-        $query = "SELECT * FROM " . $this->table_name . " 
-                  WHERE user_id = :user_id 
-                  ORDER BY created_at DESC LIMIT :limit";
+        $query = "SELECT n.* FROM " . $this->table_name . " n
+                  LEFT JOIN orders o ON (
+                      n.message LIKE '%#%' 
+                      AND o.id = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(n.message, '#', -1), ' ', 1) AS UNSIGNED)
+                  )
+                  WHERE n.user_id = :user_id 
+                    AND (o.id IS NULL OR o.status NOT IN ('completed', 'cancelled'))
+                  ORDER BY n.created_at DESC LIMIT :limit";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
         $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
@@ -32,8 +37,14 @@ class NotificationModel {
     }
 
     public function getUnreadCount($user_id) {
-        $query = "SELECT COUNT(*) as count FROM " . $this->table_name . " 
-                  WHERE user_id = :user_id AND is_read = 0";
+        $query = "SELECT COUNT(n.id) as count FROM " . $this->table_name . " n
+                  LEFT JOIN orders o ON (
+                      n.message LIKE '%#%' 
+                      AND o.id = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(n.message, '#', -1), ' ', 1) AS UNSIGNED)
+                  )
+                  WHERE n.user_id = :user_id 
+                    AND n.is_read = 0 
+                    AND (o.id IS NULL OR o.status NOT IN ('completed', 'cancelled'))";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
         $stmt->execute();

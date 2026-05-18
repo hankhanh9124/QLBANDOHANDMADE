@@ -95,7 +95,7 @@ class SellerController
                         'Yêu cầu đăng ký Seller mới',
                         'Người dùng ' . $_SESSION['user_name'] . ' vừa gửi yêu cầu mở shop: ' . $data['shop_name'],
                         'seller_request',
-                        'index.php?url=Admin/manageSellers'
+                        'index.php?url=Dashboard/manageSellers'
                     );
                 }
 
@@ -128,7 +128,7 @@ class SellerController
                 'Yêu cầu phân quyền Seller',
                 'Người dùng ' . $userName . ' muốn trở thành người bán (Seller).',
                 'seller_request',
-                'index.php?url=Admin/manageSellers'
+                'index.php?url=Dashboard/manageSellers'
             )) {
                 $success = false;
             }
@@ -181,6 +181,13 @@ class SellerController
         $stmtRevenue->bindParam(':seller_id', $sellerId);
         $stmtRevenue->execute();
         $totalRevenue = $stmtRevenue->fetch(PDO::FETCH_OBJ)->total_revenue ?? 0;
+
+        // 5. Wallet Balance
+        $stmtWallet = $this->db->prepare("SELECT balance FROM seller_wallets WHERE seller_id = :seller_id");
+        $stmtWallet->bindParam(':seller_id', $sellerId);
+        $stmtWallet->execute();
+        $walletRow = $stmtWallet->fetch(PDO::FETCH_OBJ);
+        $walletBalance = $walletRow ? $walletRow->balance : 0.00;
 
         $action = 'index';
         require_once 'app/views/seller/index.php';
@@ -329,6 +336,9 @@ class SellerController
                     $this->db->prepare("UPDATE product SET sold = sold + :qty WHERE id = :pid")
                         ->execute([':qty' => $item->quantity, ':pid' => $item->product_id]);
                 }
+
+                // Process commission and wallets
+                $this->orderModel->processOrderCommission($id);
             }
 
             $_SESSION['success_message'] = "Cập nhật trạng thái đơn hàng thành công.";
@@ -436,6 +446,156 @@ class SellerController
                 $_SESSION['error_message'] = "Có lỗi xảy ra khi gửi yêu cầu.";
             }
             header('Location: ' . BASE_URL . 'index.php?url=Seller/settings');
+            exit;
+        }
+    }
+
+    public function wallet()
+    {
+        if ($_SESSION['user_role'] !== 'seller') {
+            header('Location: ' . BASE_URL);
+            exit;
+        }
+
+        $sellerId = $_SESSION['user_id'];
+
+        // Get or create wallet
+        $stmtWallet = $this->db->prepare("SELECT * FROM seller_wallets WHERE seller_id = :seller_id");
+        $stmtWallet->bindParam(':seller_id', $sellerId);
+        $stmtWallet->execute();
+        $wallet = $stmtWallet->fetch(PDO::FETCH_OBJ);
+
+        if (!$wallet) {
+            $stmtCreate = $this->db->prepare("INSERT INTO seller_wallets (seller_id, balance, total_earned) VALUES (:seller_id, 0, 0)");
+            $stmtCreate->bindParam(':seller_id', $sellerId);
+            $stmtCreate->execute();
+
+            $stmtWallet->execute();
+            $wallet = $stmtWallet->fetch(PDO::FETCH_OBJ);
+        }
+
+        // Get transaction history
+        $stmtTxns = $this->db->prepare("SELECT * FROM wallet_transactions WHERE seller_id = :seller_id ORDER BY created_at DESC");
+        $stmtTxns->bindParam(':seller_id', $sellerId);
+        $stmtTxns->execute();
+        $transactions = $stmtTxns->fetchAll(PDO::FETCH_OBJ);
+
+        // Get withdrawal requests
+        $stmtWdrs = $this->db->prepare("SELECT * FROM withdrawal_requests WHERE seller_id = :seller_id ORDER BY created_at DESC");
+        $stmtWdrs->bindParam(':seller_id', $sellerId);
+        $stmtWdrs->execute();
+        $withdrawals = $stmtWdrs->fetchAll(PDO::FETCH_OBJ);
+
+        // Get total pending/processing withdrawal amount
+        $stmtProcessing = $this->db->prepare("SELECT SUM(amount) FROM withdrawal_requests WHERE seller_id = :seller_id AND status IN ('pending', 'processing')");
+        $stmtProcessing->bindParam(':seller_id', $sellerId);
+        $stmtProcessing->execute();
+        $amountProcessing = floatval($stmtProcessing->fetchColumn() ?: 0);
+
+        $action = 'seller_wallet';
+        require_once 'app/views/dashboard/header.php';
+        require_once 'app/views/seller/wallet.php';
+        require_once 'app/views/dashboard/footer.php';
+    }
+
+    public function submitWithdrawal()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SESSION['user_role'] === 'seller') {
+            $sellerId = $_SESSION['user_id'];
+            $amount = floatval($_POST['amount'] ?? 0);
+            $bankName = trim($_POST['bank_name'] ?? '');
+            $bankAccount = trim($_POST['bank_account'] ?? '');
+            $bankOwner = trim($_POST['bank_owner'] ?? '');
+
+            // Fetch wallet balance
+            $stmtWallet = $this->db->prepare("SELECT * FROM seller_wallets WHERE seller_id = :seller_id");
+            $stmtWallet->bindParam(':seller_id', $sellerId);
+            $stmtWallet->execute();
+            $wallet = $stmtWallet->fetch(PDO::FETCH_OBJ);
+
+            if (!$wallet || $amount <= 0 || $amount > $wallet->balance) {
+                $_SESSION['error_message'] = "Số dư không đủ hoặc số tiền rút không hợp lệ.";
+                header('Location: ' . BASE_URL . 'index.php?url=Seller/wallet');
+                exit;
+            }
+
+            if (empty($bankName) || empty($bankAccount) || empty($bankOwner)) {
+                $_SESSION['error_message'] = "Vui lòng nhập đầy đủ thông tin tài khoản ngân hàng.";
+                header('Location: ' . BASE_URL . 'index.php?url=Seller/wallet');
+                exit;
+            }
+
+            try {
+                $this->db->beginTransaction();
+
+                // Create request code
+                $requestCode = 'WDR-' . date('Ymd') . '-' . sprintf("%05d", rand(1, 99999)) . '-' . $sellerId;
+
+                // 1. Insert into withdrawal_requests
+                $stmtInsert = $this->db->prepare("INSERT INTO withdrawal_requests 
+                    (request_code, seller_id, wallet_id, amount, bank_name, bank_account, bank_owner, status) 
+                    VALUES 
+                    (:code, :seller_id, :wallet_id, :amount, :bank_name, :bank_account, :bank_owner, 'pending')");
+                $stmtInsert->execute([
+                    ':code' => $requestCode,
+                    ':seller_id' => $sellerId,
+                    ':wallet_id' => $wallet->id,
+                    ':amount' => $amount,
+                    ':bank_name' => $bankName,
+                    ':bank_account' => $bankAccount,
+                    ':bank_owner' => $bankOwner
+                ]);
+                $requestId = $this->db->lastInsertId();
+
+                // 2. Deduct from wallet balance
+                $stmtDeduct = $this->db->prepare("UPDATE seller_wallets SET balance = balance - :amount WHERE id = :id");
+                $stmtDeduct->execute([
+                    ':amount' => $amount,
+                    ':id' => $wallet->id
+                ]);
+
+                // 3. Record transaction in wallet_transactions as 'withdrawal' with status 'pending'
+                $txnCode = 'TXN-' . date('Ymd') . '-' . sprintf("%05d", rand(1, 99999)) . '-W' . $requestId;
+                $stmtTxn = $this->db->prepare("INSERT INTO wallet_transactions 
+                    (transaction_code, wallet_id, seller_id, type, amount, balance_before, balance_after, note, status) 
+                    VALUES 
+                    (:code, :wallet_id, :seller_id, 'withdrawal', :amount, :before, :after, :note, 'pending')");
+                $stmtTxn->execute([
+                    ':code' => $txnCode,
+                    ':wallet_id' => $wallet->id,
+                    ':seller_id' => $sellerId,
+                    ':amount' => -$amount,
+                    ':before' => $wallet->balance,
+                    ':after' => $wallet->balance - $amount,
+                    ':note' => 'Yêu cầu rút tiền #' . $requestCode,
+                    ':status' => 'pending'
+                ]);
+
+                // 4. Notify admin
+                require_once 'app/models/NotificationModel.php';
+                $notif = new NotificationModel($this->db);
+                $queryAdmin = "SELECT id FROM user WHERE role = 'admin'";
+                $stmtAdmin = $this->db->prepare($queryAdmin);
+                $stmtAdmin->execute();
+                $admins = $stmtAdmin->fetchAll(PDO::FETCH_OBJ);
+                foreach ($admins as $admin) {
+                    $notif->create(
+                        $admin->id,
+                        'Yêu cầu rút tiền mới',
+                        'Seller ' . $_SESSION['user_name'] . ' vừa yêu cầu rút ' . number_format($amount, 0, ',', '.') . ' ₫ về ngân hàng.',
+                        'withdrawal_request',
+                        'index.php?url=Dashboard/manageWithdrawals'
+                    );
+                }
+
+                $this->db->commit();
+                $_SESSION['success_message'] = "Yêu cầu rút tiền đã được gửi thành công và đang chờ duyệt.";
+            } catch (Exception $e) {
+                $this->db->rollBack();
+                error_log("Error in submitWithdrawal: " . $e->getMessage());
+                $_SESSION['error_message'] = "Có lỗi xảy ra trong quá trình xử lý: " . $e->getMessage();
+            }
+            header('Location: ' . BASE_URL . 'index.php?url=Seller/wallet');
             exit;
         }
     }

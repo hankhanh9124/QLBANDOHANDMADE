@@ -749,6 +749,41 @@ input[type=range]::-webkit-slider-thumb {
 /* ==========================================================================
    MINI CART DROPDOWN AND NOTIFICATION
    ========================================================================== */
+/* ==========================================================================
+   MINI NOTIFICATION DROPDOWN (SHOPEE FOOD GREEN THEME & DARK MODE)
+   ========================================================================== */
+:root {
+  --noti-bg: #ffffff;
+  --noti-border: #f0f2f5;
+  --noti-text-primary: #050505;
+  --noti-text-secondary: #65676b;
+  --noti-text-muted: #8a8d91;
+  --noti-hover-bg: #f2f3f5;
+  --noti-unread-bg: #f1fcf6; /* Very soft light green */
+  --noti-primary-green: #24ab65; /* Shopee Food green */
+  --noti-primary-green-hover: #1f9456;
+  --noti-chip-bg: #f0f2f5;
+  --noti-chip-text: #65676b;
+  --noti-chip-active-bg: #e6f7ed;
+  --noti-chip-active-text: #24ab65;
+  --noti-shadow: 0 12px 36px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark-noti {
+  --noti-bg: #1e293b;
+  --noti-border: #334155;
+  --noti-text-primary: #f8fafc;
+  --noti-text-secondary: #cbd5e1;
+  --noti-text-muted: #64748b;
+  --noti-hover-bg: #334155;
+  --noti-unread-bg: #0f2e20; /* Deep soft green tint for dark mode */
+  --noti-chip-bg: #334155;
+  --noti-chip-text: #94a3b8;
+  --noti-chip-active-bg: #0f2e20;
+  --noti-chip-active-text: #24ab65;
+  --noti-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
 .cart-wrapper-red, .notification-wrapper {
   z-index: 1000;
 }
@@ -757,18 +792,18 @@ input[type=range]::-webkit-slider-thumb {
   position: absolute;
   top: calc(100% + 15px);
   right: -10px;
-  width: 420px;
+  width: 550px;
   max-width: calc(100vw - 20px);
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 16px;
+  background: var(--noti-bg);
+  border: 1px solid var(--noti-border);
+  border-radius: 20px;
   z-index: 9999;
   display: none;
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(10px) scale(0.98);
-  box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--noti-shadow);
   overflow: hidden;
   flex-direction: column;
 }
@@ -781,24 +816,23 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .notification-header {
-  padding: 16px 16px 12px 16px;
-  background: #fff;
-  border-bottom: none;
+  padding: 18px 20px 12px 20px;
+  background: var(--noti-bg);
+  border-bottom: 1px solid var(--noti-border);
 }
 
 .notification-title {
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  color: #050505;
-  margin-bottom: 12px;
-  display: block;
+  color: var(--noti-text-primary);
+  margin-bottom: 0;
 }
 
 .notification-filters {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 10px 0 2px 0;
   scrollbar-width: none;
 }
 
@@ -807,77 +841,137 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .filter-chip {
-  padding: 8px 16px;
-  background: #f0f2f5;
-  border-radius: 20px;
-  font-size: 0.94rem;
+  padding: 6px 12px;
+  background: var(--noti-chip-bg);
+  border-radius: 50px;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #050505;
+  color: var(--noti-chip-text);
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   border: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  outline: none !important;
 }
 
 .filter-chip:hover {
-  background: #e4e6eb;
+  background: var(--noti-hover-bg);
+  color: var(--noti-text-primary);
+  transform: translateY(-1px);
 }
 
 .filter-chip.active {
-  background: #e7f3ff;
-  color: #1877f2;
+  background: var(--noti-chip-active-bg);
+  color: var(--noti-chip-active-text);
+  box-shadow: 0 2px 8px rgba(36, 171, 101, 0.15);
+}
+
+.badge-count {
+  background: var(--noti-primary-green);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.filter-chip.active .badge-count {
+  background: var(--noti-primary-green);
+  color: #fff;
 }
 
 .notification-items-container {
-  max-height: 480px;
+  max-height: 540px;
   overflow-y: auto;
   flex-grow: 1;
+  background: var(--noti-bg);
+  padding: 10px 0;
 }
 
 .notification-section-title {
-  padding: 12px 16px;
-  font-size: 1.06rem;
+  padding: 8px 20px;
+  font-size: 0.95rem;
   font-weight: 700;
-  color: #050505;
-  background: #fff;
+  color: var(--noti-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Custom Scrollbar for dropdown */
+.notification-items-container::-webkit-scrollbar {
+  width: 6px;
+}
+.notification-items-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.notification-items-container::-webkit-scrollbar-thumb {
+  background: var(--noti-border);
+  border-radius: 10px;
+}
+.notification-items-container::-webkit-scrollbar-thumb:hover {
+  background: var(--noti-text-muted);
 }
 
 .notification-item {
-  padding: 8px 16px;
+  padding: 12px 18px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  transition: background 0.2s;
+  gap: 14px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none !important;
-  border-radius: 8px;
-  margin: 0 8px 4px 8px;
+  border-radius: 14px;
+  margin: 4px 12px;
+  border: 1px solid transparent;
+  background: var(--noti-bg);
+  position: relative;
+  overflow: hidden;
 }
 
 .notification-item:hover {
-  background: #f2f2f2;
+  background: var(--noti-hover-bg);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-color: var(--noti-border);
 }
 
 .notification-item.unread {
-  position: relative;
-  background: #f0f7ff;
+  background: var(--noti-unread-bg);
 }
 
-.notification-item.unread::after {
+.notification-item.unread::before {
   content: "";
   position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 12px;
-  height: 12px;
-  background: #1877f2;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--noti-primary-green);
+  border-radius: 4px 0 0 4px;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--noti-primary-green);
   border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: auto;
+  box-shadow: 0 0 8px var(--noti-primary-green);
 }
 
 .noti-avatar-wrapper {
   position: relative;
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
 }
 
@@ -886,35 +980,38 @@ input[type=range]::-webkit-slider-thumb {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid var(--noti-border);
 }
 
 .noti-type-icon {
   position: absolute;
   bottom: -2px;
   right: -2px;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: #1877f2;
+  background: var(--noti-primary-green);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  border: 2px solid #fff;
+  font-size: 10px;
+  border: 2px solid var(--noti-bg);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* Type colors */
-.noti-type-icon.order { background: #10b981; }
+/* Type colors mapping */
+.noti-type-icon.order { background: #24ab65; }
 .noti-type-icon.chat { background: #3b82f6; }
 .noti-type-icon.approved { background: #059669; }
 .noti-type-icon.rejected { background: #ef4444; }
 .noti-type-icon.profile { background: #8b5cf6; }
 .noti-type-icon.payment { background: #f59e0b; }
-.noti-type-icon.system { background: #6b7280; }
+.noti-type-icon.system { background: var(--noti-primary-green); }
 .noti-type-icon.promotion { background: #ec4899; }
 .noti-type-icon.review { background: #eab308; }
 .noti-type-icon.seller_request { background: #6366f1; }
+.noti-type-icon.shop_update { background: #06b6d4; }
 .noti-type-icon.shipping { background: #0d9488; }
 .noti-type-icon.wishlist { background: #e11d48; }
 .noti-type-icon.inventory { background: #ea580c; }
@@ -923,47 +1020,110 @@ input[type=range]::-webkit-slider-thumb {
 
 .noti-details {
   flex-grow: 1;
-  padding-right: 20px;
+  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .noti-message {
-  font-size: 0.94rem;
-  line-height: 1.3;
-  color: #050505;
-  margin-bottom: 2px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--noti-text-primary);
 }
 
 .notification-item.unread .noti-message {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .noti-time {
-  font-size: 0.81rem;
-  color: #65676b;
+  font-size: 0.78rem;
+  color: var(--noti-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .notification-item.unread .noti-time {
-  color: #1877f2;
+  color: var(--noti-primary-green);
   font-weight: 600;
 }
 
 .noti-thumb {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
   object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--noti-border);
+}
+
+/* Skeleton Loading Shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-noti-item {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 14px;
+  margin: 4px 12px;
+  background: var(--noti-bg);
+}
+
+.skeleton-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, var(--noti-border) 25%, var(--noti-hover-bg) 50%, var(--noti-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
   flex-shrink: 0;
 }
 
+.skeleton-details {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--noti-border) 25%, var(--noti-hover-bg) 50%, var(--noti-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+.skeleton-line.title {
+  width: 45%;
+  height: 15px;
+}
+
+.skeleton-line.text {
+  width: 80%;
+}
+
+.skeleton-line.time {
+  width: 25%;
+  height: 10px;
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
   .mini-notification-dropdown {
     position: fixed;
     top: 60px;
-    right: 10px;
-    left: 10px;
+    right: 12px;
+    left: 12px;
     width: auto;
     max-width: none;
     z-index: 10001;
+    border-radius: 16px;
   }
 }
 

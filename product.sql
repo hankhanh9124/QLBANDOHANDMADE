@@ -45,6 +45,35 @@ INSERT INTO `addresses` (`id`, `user_id`, `name`, `phone`, `email`, `city`, `dis
 	(4, 5, 'Nguyễn Lan Phương', '0382613031', '', 'Thành phố Hồ Chí Minh', 'Huyện Củ Chi', 'Xã Phước Thạnh', '60/6, Trương Thị Khét', 'Nhà Riêng', 1, '2026-04-21 02:53:12'),
 	(5, 17, 'Test User', '0987654321', '', 'Thành phố Hà Nội', 'Quận Ba Đình', 'Phường Phúc Xá', '123 Test Street', '', 1, '2026-05-01 06:30:35');
 
+-- Dumping structure for table handmade_shop.admin_revenue
+CREATE TABLE IF NOT EXISTS `admin_revenue` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `transaction_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mã giao dịch duy nhất',
+  `order_id` int NOT NULL COMMENT 'FK → orders.id',
+  `order_detail_id` int NOT NULL COMMENT 'FK → order_detail.id',
+  `seller_id` int NOT NULL COMMENT 'FK → user.id (seller)',
+  `gross_amount` decimal(12,2) NOT NULL COMMENT 'Tổng giá trị mặt hàng (đơn giá * số lượng)',
+  `commission_percent` decimal(5,2) NOT NULL DEFAULT '10.00' COMMENT 'Tỷ lệ hoa hồng',
+  `admin_fee` decimal(12,2) NOT NULL COMMENT 'Số tiền admin nhận (10%)',
+  `seller_receive` decimal(12,2) NOT NULL COMMENT 'Số tiền seller nhận (90%)',
+  `status` enum('pending','settled','refunded') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'settled',
+  `note` text COLLATE utf8mb4_unicode_ci,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_rev_txn_code` (`transaction_code`),
+  KEY `idx_rev_order` (`order_id`),
+  KEY `idx_rev_order_detail` (`order_detail_id`),
+  KEY `idx_rev_seller` (`seller_id`),
+  KEY `idx_rev_created` (`created_at`),
+  CONSTRAINT `fk_rev_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
+  CONSTRAINT `fk_rev_order_detail` FOREIGN KEY (`order_detail_id`) REFERENCES `order_detail` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_rev_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Doanh thu hoa hồng của admin từ mỗi mặt hàng hoàn thành';
+
+-- Dumping data for table handmade_shop.admin_revenue: ~0 rows (approximately)
+INSERT INTO `admin_revenue` (`id`, `transaction_code`, `order_id`, `order_detail_id`, `seller_id`, `gross_amount`, `commission_percent`, `admin_fee`, `seller_receive`, `status`, `note`, `created_at`) VALUES
+	(1, 'REV-20260518-80908-40', 35, 40, 18, 55555.00, 10.00, 5555.50, 49999.50, 'settled', 'Phí hoa hồng 10% từ sản phẩm #47 (đơn hàng #35)', '2026-05-18 11:07:51');
+
 -- Dumping structure for table handmade_shop.banners
 CREATE TABLE IF NOT EXISTS `banners` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -72,16 +101,17 @@ CREATE TABLE IF NOT EXISTS `cart_items` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_product_variant` (`user_id`,`product_id`,`variant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.cart_items: ~5 rows (approximately)
+-- Dumping data for table handmade_shop.cart_items: ~7 rows (approximately)
 INSERT INTO `cart_items` (`id`, `user_id`, `product_id`, `variant_id`, `quantity`, `updated_at`) VALUES
 	(3, 12, 22, 0, 1, '2026-04-17 11:55:33'),
 	(5, 13, 5, 0, 1, '2026-04-17 12:21:08'),
 	(34, 18, 27, 0, 1, '2026-05-09 08:29:20'),
 	(41, 19, 5, 1, 1, '2026-05-13 06:14:26'),
 	(42, 18, 27, 2, 1, '2026-05-13 06:16:04'),
-	(43, 18, 42, 0, 1, '2026-05-14 06:23:13');
+	(43, 18, 42, 0, 1, '2026-05-14 06:23:13'),
+	(44, 22, 27, 0, 1, '2026-05-18 01:30:38');
 
 -- Dumping structure for table handmade_shop.category
 CREATE TABLE IF NOT EXISTS `category` (
@@ -122,9 +152,9 @@ CREATE TABLE IF NOT EXISTS `chat_messages` (
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=152 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.chat_messages: ~116 rows (approximately)
+-- Dumping data for table handmade_shop.chat_messages: ~111 rows (approximately)
 INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message_type`, `content`, `attachment_url`, `is_read`, `created_at`) VALUES
 	(1, 1, 3, 'text', 'e', NULL, 1, '2026-04-30 10:01:47'),
 	(2, 1, 3, 'text', 'r', NULL, 1, '2026-04-30 10:01:52'),
@@ -233,8 +263,10 @@ INSERT INTO `chat_messages` (`id`, `conversation_id`, `sender_id`, `message_type
 	(135, 9, 7, 'text', 'ss', NULL, 1, '2026-05-13 09:41:26'),
 	(139, 16, 11, 'text', 'kkk', NULL, 1, '2026-05-13 13:07:51'),
 	(147, 20, 18, 'text', 'alo', NULL, 1, '2026-05-14 06:21:34'),
-	(148, 21, 18, 'text', '.', NULL, 0, '2026-05-14 06:22:51'),
-	(149, 20, 3, 'text', 'sao', NULL, 1, '2026-05-14 06:27:35');
+	(148, 21, 18, 'text', '.', NULL, 1, '2026-05-14 06:22:51'),
+	(149, 20, 3, 'text', 'sao', NULL, 1, '2026-05-14 06:27:35'),
+	(150, 21, 18, 'product', '{"id":27,"name":"Hoa hồng đơn","price":"75.000₫","image":"public/uploads/prod_69e702664c008_1776747110.jpg"}', NULL, 0, '2026-05-18 02:16:16'),
+	(151, 21, 18, 'text', 'hahaa', NULL, 0, '2026-05-18 02:16:20');
 
 -- Dumping structure for table handmade_shop.conversations
 CREATE TABLE IF NOT EXISTS `conversations` (
@@ -254,7 +286,7 @@ CREATE TABLE IF NOT EXISTS `conversations` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.conversations: ~16 rows (approximately)
+-- Dumping data for table handmade_shop.conversations: ~15 rows (approximately)
 INSERT INTO `conversations` (`id`, `customer_id`, `seller_id`, `last_message`, `last_message_type`, `last_message_at`, `is_pinned`, `is_muted`, `unread_admin`, `unread_customer`, `created_at`, `updated_at`, `deleted_at`) VALUES
 	(1, 3, 3, 'ágfasfg', 'text', '2026-05-12 11:58:27', 0, 0, 0, 0, '2026-04-30 10:01:43', '2026-05-12 04:58:27', NULL),
 	(4, 6, 0, 'sao', 'text', '2026-05-01 12:53:56', 0, 0, 0, 0, '2026-05-01 04:05:07', '2026-05-01 05:53:56', NULL),
@@ -270,7 +302,7 @@ INSERT INTO `conversations` (`id`, `customer_id`, `seller_id`, `last_message`, `
 	(17, 20, 0, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 14:16:26', '2026-05-13 14:16:26', NULL),
 	(18, 20, 3, NULL, 'text', NULL, 0, 0, 0, 0, '2026-05-13 14:16:26', '2026-05-13 14:16:26', NULL),
 	(20, 18, 0, 'sao', 'text', '2026-05-14 13:27:35', 0, 0, 0, 0, '2026-05-14 06:21:30', '2026-05-14 06:27:35', NULL),
-	(21, 18, 5, '.', 'text', '2026-05-14 13:22:51', 0, 0, 0, 0, '2026-05-14 06:22:48', '2026-05-14 06:22:51', NULL);
+	(21, 18, 5, 'hahaa', 'text', '2026-05-18 09:16:20', 0, 0, 0, 0, '2026-05-14 06:22:48', '2026-05-18 02:16:20', NULL);
 
 -- Dumping structure for table handmade_shop.notifications
 CREATE TABLE IF NOT EXISTS `notifications` (
@@ -283,9 +315,9 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   `is_read` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.notifications: ~48 rows (approximately)
+-- Dumping data for table handmade_shop.notifications: ~61 rows (approximately)
 INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `link`, `is_read`, `created_at`) VALUES
 	(1, 3, NULL, 'Có đơn đặt hàng mới #28 trị giá 59.100 đ', 'system', 'index.php?url=Dashboard/orders', 1, '2026-04-30 07:42:01'),
 	(2, 5, NULL, 'Có đơn đặt hàng mới #28 trị giá 59.100 đ', 'system', 'index.php?url=Dashboard/orders', 0, '2026-04-30 07:42:01'),
@@ -315,39 +347,42 @@ INSERT INTO `notifications` (`id`, `user_id`, `title`, `message`, `type`, `link`
 	(26, 5, 'Thông báo hệ thống', 'Đơn hàng #8 của bạn đã được cập nhật thành: Đang giao', 'system', 'index.php?url=Page/orders', 0, '2026-05-09 06:36:25'),
 	(27, 3, 'Thông báo hệ thống', 'Đơn hàng #30 của bạn đã được cập nhật thành: Đã giao thành công', 'system', 'index.php?url=Page/orders', 1, '2026-05-09 06:38:10'),
 	(28, 18, 'Yêu cầu lên Người bán bị từ chối', 'Rất tiếc, yêu cầu của bạn bị từ chối. Lý do: no', 'danger', 'index.php?url=Seller/register', 1, '2026-05-09 06:42:51'),
-	(29, 3, 'Yêu cầu đăng ký Seller mới', 'Người dùng Han Khanh vừa gửi yêu cầu mở shop: Han Shop', 'seller_request', 'index.php?url=Admin/manageSellers', 0, '2026-05-09 07:54:02'),
+	(29, 3, 'Yêu cầu đăng ký Seller mới', 'Người dùng Han Khanh vừa gửi yêu cầu mở shop: Han Shop', 'seller_request', 'index.php?url=Admin/manageSellers', 1, '2026-05-09 07:54:02'),
 	(30, 5, 'Yêu cầu đăng ký Seller mới', 'Người dùng Han Khanh vừa gửi yêu cầu mở shop: Han Shop', 'seller_request', 'index.php?url=Admin/manageSellers', 0, '2026-05-09 07:54:02'),
 	(31, 3, 'Yêu cầu đăng ký Seller mới', 'Người dùng Han Khanh vừa gửi yêu cầu mở shop: Han Shop', 'seller_request', 'index.php?url=Admin/manageSellers', 1, '2026-05-09 07:55:56'),
 	(32, 5, 'Yêu cầu đăng ký Seller mới', 'Người dùng Han Khanh vừa gửi yêu cầu mở shop: Han Shop', 'seller_request', 'index.php?url=Admin/manageSellers', 0, '2026-05-09 07:55:56'),
 	(33, 18, 'Yêu cầu lên Người bán được phê duyệt', 'Chúc mừng! Cửa hàng "Han Shop" của bạn đã được kích hoạt. Bạn có thể đăng sản phẩm ngay bây giờ.', 'success', 'index.php?url=Product/myProducts', 1, '2026-05-09 07:56:02'),
 	(34, 3, 'Thông báo hệ thống', 'Có đơn đặt hàng mới #32 trị giá 97.500 đ', 'system', 'index.php?url=Dashboard/orders', 1, '2026-05-09 08:09:19'),
 	(35, 5, 'Thông báo hệ thống', 'Có đơn đặt hàng mới #32 trị giá 97.500 đ', 'system', 'index.php?url=Dashboard/orders', 0, '2026-05-09 08:09:19'),
-	(36, 3, 'Thông báo hệ thống', 'Đơn hàng #32 của bạn đã được cập nhật thành: Đã giao thành công', 'system', 'index.php?url=Page/orders', 0, '2026-05-09 08:09:49'),
+	(36, 3, 'Thông báo hệ thống', 'Đơn hàng #32 của bạn đã được cập nhật thành: Đã giao thành công', 'system', 'index.php?url=Page/orders', 1, '2026-05-09 08:09:49'),
 	(37, 3, 'Thông báo hệ thống', 'Có đơn đặt hàng mới #33 trị giá 78.500 đ', 'system', 'index.php?url=Dashboard/orders', 1, '2026-05-09 08:10:30'),
 	(38, 5, 'Thông báo hệ thống', 'Có đơn đặt hàng mới #33 trị giá 78.500 đ', 'system', 'index.php?url=Dashboard/orders', 0, '2026-05-09 08:10:30'),
 	(39, 1, 'Thông báo hệ thống', 'Sản phẩm mới \' lấy trễ hơn giù\' từ người bán đang chờ phê duyệt.', 'system', 'index.php?url=Dashboard/products', 0, '2026-05-09 08:21:06'),
 	(40, 3, 'Thông báo hệ thống', 'Có đơn đặt hàng mới #34 trị giá 251.100 đ', 'system', 'index.php?url=Dashboard/orders', 1, '2026-05-13 05:51:22'),
 	(41, 5, 'Thông báo hệ thống', 'Có đơn đặt hàng mới #34 trị giá 251.100 đ', 'system', 'index.php?url=Dashboard/orders', 0, '2026-05-13 05:51:22'),
-	(42, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-13 10:10:56'),
+	(42, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 1, '2026-05-13 10:10:56'),
 	(43, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-13 10:10:56'),
 	(44, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-13 10:11:03'),
-	(45, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-13 10:11:40'),
+	(45, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 1, '2026-05-13 10:11:40'),
 	(46, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 1, '2026-05-13 10:11:40'),
 	(47, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-13 10:11:54'),
-	(48, 3, 'Thông báo hệ thống', 'Đơn hàng #34 của bạn đã được cập nhật thành: Đã giao thành công', 'system', 'index.php?url=Page/orders', 0, '2026-05-13 10:17:27'),
+	(48, 3, 'Thông báo hệ thống', 'Đơn hàng #34 của bạn đã được cập nhật thành: Đã giao thành công', 'system', 'index.php?url=Page/orders', 1, '2026-05-13 10:17:27'),
 	(49, 1, 'Thông báo hệ thống', 'Sản phẩm mới \'Len sợi A\' từ người bán đang chờ phê duyệt.', 'system', 'index.php?url=Dashboard/products', 0, '2026-05-14 03:42:48'),
 	(50, 1, 'Thông báo hệ thống', 'Sản phẩm mới \'Lục Lạc Vòng Gỗ \' từ người bán đang chờ phê duyệt.', 'system', 'index.php?url=Dashboard/products', 0, '2026-05-14 03:57:42'),
-	(51, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:02:27'),
+	(51, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 1, '2026-05-14 04:02:27'),
 	(52, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:02:27'),
 	(53, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:09:00'),
-	(54, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:37:36'),
+	(54, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 1, '2026-05-14 04:37:36'),
 	(55, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shop yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:37:36'),
 	(56, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:38:00'),
-	(57, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shoppp yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:53:57'),
+	(57, 3, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shoppp yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 1, '2026-05-14 04:53:57'),
 	(58, 5, 'Yêu cầu cập nhật thông tin Shop', 'Cửa hàng Han Shoppp yêu cầu cập nhật thông tin.', 'system', 'index.php?url=Dashboard/shopUpdates', 0, '2026-05-14 04:53:57'),
-	(59, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 0, '2026-05-14 04:54:04'),
-	(60, 3, 'Yêu cầu phân quyền Seller', 'Người dùng Khánh Hân muốn trở thành người bán (Seller).', 'seller_request', 'index.php?url=Admin/manageSellers', 0, '2026-05-14 07:58:38'),
-	(61, 5, 'Yêu cầu phân quyền Seller', 'Người dùng Khánh Hân muốn trở thành người bán (Seller).', 'seller_request', 'index.php?url=Admin/manageSellers', 0, '2026-05-14 07:58:38');
+	(59, 18, 'Cập nhật thông tin Shop thành công', 'Yêu cầu cập nhật thông tin cửa hàng của bạn đã được Admin phê duyệt.', 'success', 'index.php?url=Seller/settings', 1, '2026-05-14 04:54:04'),
+	(60, 3, 'Yêu cầu phân quyền Seller', 'Người dùng Khánh Hân muốn trở thành người bán (Seller).', 'seller_request', 'index.php?url=Admin/manageSellers', 1, '2026-05-14 07:58:38'),
+	(61, 5, 'Yêu cầu phân quyền Seller', 'Người dùng Khánh Hân muốn trở thành người bán (Seller).', 'seller_request', 'index.php?url=Admin/manageSellers', 0, '2026-05-14 07:58:38'),
+	(62, 3, 'Đơn hàng mới', 'Có đơn đặt hàng mới #35 trị giá 85.555 đ', 'order', 'index.php?url=Dashboard/orderDetail/35', 1, '2026-05-18 04:07:42'),
+	(63, 5, 'Đơn hàng mới', 'Có đơn đặt hàng mới #35 trị giá 85.555 đ', 'order', 'index.php?url=Dashboard/orderDetail/35', 0, '2026-05-18 04:07:42'),
+	(64, 3, 'Thông báo hệ thống', 'Đơn hàng #35 của bạn đã được cập nhật thành: Đã giao thành công', 'system', 'index.php?url=Page/orders', 0, '2026-05-18 04:07:51');
 
 -- Dumping structure for table handmade_shop.orders
 CREATE TABLE IF NOT EXISTS `orders` (
@@ -361,45 +396,47 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `status` enum('pending','confirmed','shipping','completed','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
   `payment_method` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'cod',
   `shipping_fee` decimal(10,2) DEFAULT '0.00',
+  `commission_settled` tinyint(1) NOT NULL DEFAULT '0',
   `cancel_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.orders: ~30 rows (approximately)
-INSERT INTO `orders` (`id`, `recipient_name`, `recipient_phone`, `recipient_address`, `note`, `user_id`, `total`, `status`, `payment_method`, `shipping_fee`, `cancel_reason`, `created_at`) VALUES
-	(1, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', NULL, 3, 180000.00, 'completed', 'cod', 0.00, 'Tôi muốn cập nhật địa chỉ/sđt nhận hàng.', '2026-03-21 05:22:12'),
-	(2, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 2660000.00, 'completed', 'cod', 0.00, NULL, '2026-03-24 04:11:20'),
-	(3, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 100000.00, 'completed', 'cod', 0.00, NULL, '2026-04-04 17:08:28'),
-	(4, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 100000.00, 'cancelled', 'cod', 0.00, NULL, '2026-04-04 17:16:04'),
-	(5, 'Hân', '0964325331', '60/49 Phan Chu Trinh, Phường Lộc Tiến, Thành phố Bảo Lộc, Tỉnh Lâm Đồng', NULL, 8, 120000.00, 'pending', 'cod', 0.00, NULL, '2026-04-08 05:05:37'),
-	(6, 'Hân', '0964325344', '34 Tân Lập 1, Phường Hiệp Phú, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', NULL, 9, 1000000.00, 'pending', 'cod', 0.00, NULL, '2026-04-10 09:16:01'),
-	(7, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', NULL, 3, 180000.00, 'cancelled', 'cod', 0.00, 'Tôi muốn thay đổi sản phẩm (kích thước, màu sắc, số lượng...)', '2026-04-10 09:17:50'),
-	(8, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 480000.00, 'shipping', 'cod', 0.00, NULL, '2026-04-11 15:38:42'),
-	(9, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 390000.00, 'pending', 'cod', 0.00, NULL, '2026-04-13 10:22:27'),
-	(10, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 14, 130000.00, 'pending', 'cod', 0.00, NULL, '2026-04-17 14:16:45'),
-	(11, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 14, 340000.00, 'pending', 'cod', 0.00, NULL, '2026-04-17 14:17:30'),
-	(12, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 14, 550000.00, 'pending', 'cod', 0.00, NULL, '2026-04-17 14:18:05'),
-	(13, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 14, 270000.00, 'pending', 'cod', 0.00, NULL, '2026-04-17 14:18:23'),
-	(14, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 310000.00, 'shipping', 'cod', 0.00, NULL, '2026-04-17 14:23:16'),
-	(15, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 1110000.00, 'cancelled', 'cod', 0.00, 'Thủ tục thanh toán rắc rối', '2026-04-17 14:24:59'),
-	(16, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 130000.00, 'pending', 'cod', 0.00, NULL, '2026-04-17 14:28:00'),
-	(17, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 130000.00, 'pending', 'cod', 0.00, NULL, '2026-04-17 14:34:56'),
-	(18, 'Khánh Hân', '0964325348', '60/49 Phan Chu Trinh, Phường Lộc Tiến, Thành phố Bảo Lộc, Tỉnh Lâm Đồng', '', 3, 310000.00, 'cancelled', 'cod', 0.00, NULL, '2026-04-17 14:41:43'),
-	(19, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 1110000.00, 'cancelled', 'cod', 0.00, NULL, '2026-04-17 15:07:10'),
-	(20, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', '', 5, 165000.00, 'pending', 'cod', 0.00, NULL, '2026-04-21 04:45:00'),
-	(21, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', '', 5, 105000.00, 'confirmed', 'cod', 0.00, NULL, '2026-04-21 04:52:40'),
-	(26, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', '', 5, 80000.00, 'pending', 'cod', 0.00, NULL, '2026-04-21 08:30:41'),
-	(27, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 59100.00, 'cancelled', 'cod', 30000.00, NULL, '2026-04-30 07:40:55'),
-	(28, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 59100.00, 'completed', 'cod', 30000.00, NULL, '2026-04-30 07:42:01'),
-	(29, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 59100.00, 'shipping', 'cod', 30000.00, NULL, '2026-04-30 07:50:07'),
-	(30, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 59100.00, 'completed', 'cod', 30000.00, NULL, '2026-04-30 08:50:56'),
-	(31, 'Test User', '0987654321', '123 Test Street, Phường Phúc Xá, Quận Ba Đình, Thành phố Hà Nội', '', 17, 310000.00, 'cancelled', 'cod', 30000.00, NULL, '2026-05-01 06:30:44'),
-	(32, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 97500.00, 'completed', 'cod', 30000.00, NULL, '2026-05-09 08:09:19'),
-	(33, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 78500.00, 'completed', 'cod', 30000.00, NULL, '2026-05-09 08:10:30'),
-	(34, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 251100.00, 'completed', 'cod', 30000.00, NULL, '2026-05-13 05:51:22');
+INSERT INTO `orders` (`id`, `recipient_name`, `recipient_phone`, `recipient_address`, `note`, `user_id`, `total`, `status`, `payment_method`, `shipping_fee`, `commission_settled`, `cancel_reason`, `created_at`) VALUES
+	(1, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', NULL, 3, 180000.00, 'completed', 'cod', 0.00, 0, 'Tôi muốn cập nhật địa chỉ/sđt nhận hàng.', '2026-03-21 05:22:12'),
+	(2, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 2660000.00, 'completed', 'cod', 0.00, 0, NULL, '2026-03-24 04:11:20'),
+	(3, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 100000.00, 'completed', 'cod', 0.00, 0, NULL, '2026-04-04 17:08:28'),
+	(4, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 100000.00, 'cancelled', 'cod', 0.00, 0, NULL, '2026-04-04 17:16:04'),
+	(5, 'Hân', '0964325331', '60/49 Phan Chu Trinh, Phường Lộc Tiến, Thành phố Bảo Lộc, Tỉnh Lâm Đồng', NULL, 8, 120000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-08 05:05:37'),
+	(6, 'Hân', '0964325344', '34 Tân Lập 1, Phường Hiệp Phú, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', NULL, 9, 1000000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-10 09:16:01'),
+	(7, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', NULL, 3, 180000.00, 'cancelled', 'cod', 0.00, 0, 'Tôi muốn thay đổi sản phẩm (kích thước, màu sắc, số lượng...)', '2026-04-10 09:17:50'),
+	(8, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 480000.00, 'shipping', 'cod', 0.00, 0, NULL, '2026-04-11 15:38:42'),
+	(9, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', NULL, 5, 390000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-13 10:22:27'),
+	(10, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 14, 130000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-17 14:16:45'),
+	(11, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 14, 340000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-17 14:17:30'),
+	(12, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 14, 550000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-17 14:18:05'),
+	(13, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 14, 270000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-17 14:18:23'),
+	(14, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 310000.00, 'shipping', 'cod', 0.00, 0, NULL, '2026-04-17 14:23:16'),
+	(15, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 1110000.00, 'cancelled', 'cod', 0.00, 0, 'Thủ tục thanh toán rắc rối', '2026-04-17 14:24:59'),
+	(16, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 130000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-17 14:28:00'),
+	(17, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 130000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-17 14:34:56'),
+	(18, 'Khánh Hân', '0964325348', '60/49 Phan Chu Trinh, Phường Lộc Tiến, Thành phố Bảo Lộc, Tỉnh Lâm Đồng', '', 3, 310000.00, 'cancelled', 'cod', 0.00, 0, NULL, '2026-04-17 14:41:43'),
+	(19, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân Lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 1110000.00, 'cancelled', 'cod', 0.00, 0, NULL, '2026-04-17 15:07:10'),
+	(20, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', '', 5, 165000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-21 04:45:00'),
+	(21, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', '', 5, 105000.00, 'confirmed', 'cod', 0.00, 0, NULL, '2026-04-21 04:52:40'),
+	(26, 'Nguyễn Lan Phương', '0382613031', '60/6, Trương Thị Khét, Xã Phước Thạnh, Huyện Củ Chi, Thành phố Hồ Chí Minh', '', 5, 80000.00, 'pending', 'cod', 0.00, 0, NULL, '2026-04-21 08:30:41'),
+	(27, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 59100.00, 'cancelled', 'cod', 30000.00, 0, NULL, '2026-04-30 07:40:55'),
+	(28, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 59100.00, 'completed', 'cod', 30000.00, 0, NULL, '2026-04-30 07:42:01'),
+	(29, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 59100.00, 'shipping', 'cod', 30000.00, 0, NULL, '2026-04-30 07:50:07'),
+	(30, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 59100.00, 'completed', 'cod', 30000.00, 0, NULL, '2026-04-30 08:50:56'),
+	(31, 'Test User', '0987654321', '123 Test Street, Phường Phúc Xá, Quận Ba Đình, Thành phố Hà Nội', '', 17, 310000.00, 'cancelled', 'cod', 30000.00, 0, NULL, '2026-05-01 06:30:44'),
+	(32, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 97500.00, 'completed', 'cod', 30000.00, 0, NULL, '2026-05-09 08:09:19'),
+	(33, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 78500.00, 'completed', 'cod', 30000.00, 0, NULL, '2026-05-09 08:10:30'),
+	(34, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 251100.00, 'completed', 'cod', 30000.00, 0, NULL, '2026-05-13 05:51:22'),
+	(35, 'Chu Hoàng Khánh Hân', '0964325348', '34 Tân lập 1, Phường Tăng Nhơn Phú B, Thành phố Thủ Đức, Thành phố Hồ Chí Minh', '', 3, 85555.00, 'completed', 'cod', 30000.00, 1, NULL, '2026-05-18 04:07:42');
 
 -- Dumping structure for table handmade_shop.order_detail
 CREATE TABLE IF NOT EXISTS `order_detail` (
@@ -409,54 +446,59 @@ CREATE TABLE IF NOT EXISTS `order_detail` (
   `variant_id` int DEFAULT '0',
   `quantity` int DEFAULT '1',
   `price` decimal(10,2) DEFAULT NULL,
+  `commission_percent` decimal(5,2) NOT NULL DEFAULT '10.00',
+  `admin_fee` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `seller_receive` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `commission_settled` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `order_id` (`order_id`),
   KEY `product_id` (`product_id`),
   CONSTRAINT `order_detail_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
   CONSTRAINT `order_detail_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.order_detail: ~39 rows (approximately)
-INSERT INTO `order_detail` (`id`, `order_id`, `product_id`, `variant_id`, `quantity`, `price`) VALUES
-	(1, 1, 1, 0, 1, 180000.00),
-	(2, 2, 1, 0, 12, 180000.00),
-	(3, 2, 2, 0, 1, 500000.00),
-	(4, 3, 5, 0, 1, 100000.00),
-	(5, 4, 5, 0, 1, 100000.00),
-	(6, 5, 11, 0, 1, 120000.00),
-	(7, 6, 1, 0, 2, 180000.00),
-	(8, 6, 2, 0, 1, 400000.00),
-	(9, 6, 6, 0, 2, 120000.00),
-	(10, 7, 1, 0, 1, 180000.00),
-	(11, 8, 22, 0, 1, 450000.00),
-	(12, 9, 1, 0, 2, 180000.00),
-	(13, 10, 5, 0, 1, 100000.00),
-	(14, 11, 6, 0, 2, 120000.00),
-	(15, 12, 6, 0, 2, 120000.00),
-	(16, 12, 8, 0, 1, 280000.00),
-	(17, 13, 6, 0, 2, 120000.00),
-	(18, 14, 8, 0, 1, 280000.00),
-	(19, 15, 6, 0, 2, 120000.00),
-	(20, 15, 8, 0, 3, 280000.00),
-	(21, 16, 5, 0, 1, 100000.00),
-	(22, 17, 5, 0, 1, 100000.00),
-	(23, 18, 8, 0, 1, 280000.00),
-	(24, 19, 6, 0, 2, 120000.00),
-	(25, 19, 8, 0, 3, 280000.00),
-	(26, 20, 35, 0, 3, 45000.00),
-	(27, 21, 27, 0, 1, 75000.00),
-	(28, 26, 36, 9, 1, 25000.00),
-	(29, 26, 36, 10, 1, 25000.00),
-	(30, 27, 39, 0, 1, 29100.00),
-	(31, 28, 39, 0, 1, 29100.00),
-	(32, 29, 39, 0, 1, 29100.00),
-	(33, 30, 39, 0, 1, 29100.00),
-	(34, 31, 8, 0, 1, 280000.00),
-	(35, 32, 39, 0, 1, 29100.00),
-	(36, 32, 40, 0, 1, 38400.00),
-	(37, 33, 44, 0, 1, 48500.00),
-	(38, 34, 39, 0, 1, 29100.00),
-	(39, 34, 40, 0, 5, 38400.00);
+INSERT INTO `order_detail` (`id`, `order_id`, `product_id`, `variant_id`, `quantity`, `price`, `commission_percent`, `admin_fee`, `seller_receive`, `commission_settled`) VALUES
+	(1, 1, 1, 0, 1, 180000.00, 10.00, 0.00, 0.00, 0),
+	(2, 2, 1, 0, 12, 180000.00, 10.00, 0.00, 0.00, 0),
+	(3, 2, 2, 0, 1, 500000.00, 10.00, 0.00, 0.00, 0),
+	(4, 3, 5, 0, 1, 100000.00, 10.00, 0.00, 0.00, 0),
+	(5, 4, 5, 0, 1, 100000.00, 10.00, 0.00, 0.00, 0),
+	(6, 5, 11, 0, 1, 120000.00, 10.00, 0.00, 0.00, 0),
+	(7, 6, 1, 0, 2, 180000.00, 10.00, 0.00, 0.00, 0),
+	(8, 6, 2, 0, 1, 400000.00, 10.00, 0.00, 0.00, 0),
+	(9, 6, 6, 0, 2, 120000.00, 10.00, 0.00, 0.00, 0),
+	(10, 7, 1, 0, 1, 180000.00, 10.00, 0.00, 0.00, 0),
+	(11, 8, 22, 0, 1, 450000.00, 10.00, 0.00, 0.00, 0),
+	(12, 9, 1, 0, 2, 180000.00, 10.00, 0.00, 0.00, 0),
+	(13, 10, 5, 0, 1, 100000.00, 10.00, 0.00, 0.00, 0),
+	(14, 11, 6, 0, 2, 120000.00, 10.00, 0.00, 0.00, 0),
+	(15, 12, 6, 0, 2, 120000.00, 10.00, 0.00, 0.00, 0),
+	(16, 12, 8, 0, 1, 280000.00, 10.00, 0.00, 0.00, 0),
+	(17, 13, 6, 0, 2, 120000.00, 10.00, 0.00, 0.00, 0),
+	(18, 14, 8, 0, 1, 280000.00, 10.00, 0.00, 0.00, 0),
+	(19, 15, 6, 0, 2, 120000.00, 10.00, 0.00, 0.00, 0),
+	(20, 15, 8, 0, 3, 280000.00, 10.00, 0.00, 0.00, 0),
+	(21, 16, 5, 0, 1, 100000.00, 10.00, 0.00, 0.00, 0),
+	(22, 17, 5, 0, 1, 100000.00, 10.00, 0.00, 0.00, 0),
+	(23, 18, 8, 0, 1, 280000.00, 10.00, 0.00, 0.00, 0),
+	(24, 19, 6, 0, 2, 120000.00, 10.00, 0.00, 0.00, 0),
+	(25, 19, 8, 0, 3, 280000.00, 10.00, 0.00, 0.00, 0),
+	(26, 20, 35, 0, 3, 45000.00, 10.00, 0.00, 0.00, 0),
+	(27, 21, 27, 0, 1, 75000.00, 10.00, 0.00, 0.00, 0),
+	(28, 26, 36, 9, 1, 25000.00, 10.00, 0.00, 0.00, 0),
+	(29, 26, 36, 10, 1, 25000.00, 10.00, 0.00, 0.00, 0),
+	(30, 27, 39, 0, 1, 29100.00, 10.00, 0.00, 0.00, 0),
+	(31, 28, 39, 0, 1, 29100.00, 10.00, 0.00, 0.00, 0),
+	(32, 29, 39, 0, 1, 29100.00, 10.00, 0.00, 0.00, 0),
+	(33, 30, 39, 0, 1, 29100.00, 10.00, 0.00, 0.00, 0),
+	(34, 31, 8, 0, 1, 280000.00, 10.00, 0.00, 0.00, 0),
+	(35, 32, 39, 0, 1, 29100.00, 10.00, 0.00, 0.00, 0),
+	(36, 32, 40, 0, 1, 38400.00, 10.00, 0.00, 0.00, 0),
+	(37, 33, 44, 0, 1, 48500.00, 10.00, 0.00, 0.00, 0),
+	(38, 34, 39, 0, 1, 29100.00, 10.00, 0.00, 0.00, 0),
+	(39, 34, 40, 0, 5, 38400.00, 10.00, 0.00, 0.00, 0),
+	(40, 35, 47, 0, 1, 55555.00, 10.00, 5555.50, 49999.50, 1);
 
 -- Dumping structure for table handmade_shop.password_resets
 CREATE TABLE IF NOT EXISTS `password_resets` (
@@ -499,7 +541,7 @@ CREATE TABLE IF NOT EXISTS `product` (
   CONSTRAINT `product_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.product: ~42 rows (approximately)
+-- Dumping data for table handmade_shop.product: ~43 rows (approximately)
 INSERT INTO `product` (`id`, `name`, `description`, `price`, `image`, `stock`, `category_id`, `sold`, `rating`, `rating_count`, `is_featured`, `display_order`, `discount_percent`, `location`, `user_id`, `status`, `created_at`, `rejection_reason`, `likes`) VALUES
 	(1, 'Lục Lạc Vòng Gỗ Handmade đồ chơi an toàn cho Bé', 'chiều cao 10cm\r\nchất liệu từ sợi cotton cao cấp, bền đẹp và an toàn cho bé,\r\nbên trong nhồi bông gòn nhân tạo không gây dị ứng cho bé yêu\r\nMắt được khâu thủ công đảm bảo an toàn', 180000.00, 'luc-lac-vong-go-handmade-do-choi-an-toan-cho-be-11-510x383.jpg', 0, 4, 5, 4.0, 1, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
 	(2, 'Búp bê handmade Autumn', 'chiều cao 30cm\r\nchất liệu từ sợi cotton cao cấp, bền đẹp và an toàn cho bé, không gây dị ứng cho bé yêu\r\nmắt búp bê bằng nhựa, được gắn chốt, đẹp bền và an toàn cho bé trong quá trình sử dụng\r\nváy áo và mũ cũng được làm thủ công có thể tháo rời cho các tự do thay đổi', 400000.00, '61340911_1261004000732867_6425604364278169600_n-510x510.jpg', 0, 4, 1, 0.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 06:38:36', NULL, 0),
@@ -543,7 +585,7 @@ INSERT INTO `product` (`id`, `name`, `description`, `price`, `image`, `stock`, `
 	(43, 'Len Milk Cotton 2mm 50g', '', 15000.00, 'prod_69f318ceaba30_1777539278.jpg', 5, 12, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-04-30 08:54:38', NULL, 1),
 	(44, 'Len sợi Acrylic Paintbox Yarns Simply DK', 'so beautiful', 50000.00, 'prod_69fee9beb3cbf_1778313662.jpg', 6, 13, 1, 5.0, 0, 0, 0, 6, 'Tp. Hồ Chí Minh', 5, 'approved', '2026-05-09 08:01:02', NULL, 0),
 	(45, ' lấy trễ hơn giù', 'ss', 65555.00, 'prod_69feee72bc994_1778314866.jpg', 6, 13, 0, 5.0, 0, 0, 0, 2, 'Tp. Hồ Chí Minh', 5, 'rejected', '2026-05-09 08:21:06', 'no', 0),
-	(47, 'Lục Lạc Vòng Gỗ ', 'd', 55555.00, 'prod_6a05503a952d0_1778733114.jpg', 0, 13, 0, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 18, 'approved', '2026-05-14 03:57:42', NULL, 0);
+	(47, 'Lục Lạc Vòng Gỗ ', 'd', 55555.00, 'prod_6a05503a952d0_1778733114.jpg', 1, 13, 1, 5.0, 0, 0, 0, 0, 'Tp. Hồ Chí Minh', 18, 'pending', '2026-05-14 03:57:42', NULL, 0);
 
 -- Dumping structure for table handmade_shop.product_likes
 CREATE TABLE IF NOT EXISTS `product_likes` (
@@ -583,7 +625,7 @@ CREATE TABLE IF NOT EXISTS `product_reviews` (
   CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.product_reviews: ~5 rows (approximately)
+-- Dumping data for table handmade_shop.product_reviews: ~6 rows (approximately)
 INSERT INTO `product_reviews` (`id`, `product_id`, `user_id`, `rating`, `comment`, `created_at`) VALUES
 	(1, 4, 5, 5, 'ê cái túi dễ thw lắm á mn, đang giá tiền nha!', '2026-04-04 17:02:58'),
 	(2, 5, 5, 5, '100k 2 con mua cặp với người iu là hết sẫy lun', '2026-04-04 17:04:12'),
@@ -639,7 +681,7 @@ CREATE TABLE IF NOT EXISTS `returns` (
 
 -- Dumping data for table handmade_shop.returns: ~3 rows (approximately)
 INSERT INTO `returns` (`id`, `order_id`, `user_id`, `reason`, `description`, `amount`, `status`, `created_at`, `updated_at`) VALUES
-	(1, 19, 3, 'Sản phẩm khác với mô tả', 'no', 1110000.00, 'rejected', '2026-04-30 08:05:42', '2026-04-30 08:20:32'),
+	(1, 19, 3, 'Sản phẩm khác với mô tả', 'no', 1110000.00, 'refunded', '2026-04-30 08:05:42', '2026-05-18 01:39:06'),
 	(2, 28, 3, 'Giao sai sản phẩm', 'no', 59100.00, 'approved', '2026-04-30 08:22:16', '2026-04-30 09:42:31'),
 	(3, 27, 3, 'Giao thiếu sản phẩm', 'l', 59100.00, 'approved', '2026-04-30 08:25:25', '2026-05-13 05:33:32');
 
@@ -653,9 +695,9 @@ CREATE TABLE IF NOT EXISTS `return_history` (
   PRIMARY KEY (`id`),
   KEY `return_id` (`return_id`),
   CONSTRAINT `return_history_ibfk_1` FOREIGN KEY (`return_id`) REFERENCES `returns` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.return_history: ~25 rows (approximately)
+-- Dumping data for table handmade_shop.return_history: ~26 rows (approximately)
 INSERT INTO `return_history` (`id`, `return_id`, `status`, `note`, `created_at`) VALUES
 	(1, 1, 'pending', 'Yêu cầu trả hàng đã được gửi.', '2026-04-30 08:05:42'),
 	(2, 1, 'reviewing', '', '2026-04-30 08:12:20'),
@@ -681,7 +723,8 @@ INSERT INTO `return_history` (`id`, `return_id`, `status`, `note`, `created_at`)
 	(22, 3, 'reviewing', 'jjj', '2026-05-13 04:50:07'),
 	(23, 3, 'rejected', '', '2026-05-13 04:50:22'),
 	(24, 3, 'approved', '', '2026-05-13 05:33:32'),
-	(25, 3, 'approved', '', '2026-05-13 05:33:33');
+	(25, 3, 'approved', '', '2026-05-13 05:33:33'),
+	(26, 1, 'refunded', '', '2026-05-18 01:39:06');
 
 -- Dumping structure for table handmade_shop.return_media
 CREATE TABLE IF NOT EXISTS `return_media` (
@@ -723,6 +766,24 @@ INSERT INTO `seller_requests` (`id`, `user_id`, `shop_name`, `shop_description`,
 	(2, 18, 'Han Shop', 'dep', 'Đồ len', '1778313242_istockphoto-1255984577-1024x1024.jpg', 'https://www.facebook.com/falafs', '1028293216 - Vietcombank', 'approved', NULL, '2026-05-09 07:54:02'),
 	(3, 18, 'Han Shop', 'hehe', 'Đồ len', '1778313356_istockphoto-1255984577-1024x1024.jpg', '', '1028293216 - Vietcombank', 'approved', NULL, '2026-05-09 07:55:56');
 
+-- Dumping structure for table handmade_shop.seller_wallets
+CREATE TABLE IF NOT EXISTS `seller_wallets` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `seller_id` int NOT NULL COMMENT 'FK → user.id (role=seller)',
+  `balance` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT 'Số dư hiện tại có thể rút',
+  `total_earned` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT 'Tổng đã kiếm được từ trước tới nay',
+  `total_withdrawn` decimal(15,2) NOT NULL DEFAULT '0.00' COMMENT 'Tổng đã rút ra',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_seller_wallet` (`seller_id`),
+  CONSTRAINT `fk_wallet_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Ví điện tử của từng seller';
+
+-- Dumping data for table handmade_shop.seller_wallets: ~0 rows (approximately)
+INSERT INTO `seller_wallets` (`id`, `seller_id`, `balance`, `total_earned`, `total_withdrawn`, `created_at`, `updated_at`) VALUES
+	(1, 18, 49999.50, 49999.50, 0.00, '2026-05-18 10:58:23', '2026-05-18 11:07:51');
+
 -- Dumping structure for table handmade_shop.shops
 CREATE TABLE IF NOT EXISTS `shops` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -752,12 +813,12 @@ CREATE TABLE IF NOT EXISTS `shop_followers` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_shop_user` (`shop_id`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dumping data for table handmade_shop.shop_followers: ~2 rows (approximately)
 INSERT INTO `shop_followers` (`id`, `shop_id`, `user_id`, `created_at`) VALUES
 	(2, 1, 3, '2026-05-14 04:24:59'),
-	(8, 2, 3, '2026-05-14 06:27:26');
+	(9, 2, 3, '2026-05-18 01:26:00');
 
 -- Dumping structure for table handmade_shop.shop_update_requests
 CREATE TABLE IF NOT EXISTS `shop_update_requests` (
@@ -799,9 +860,9 @@ CREATE TABLE IF NOT EXISTS `user` (
   `avatar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table handmade_shop.user: ~15 rows (approximately)
+-- Dumping data for table handmade_shop.user: ~17 rows (approximately)
 INSERT INTO `user` (`id`, `name`, `username`, `email`, `password`, `phone`, `address`, `gender`, `dob`, `role`, `bank_name`, `bank_account`, `avatar`) VALUES
 	(3, 'Chu Hoàng Khánh Hân', 'hankhanh0901@gmail.com', 'hankhanh0901@gmail.com', '$2y$10$I2jEvFCw70Z.fcFeqEPp4.tcafRIc8RiB97l38OAJoiXsyfZwUNFS', '0964325348', '', 'nam', '2004-01-09', 'admin', NULL, NULL, 'avatar_3_1776425351.jpg'),
 	(5, 'Nguyễn Lan Phương', 'nguyenphuong2005b@gmail.com', 'nguyenphuong2005b@gmail.com', '$2y$10$NI81lET7vgHTCOZJ9F.EIOB92AyqaGO8pCJ69vSj4AxpDDCqL3WyO', '0382613031', '', 'nu', '2005-03-13', 'admin', NULL, NULL, 'avatar_5_1775829360.jpg'),
@@ -818,7 +879,43 @@ INSERT INTO `user` (`id`, `name`, `username`, `email`, `password`, `phone`, `add
 	(18, 'Han Khanh', NULL, NULL, '$2y$10$O7G6x09oqk2RR0VFwjmuNuObK2vCBLs8LY2w4ZpbuN6dr/rayFhLy', '0964325321', '', 'khac', NULL, 'seller', NULL, NULL, NULL),
 	(19, 'Test User', NULL, 'testuser@gmail.com', '$2y$10$RsLRF8WEN.FMRmTEZ9UjWO4wpJMbONoxpDsANEiCjjPyhC.SAegCa', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
 	(20, 'phuong', NULL, 'phuong@gmail.com', '$2y$10$NUgg8WdXbT3lZcolECY7BuozyR31YxWHogjW3QfbO3.fHChPjUj52', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
-	(21, 'Test User', NULL, 'test@example.com', '$2y$10$mWhrzqfOLqiDqT8kwzPm4ukwE8LDphEYxhz5pqfZc3Lfg672CJ.9.', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL);
+	(21, 'Test User', NULL, 'test@example.com', '$2y$10$mWhrzqfOLqiDqT8kwzPm4ukwE8LDphEYxhz5pqfZc3Lfg672CJ.9.', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL),
+	(22, 'Unique User', NULL, 'unique_user_2026@gmail.com', '$2y$10$suWUwGGY/ITmvP9e0r0INu51CHZEoJDGR7BvSURbBoDiXDppzx3hy', NULL, '', 'khac', NULL, 'user', NULL, NULL, NULL);
+
+-- Dumping structure for table handmade_shop.wallet_transactions
+CREATE TABLE IF NOT EXISTS `wallet_transactions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `transaction_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mã giao dịch duy nhất VD: TXN-20240518-00001',
+  `wallet_id` int NOT NULL COMMENT 'FK → seller_wallets.id',
+  `seller_id` int NOT NULL COMMENT 'FK → user.id',
+  `order_id` int DEFAULT NULL COMMENT 'FK → orders.id',
+  `order_detail_id` int DEFAULT NULL COMMENT 'FK → order_detail.id (NULL nếu là rút tiền)',
+  `type` enum('commission','withdrawal','refund','adjustment') COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Loại giao dịch',
+  `gross_amount` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Tổng giá trị mặt hàng (trước khi trừ phí)',
+  `commission_percent` decimal(5,2) NOT NULL DEFAULT '10.00' COMMENT 'Tỷ lệ hoa hồng áp dụng',
+  `admin_fee` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Số tiền admin nhận',
+  `amount` decimal(12,2) NOT NULL COMMENT 'Số tiền thực tế seller nhận/rút',
+  `balance_before` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Số dư ví trước giao dịch',
+  `balance_after` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Số dư ví sau giao dịch',
+  `note` text COLLATE utf8mb4_unicode_ci COMMENT 'Ghi chú thêm',
+  `status` enum('pending','completed','failed','refunded') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'completed',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_txn_code` (`transaction_code`),
+  KEY `idx_txn_seller` (`seller_id`),
+  KEY `idx_txn_order` (`order_id`),
+  KEY `idx_txn_order_detail` (`order_detail_id`),
+  KEY `idx_txn_created` (`created_at`),
+  KEY `fk_txn_wallet` (`wallet_id`),
+  CONSTRAINT `fk_txn_order` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_txn_order_detail` FOREIGN KEY (`order_detail_id`) REFERENCES `order_detail` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_txn_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `fk_txn_wallet` FOREIGN KEY (`wallet_id`) REFERENCES `seller_wallets` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Lịch sử giao dịch chi tiết của ví seller';
+
+-- Dumping data for table handmade_shop.wallet_transactions: ~0 rows (approximately)
+INSERT INTO `wallet_transactions` (`id`, `transaction_code`, `wallet_id`, `seller_id`, `order_id`, `order_detail_id`, `type`, `gross_amount`, `commission_percent`, `admin_fee`, `amount`, `balance_before`, `balance_after`, `note`, `status`, `created_at`) VALUES
+	(1, 'TXN-20260518-95388-40', 1, 18, 35, 40, 'commission', 55555.00, 10.00, 5555.50, 49999.50, 0.00, 49999.50, 'Nhận tiền từ sản phẩm #47 (đơn hàng #35)', 'completed', '2026-05-18 11:07:51');
 
 -- Dumping structure for table handmade_shop.wishlist
 CREATE TABLE IF NOT EXISTS `wishlist` (
@@ -853,6 +950,32 @@ INSERT INTO `wishlist` (`id`, `user_id`, `product_id`, `created_at`) VALUES
 	(33, 18, 10, '2026-05-09 06:44:18'),
 	(34, 3, 27, '2026-05-09 06:46:03'),
 	(35, 3, 34, '2026-05-09 06:46:09');
+
+-- Dumping structure for table handmade_shop.withdrawal_requests
+CREATE TABLE IF NOT EXISTS `withdrawal_requests` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `request_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Mã yêu cầu VD: WDR-20240518-00001',
+  `seller_id` int NOT NULL COMMENT 'FK → user.id',
+  `wallet_id` int NOT NULL COMMENT 'FK → seller_wallets.id',
+  `amount` decimal(12,2) NOT NULL COMMENT 'Số tiền muốn rút',
+  `bank_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Tên ngân hàng',
+  `bank_account` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Số tài khoản ngân hàng',
+  `bank_owner` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Tên chủ tài khoản',
+  `status` enum('pending','approved','rejected','processing','completed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `admin_note` text COLLATE utf8mb4_unicode_ci COMMENT 'Ghi chú của admin khi xử lý',
+  `processed_at` datetime DEFAULT NULL COMMENT 'Thời điểm admin xử lý',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_wdr_code` (`request_code`),
+  KEY `idx_wdr_seller` (`seller_id`),
+  KEY `idx_wdr_status` (`status`),
+  KEY `fk_wdr_wallet` (`wallet_id`),
+  CONSTRAINT `fk_wdr_seller` FOREIGN KEY (`seller_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `fk_wdr_wallet` FOREIGN KEY (`wallet_id`) REFERENCES `seller_wallets` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Yêu cầu rút tiền từ ví của seller';
+
+-- Dumping data for table handmade_shop.withdrawal_requests: ~0 rows (approximately)
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

@@ -192,7 +192,12 @@
                         <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/users"><i class="fas fa-users mr-2"></i> Quản lý người dùng</a>
                     </li>
                     <li class="<?php echo $action == 'manage_sellers' ? 'active' : ''; ?>">
-                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/manageSellers"><i class="fas fa-user-check mr-2"></i> Duyệt người bán</a>
+                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/manageSellers" class="d-flex align-items-center">
+                            <span><i class="fas fa-user-check mr-2"></i> Duyệt người bán</span>
+                            <?php if (isset($this->pendingSellerRequestsCount) && $this->pendingSellerRequestsCount > 0): ?>
+                                <span class="badge badge-danger ml-auto"><?php echo $this->pendingSellerRequestsCount; ?></span>
+                            <?php endif; ?>
+                        </a>
                     </li>
                     <li class="<?php echo $action == 'shop_updates' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/shopUpdates"><i class="fas fa-store-slash mr-2"></i> Duyệt thông tin Shop</a>
@@ -202,6 +207,12 @@
                     </li>
                     <li class="<?php echo $action == 'returns' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/returns"><i class="fas fa-undo mr-2"></i> Trả hàng / Hoàn tiền</a>
+                    </li>
+                    <li class="<?php echo $action == 'admin_revenue' ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/adminRevenue"><i class="fas fa-wallet mr-2"></i> Doanh thu hoa hồng</a>
+                    </li>
+                    <li class="<?php echo $action == 'manage_withdrawals' ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/manageWithdrawals"><i class="fas fa-hand-holding-usd mr-2"></i> Yêu cầu rút tiền</a>
                     </li>
 
                 <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'seller'): ?>
@@ -229,6 +240,9 @@
                     </li>
                     <li class="<?php echo $action == 'orders' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Seller/orders"><i class="fas fa-shopping-bag mr-2"></i> Quản lý đơn hàng</a>
+                    </li>
+                    <li class="<?php echo $action == 'seller_wallet' ? 'active' : ''; ?>">
+                        <a href="<?php echo BASE_URL; ?>index.php?url=Seller/wallet"><i class="fas fa-wallet mr-2"></i> Ví của tôi</a>
                     </li>
 
                 <?php endif; ?>

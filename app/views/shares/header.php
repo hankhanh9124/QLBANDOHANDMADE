@@ -268,26 +268,32 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                         <!-- Notification Dropdown -->
                         <div class="mini-notification-dropdown shadow" id="notification-dropdown">
                             <div class="notification-header">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="notification-title">Thông báo</span>
-                                    <a href="#" class="mark-all-read small text-primary" style="font-weight: 600;">Đánh dấu tất cả đã đọc</a>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="notification-title"><i class="fas fa-bell mr-2" style="color: var(--noti-primary-green);"></i>Thông báo</span>
+                                    <div class="d-flex align-items-center">
+                                        <button id="toggle-noti-theme" class="btn btn-link text-muted p-0 mr-3" style="outline: none; box-shadow: none;" title="Chuyển chế độ tối">
+                                            <i class="far fa-moon" style="font-size: 1.05rem;"></i>
+                                        </button>
+                                        <a href="#" class="mark-all-read small" style="font-weight: 700; color: var(--noti-primary-green); text-decoration: none;">Đánh dấu tất cả đã đọc</a>
+                                    </div>
                                 </div>
                                 <div class="notification-filters" id="notification-filters">
-                                    <div class="filter-chip active" data-filter="all">Tất cả</div>
-                                    <?php if (isset($_SESSION['user_role'])): ?>
-                                        <?php if ($_SESSION['user_role'] === 'admin'): ?>
-                                            <div class="filter-chip" data-filter="seller_request">Yêu cầu phân quyền</div>
-                                            <div class="filter-chip" data-filter="order">Đơn hàng</div>
-                                            <div class="filter-chip" data-filter="review">Đánh giá</div>
-                                            <div class="filter-chip" data-filter="wishlist">Yêu thích sản phẩm</div>
-                                        <?php elseif ($_SESSION['user_role'] === 'seller'): ?>
-                                            <div class="filter-chip" data-filter="order">Đơn hàng</div>
-                                            <div class="filter-chip" data-filter="review">Đánh giá</div>
-                                            <div class="filter-chip" data-filter="wishlist">Yêu thích sản phẩm</div>
-                                        <?php else: ?>
-                                            <div class="filter-chip" data-filter="order">Đơn hàng</div>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
+                                    <div class="filter-chip active" data-filter="all">
+                                        <i class="fas fa-list-ul"></i> Tất cả
+                                        <span class="badge-count d-none" id="badge-all">0</span>
+                                    </div>
+                                    <div class="filter-chip" data-filter="seller_request">
+                                        <i class="fas fa-user-shield"></i> <?php echo (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'seller') ? 'Yêu cầu cập nhật' : 'Yêu cầu phân quyền'; ?>
+                                        <span class="badge-count d-none" id="badge-seller_request">0</span>
+                                    </div>
+                                    <div class="filter-chip" data-filter="order">
+                                        <i class="fas fa-shopping-basket"></i> Đơn hàng
+                                        <span class="badge-count d-none" id="badge-order">0</span>
+                                    </div>
+                                    <div class="filter-chip" data-filter="review">
+                                        <i class="fas fa-star"></i> Đánh giá
+                                        <span class="badge-count d-none" id="badge-review">0</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="notification-items-container" id="notification-list">
@@ -461,188 +467,321 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
                 });
             }
 
-            // Notification Polling System
+            // Notification Polling & Modern UI System
             const notificationBadge = document.getElementById('notification-badge');
             const notificationDropdown = document.getElementById('notification-dropdown');
             let currentFilter = 'all';
+            let cachedNotifications = [];
 
-            function fetchNotifications() {
+            // Theme Preference Persistence
+            const savedNotiTheme = localStorage.getItem('noti-dark-mode');
+            if (savedNotiTheme === 'true') {
+                $(notificationDropdown).addClass('dark-noti');
+                $('#toggle-noti-theme i').removeClass('far fa-moon').addClass('fas fa-sun');
+            }
+
+            $('#toggle-noti-theme').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(notificationDropdown).toggleClass('dark-noti');
+                const isDark = $(notificationDropdown).hasClass('dark-noti');
+                localStorage.setItem('noti-dark-mode', isDark);
+                if (isDark) {
+                    $(this).find('i').removeClass('far fa-moon').addClass('fas fa-sun');
+                } else {
+                    $(this).find('i').removeClass('fas fa-sun').addClass('far fa-moon');
+                }
+            });
+
+            function showSkeletons() {
+                const notificationList = document.getElementById('notification-list');
+                if (!notificationList) return;
+                notificationList.innerHTML = `
+                    <div class="skeleton-noti-item">
+                        <div class="skeleton-avatar"></div>
+                        <div class="skeleton-details">
+                            <div class="skeleton-line title"></div>
+                            <div class="skeleton-line text"></div>
+                            <div class="skeleton-line time"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-noti-item">
+                        <div class="skeleton-avatar"></div>
+                        <div class="skeleton-details">
+                            <div class="skeleton-line title"></div>
+                            <div class="skeleton-line text"></div>
+                            <div class="skeleton-line time"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-noti-item">
+                        <div class="skeleton-avatar"></div>
+                        <div class="skeleton-details">
+                            <div class="skeleton-line title"></div>
+                            <div class="skeleton-line text"></div>
+                            <div class="skeleton-line time"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderNotifications(notifications) {
+                const notificationList = document.getElementById('notification-list');
+                if (!notificationList) return;
+
+                // Dynamically normalize legacy/system-type notification categories based on link or content
+                notifications.forEach(item => {
+                    const link = item.link || '';
+                    const message = item.message || '';
+                    
+                    // Normalize Order legacy notifications
+                    if (message.includes('Có đơn đặt hàng mới #') || message.includes('Đơn hàng #') || message.includes('Yêu cầu trả hàng mới cho đơn hàng #')) {
+                        item.type = 'order';
+                        
+                        // Dynamically rewrite legacy non-specific link to the specific order's detail page
+                        if (link.includes('Dashboard/orders') || !link) {
+                            const match = message.match(/(?:đơn đặt hàng mới #|Đơn hàng #|cho đơn hàng #)(\d+)/i);
+                            if (match && match[1]) {
+                                item.link = 'index.php?url=Dashboard/orderDetail/' + match[1];
+                            }
+                        }
+                    }
+                    
+                    if (item.type === 'system' || !item.type) {
+                        const msgLower = message.toLowerCase();
+                        const linkLower = link.toLowerCase();
+                        if (
+                            linkLower.includes('dashboard/shopupdates') || 
+                            msgLower.includes('cập nhật thông tin shop') || 
+                            msgLower.includes('yêu cầu cập nhật thông tin') ||
+                            msgLower.includes('cập nhật thông tin cửa hàng') ||
+                            msgLower.includes('yêu cầu cập nhật thông tin cửa hàng') ||
+                            (msgLower.includes('đã được admin phê duyệt') && msgLower.includes('cập nhật'))
+                        ) {
+                            item.type = 'shop_update';
+                        } else if (
+                            linkLower.includes('managesellers') || 
+                            msgLower.includes('yêu cầu mở shop') || 
+                            msgLower.includes('trở thành người bán')
+                        ) {
+                            item.type = 'seller_request';
+                        }
+                    }
+                });
+
+                // 1. Calculate and update pill badges (unread count per category)
+                let counts = { all: 0, order: 0, seller_request: 0, review: 0 };
+                notifications.forEach(item => {
+                    if (item.is_read == 0 || item.is_read == '0') {
+                        counts.all++;
+                        const type = item.type || 'system';
+                        if (['order', 'shipping', 'cancel', 'payment'].includes(type)) {
+                            counts.order++;
+                        } else if (['seller_request', 'shop_update'].includes(type)) {
+                            counts.seller_request++;
+                        } else if (type === 'review') {
+                            counts.review++;
+                        }
+                    }
+                });
+
+                // Update DOM badges
+                Object.keys(counts).forEach(key => {
+                    const badge = document.getElementById(`badge-${key}`);
+                    if (badge) {
+                        if (counts[key] > 0) {
+                            badge.textContent = counts[key];
+                            badge.classList.remove('d-none');
+                        } else {
+                            badge.classList.add('d-none');
+                        }
+                    }
+                });
+
+                // Update top bell badge
+                if (counts.all > 0) {
+                    notificationBadge.textContent = counts.all;
+                    notificationBadge.classList.remove('d-none');
+                } else {
+                    notificationBadge.classList.add('d-none');
+                }
+
+                // 2. Filter notifications based on current selected filter
+                const filtered = notifications.filter(item => {
+                    const type = item.type || 'system';
+                    if (currentFilter === 'all') return true;
+                    if (currentFilter === 'order') return ['order', 'shipping', 'cancel', 'payment'].includes(type);
+                    if (currentFilter === 'seller_request') return ['seller_request', 'shop_update'].includes(type);
+                    if (currentFilter === 'review') return type === 'review';
+                    return type === currentFilter;
+                });
+
+                // 3. Render items
+                if (filtered.length > 0) {
+                    let html = '';
+                    html += '<div class="notification-section-title">Mới nhất</div>';
+                    filtered.forEach(item => {
+                        let itemLink = item.link || '#';
+                        if (itemLink.includes('Admin/manageSellers')) {
+                            itemLink = itemLink.replace('Admin/manageSellers', 'Dashboard/manageSellers');
+                        }
+                        const link = itemLink !== '#' ? '<?php echo BASE_URL; ?>' + itemLink : '#';
+                        const isUnread = (item.is_read == 0 || item.is_read == '0');
+                        const unreadClass = isUnread ? 'unread' : '';
+
+                        // Type to Icon Mapping
+                        const type = item.type || 'system';
+                        const iconMapping = {
+                            'order': 'fa-shopping-basket',
+                            'chat': 'fa-comment-dots',
+                            'approved': 'fa-check-double',
+                            'rejected': 'fa-times-circle',
+                            'profile': 'fa-user-cog',
+                            'payment': 'fa-credit-card',
+                            'system': 'fa-info-circle',
+                            'promotion': 'fa-tag',
+                            'review': 'fa-star',
+                            'seller_request': 'fa-store-alt',
+                            'shop_update': 'fa-store-alt',
+                            'shipping': 'fa-truck',
+                            'wishlist': 'fa-heart',
+                            'inventory': 'fa-warehouse',
+                            'cancel': 'fa-ban',
+                            'voucher': 'fa-ticket-alt'
+                        };
+                        const iconClass = iconMapping[type] || 'fa-bell';
+
+                        // Default or Custom Avatar
+                        const avatarUrl = item.sender_avatar ?
+                            '<?php echo BASE_URL; ?>public/uploads/avatars/' + item.sender_avatar :
+                            'https://ui-avatars.com/api/?name=System&background=24ab65&color=fff';
+
+                        // Notification Card Markup (Premium rounded, hover effects)
+                        html += `
+                            <a href="${link}" class="notification-item ${unreadClass} mark-read-btn" data-id="${item.id}" data-type="${type}">
+                                <div class="noti-avatar-wrapper">
+                                    <img src="${avatarUrl}" class="noti-avatar" alt="User">
+                                    <div class="noti-type-icon ${type}">
+                                        <i class="fas ${iconClass}"></i>
+                                    </div>
+                                </div>
+                                <div class="noti-details">
+                                    <div class="noti-message">${item.message}</div>
+                                    <div class="noti-time">
+                                        <i class="far fa-clock"></i> ${item.created_at}
+                                    </div>
+                                </div>
+                                ${item.thumbnail ? `<img src="<?php echo BASE_URL; ?>public/uploads/products/${item.thumbnail}" class="noti-thumb" alt="Product">` : ''}
+                                ${isUnread ? '<div class="unread-dot"></div>' : ''}
+                            </a>
+                        `;
+                    });
+                    notificationList.innerHTML = html;
+                } else {
+                    notificationList.innerHTML = `
+                        <div class="p-5 text-center text-muted">
+                            <i class="fas fa-bell-slash d-block mb-3" style="font-size: 2rem; opacity: 0.3; color: var(--noti-primary-green);"></i>
+                            Không có thông báo nào thuộc mục này
+                        </div>
+                    `;
+                }
+            }
+
+            function fetchNotifications(showLoader = false) {
+                if (showLoader) {
+                    showSkeletons();
+                }
                 $.ajax({
                     url: '<?php echo BASE_URL; ?>index.php?url=Notification/getUnread',
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            const notificationList = document.getElementById('notification-list');
-                            if (response.count > 0) {
-                                notificationBadge.textContent = response.count;
-                                notificationBadge.classList.remove('d-none');
-
-                                let html = '';
-                                html += '<div class="notification-section-title">Mới nhất</div>';
-
-                                response.notifications.forEach(item => {
-                                    const link = item.link ? '<?php echo BASE_URL; ?>' + item.link : '#';
-                                    const unreadClass = (item.is_read == 0 || item.is_read == '0') ? 'unread' : '';
-
-                                    // Icon Mapping Logic
-                                    const type = item.type || 'system';
-                                    const iconMapping = {
-                                        'order': 'fa-shopping-basket',
-                                        'chat': 'fa-comment-dots',
-                                        'approved': 'fa-check-double',
-                                        'rejected': 'fa-times-circle',
-                                        'profile': 'fa-user-cog',
-                                        'payment': 'fa-credit-card',
-                                        'system': 'fa-info-circle',
-                                        'promotion': 'fa-tag',
-                                        'review': 'fa-star',
-                                        'seller_request': 'fa-store-alt',
-                                        'shop_update': 'fa-store-alt',
-                                        'shipping': 'fa-truck',
-                                        'wishlist': 'fa-heart',
-                                        'inventory': 'fa-warehouse',
-                                        'cancel': 'fa-ban',
-                                        'voucher': 'fa-ticket-alt'
-                                    };
-                                    const iconClass = iconMapping[type] || 'fa-bell';
-
-                                    const avatarUrl = item.sender_avatar ?
-                                        '<?php echo BASE_URL; ?>public/uploads/avatars/' + item.sender_avatar :
-                                        'https://ui-avatars.com/api/?name=System&background=random';
-
-                                    const isMatch = (currentFilter === 'all') ||
-                                        (currentFilter === type) ||
-                                        (currentFilter === 'seller_request' && (type === 'seller_request' || type === 'shop_update')) ||
-                                        (currentFilter === 'order' && ['order', 'shipping', 'cancel', 'payment'].includes(type));
-
-                                    html += `
-                                        <a href="${link}" class="notification-item ${unreadClass} mark-read-btn" data-id="${item.id}" data-type="${type}" ${!isMatch ? 'style="display:none;"' : ''}>
-                                            <div class="noti-avatar-wrapper">
-                                                <img src="${avatarUrl}" class="noti-avatar" alt="User">
-                                                <div class="noti-type-icon ${type}">
-                                                    <i class="fas ${iconClass}"></i>
-                                                </div>
-                                            </div>
-                                            <div class="noti-details">
-                                                <div class="noti-message">${item.message}</div>
-                                                <div class="noti-time">${item.created_at}</div>
-                                            </div>
-                                            ${item.thumbnail ? `<img src="<?php echo BASE_URL; ?>public/uploads/products/${item.thumbnail}" class="noti-thumb" alt="P">` : ''}
-                                        </a>
-                                    `;
-                                });
-                                notificationList.innerHTML = html;
-
-                                // Check if current filter has results, if not show empty message
-                                if (currentFilter !== 'all' && $(`.notification-item[data-type="${currentFilter}"]`).length === 0 && (currentFilter !== 'seller_request' || $(`.notification-item[data-type="shop_update"]`).length === 0)) {
-                                    notificationList.innerHTML += '<div class="p-4 text-center text-muted no-filter-results">Không có thông báo nào thuộc mục này</div>';
-                                }
-                            } else {
-                                notificationBadge.classList.add('d-none');
-                                notificationList.innerHTML = '<div class="p-5 text-center text-muted"><i class="fas fa-bell-slash d-block mb-3" style="font-size: 2rem; opacity: 0.3;"></i>Không có thông báo mới</div>';
-                            }
+                            cachedNotifications = response.notifications || [];
+                            renderNotifications(cachedNotifications);
                         }
                     }
                 });
             }
 
             if (notificationBadge && notificationDropdown) {
-                // Fetch notifications on load
-                fetchNotifications();
-                // Poll every 15 seconds
+                // Initial load with skeleton effect
+                fetchNotifications(true);
+                // Poll in the background every 15s without resetting the loading skeletons
                 setInterval(fetchNotifications, 15000);
 
-                // Toggle notification dropdown on click
+                // Toggle notification dropdown
                 $('.notification-wrapper > a').on('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     $(notificationDropdown).toggleClass('active');
-                    // Ensure cart dropdown doesn't conflict if it used the same system
                     $('.mini-cart-dropdown').removeClass('active');
                 });
 
-                // Close when clicking outside
+                // Close dropdown on click outside
                 $(document).on('click', function(e) {
                     if (!$(e.target).closest('.notification-wrapper').length) {
                         $(notificationDropdown).removeClass('active');
                     }
                 });
 
-                // Prevent closing when clicking inside the dropdown
+                // Prevent click propagation inside dropdown unless clicking interactive elements
                 $(notificationDropdown).on('click', function(e) {
-                    e.stopPropagation();
+                    if (!$(e.target).closest('.filter-chip, .mark-read-btn, .mark-all-read, #toggle-noti-theme').length) {
+                        e.stopPropagation();
+                    }
                 });
 
-                // Filter logic
-                $(document).on('click', '.filter-chip', function() {
+                // Pill Filter Interaction (Simulate Loading on Tab Switch)
+                $(notificationDropdown).on('click', '.filter-chip', function() {
                     const filter = $(this).data('filter');
+                    if (currentFilter === filter) return;
+
                     currentFilter = filter;
                     $('.filter-chip').removeClass('active');
                     $(this).addClass('active');
 
-                    $('.no-filter-results').remove();
-                    if (filter === 'all') {
-                        $('.notification-item').show();
-                    } else {
-                        $('.notification-item').hide();
+                    // Micro-animation: Quick 350ms skeleton loader when tab shifts
+                    showSkeletons();
+                    setTimeout(() => {
+                        renderNotifications(cachedNotifications);
+                    }, 350);
+                });
 
-                        let types = [filter];
-                        if (filter === 'seller_request') {
-                            types = ['seller_request', 'shop_update'];
-                        } else if (filter === 'order') {
-                            types = ['order', 'shipping', 'cancel', 'payment'];
-                        }
-
-                        let selector = types.map(t => `.notification-item[data-type="${t}"]`).join(', ');
-                        const filteredItems = $(selector);
-
-                        if (filteredItems.length > 0) {
-                            filteredItems.show();
-                        } else {
-                            $('#notification-list').append('<div class="p-4 text-center text-muted no-filter-results">Không có thông báo nào thuộc mục này</div>');
-                        }
+                // Mark single notification as read
+                $(notificationDropdown).on('click', '.mark-read-btn', function(e) {
+                    const id = $(this).data('id');
+                    const href = $(this).attr('href');
+                    if (id) {
+                        e.preventDefault();
+                        $.ajax({
+                            url: '<?php echo BASE_URL; ?>index.php?url=Notification/markRead',
+                            type: 'POST',
+                            data: { id: id },
+                            success: function() {
+                                if (href && href !== '#') {
+                                    window.location.href = href;
+                                } else {
+                                    fetchNotifications();
+                                }
+                            }
+                        });
                     }
                 });
-            }
 
-            // Handle mark as read
-            $(document).on('click', '.mark-read-btn', function(e) {
-                const id = $(this).data('id');
-                const href = $(this).attr('href');
-                if (id) {
-                    // Prevent default to run ajax then redirect
+                // Mark all notifications as read
+                $(notificationDropdown).on('click', '.mark-all-read', function(e) {
                     e.preventDefault();
+                    showSkeletons();
                     $.ajax({
-                        url: '<?php echo BASE_URL; ?>index.php?url=Notification/markRead',
+                        url: '<?php echo BASE_URL; ?>index.php?url=Notification/markAllRead',
                         type: 'POST',
-                        data: {
-                            id: id
-                        },
                         success: function() {
-                            if (href && href !== '#') {
-                                window.location.href = href;
-                            } else {
-                                fetchNotifications();
-                            }
+                            fetchNotifications();
                         }
                     });
-                }
-            });
-
-            $(document).on('click', '.mark-all-read', function(e) {
-                e.preventDefault();
-                $.ajax({
-                    url: '<?php echo BASE_URL; ?>index.php?url=Notification/markAllRead',
-                    type: 'POST',
-                    success: function() {
-                        fetchNotifications();
-                    }
                 });
-            });
+            }
         });
-    </script>
-
     </script>
 
     <div class="container">

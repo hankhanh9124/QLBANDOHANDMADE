@@ -14,7 +14,7 @@ include 'app/views/dashboard/header.php';
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h3 class="mb-0"><?php echo $totalProducts; ?></h3>
+                                <h3 class="mb-0"><?php echo $totalProducts ?? 0; ?></h3>
                                 <p class="mb-0">Sản phẩm</p>
                             </div>
                             <i class="fas fa-box fa-2x opacity-50"></i>
@@ -31,7 +31,7 @@ include 'app/views/dashboard/header.php';
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h3 class="mb-0"><?php echo number_format($totalSold); ?></h3>
+                                <h3 class="mb-0"><?php echo number_format($totalSold ?? 0); ?></h3>
                                 <p class="mb-0">Sản phẩm đã bán</p>
                             </div>
                             <i class="fas fa-cart-arrow-down fa-2x opacity-50"></i>
@@ -48,7 +48,7 @@ include 'app/views/dashboard/header.php';
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h3 class="mb-0"><?php echo $totalOrders; ?></h3>
+                                <h3 class="mb-0"><?php echo $totalOrders ?? 0; ?></h3>
                                 <p class="mb-0">Tổng đơn hàng</p>
                             </div>
                             <i class="fas fa-shopping-cart fa-2x opacity-50"></i>
@@ -65,7 +65,7 @@ include 'app/views/dashboard/header.php';
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h3 class="mb-0"><?php echo number_format($totalRevenue, 0, ',', '.'); ?> ₫</h3>
+                                <h3 class="mb-0"><?php echo number_format($totalRevenue ?? 0, 0, ',', '.'); ?> ₫</h3>
                                 <p class="mb-0">Doanh thu</p>
                             </div>
                             <i class="fas fa-dollar-sign fa-2x opacity-50"></i>
@@ -86,9 +86,9 @@ include 'app/views/dashboard/header.php';
 
     <!-- Quick Actions -->
     <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0 py-3">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-header bg-white border-0 py-3" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
                     <h5 class="mb-0 font-weight-bold">Thao tác nhanh</h5>
                 </div>
                 <div class="card-body">
@@ -101,6 +101,27 @@ include 'app/views/dashboard/header.php';
                         </a>
                         <a href="<?php echo BASE_URL; ?>index.php?url=Seller/orders" class="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center">
                             <i class="fas fa-shipping-fast text-warning mr-3"></i> Xử lý đơn hàng mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #c2255c 0%, #e64980 100%); border-radius: 12px; min-height: 200px;">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 font-weight-bold text-white-50 small text-uppercase">Ví tiền của tôi</h5>
+                            <i class="fas fa-wallet fa-lg"></i>
+                        </div>
+                        <h3 class="font-weight-bold mb-1" style="font-size: 2.2rem;">
+                            <?php echo number_format($walletBalance ?? 0, 0, ',', '.'); ?> ₫
+                        </h3>
+                        <p class="text-white-50 small mb-0"><i class="fas fa-info-circle mr-1"></i> Số dư khả dụng có thể rút về ngân hàng.</p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="<?php echo BASE_URL; ?>index.php?url=Seller/wallet" class="btn btn-light btn-block font-weight-bold" style="color: #c2255c; border-radius: 8px; transition: background-color 0.2s;">
+                            <i class="fas fa-university mr-2"></i> Quản lý ví & Rút tiền
                         </a>
                     </div>
                 </div>
