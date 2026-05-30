@@ -138,8 +138,8 @@ class ChatController
         $customerId = isset($_GET['customer_id'])? (int)$_GET['customer_id']: null;
         $since      = $_GET['since'] ?? null;
 
-        // Customer → lấy conv với seller cụ thể (seller_id > 0 mới là hợp lệ)
-        if (!$convId && !$this->isAdmin() && $sellerId > 0) {
+        // Lấy hoặc tạo conv với seller cụ thể (seller_id > 0 mới là hợp lệ)
+        if (!$convId && $sellerId > 0) {
             $conv   = $this->chatModel->getOrCreateConversation($userId, $sellerId);
             $convId = $conv ? $conv->id : null;
         }
@@ -297,6 +297,7 @@ class ChatController
         header('Content-Type: application/json');
 
         $userId   = $this->userId();
+        $userRole = $_SESSION['user_role'] ?? 'user';
         $sellerId = isset($_GET['seller_id']) ? (int)$_GET['seller_id'] : 0;
         $keyword  = $_GET['q'] ?? '';
 
@@ -305,10 +306,22 @@ class ChatController
 
         $results = [];
 
+        // Nếu người dùng hiện tại là Seller, luôn lấy sản phẩm của chính họ
+        // (kể cả đang pending duyệt sau khi cập nhật)
+        if ($userRole === 'seller') {
+            $sellerId = $userId; // Override seller_id = chính mình
+        }
+
         // Lấy sản phẩm của Seller này
         if ($sellerId > 0) {
             $shopProducts = $productModel->getProductsBySeller($sellerId);
             foreach ($shopProducts as $p) {
+                // Nếu user là seller chính mình → hiện tất cả kể cả pending
+                // Nếu người khác xem → chỉ hiện approved
+                if ($userRole !== 'seller' && ($p->status ?? 'approved') !== 'approved') {
+                    continue;
+                }
+
                 if (empty($keyword) || mb_stripos($p->name, $keyword) !== false) {
                     $discount = isset($p->discount_percent) ? (int)$p->discount_percent : 0;
                     $price = $p->price;
@@ -318,12 +331,18 @@ class ChatController
                         $price = $price * (1 - $discount / 100);
                     }
 
+                    $prodImg = $p->image;
+                    $finalImg = (strpos($prodImg, 'http') === 0) ? $prodImg : 
+                        ((strpos($prodImg, 'public/') === false) ?
+                            ((strpos($prodImg, 'uploads/') !== false) ? 'public/' . $prodImg : 'public/uploads/' . $prodImg) :
+                            $prodImg);
+
                     $results[] = [
                         'id'    => $p->id,
                         'name'  => $p->name,
                         'price' => number_format($price, 0, ',', '.') . '₫',
                         'old_price' => $oldPrice,
-                        'image' => (strpos($p->image, 'http') === 0) ? $p->image : BASE_URL . (strpos($p->image, 'public/') === 0 ? '' : 'public/uploads/') . $p->image
+                        'image' => (strpos($finalImg, 'http') === 0) ? $finalImg : BASE_URL . $finalImg
                     ];
                 }
             }
@@ -332,18 +351,24 @@ class ChatController
             $cartItems = $cartModel->getItems($userId);
             foreach ($cartItems as $item) {
                 if (empty($keyword) || mb_stripos($item['name'], $keyword) !== false) {
+                    $itemImg = $item['image'];
+                    $finalItemImg = (strpos($itemImg, 'http') === 0) ? $itemImg : 
+                        ((strpos($itemImg, 'public/') === false) ?
+                            ((strpos($itemImg, 'uploads/') !== false) ? 'public/' . $itemImg : 'public/uploads/' . $itemImg) :
+                            $itemImg);
+
                     $results[] = [
                         'id'    => $item['id'],
                         'name'  => $item['name'],
                         'price' => number_format($item['price'], 0, ',', '.') . '₫',
-                        'image' => (strpos($item['image'], 'http') === 0) ? $item['image'] : BASE_URL . (strpos($item['image'], 'public/') === 0 ? '' : 'public/uploads/') . $item['image']
+                        'image' => (strpos($finalItemImg, 'http') === 0) ? $finalItemImg : BASE_URL . $finalItemImg
                     ];
                 }
             }
         }
 
-        // Nếu giỏ hàng trống hoặc đang tìm kiếm, lấy thêm từ shop
-        if (count($results) < 5 || !empty($keyword)) {
+        // Nếu không chỉ định seller (seller_id == 0) và giỏ hàng trống hoặc đang tìm kiếm, lấy thêm từ shop
+        if ($sellerId == 0 && (count($results) < 5 || !empty($keyword))) {
             $shopProducts = $productModel->getProducts();
             foreach ($shopProducts as $p) {
                 // Tránh trùng lặp với giỏ hàng
@@ -358,12 +383,18 @@ class ChatController
                         $price = $price * (1 - $discount / 100);
                     }
 
+                    $prodImg = $p->image;
+                    $finalImg = (strpos($prodImg, 'http') === 0) ? $prodImg : 
+                        ((strpos($prodImg, 'public/') === false) ?
+                            ((strpos($prodImg, 'uploads/') !== false) ? 'public/' . $prodImg : 'public/uploads/' . $prodImg) :
+                            $prodImg);
+
                     $results[] = [
                         'id'    => $p->id,
                         'name'  => $p->name,
                         'price' => number_format($price, 0, ',', '.') . '₫',
                         'old_price' => $oldPrice,
-                        'image' => (strpos($p->image, 'http') === 0) ? $p->image : BASE_URL . 'public/uploads/' . $p->image
+                        'image' => (strpos($finalImg, 'http') === 0) ? $finalImg : BASE_URL . $finalImg
                     ];
                 }
                 if (count($results) >= 20) break; // Giới hạn 20 sản phẩm
@@ -372,6 +403,7 @@ class ChatController
 
         echo json_encode(['success' => true, 'products' => $results]);
     }
+
 
     // ── AJAX: Danh sách đơn hàng để chọn ──────────────────────────
 

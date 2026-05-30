@@ -62,20 +62,6 @@ include 'app/views/dashboard/header.php';
                                         <button class="btn btn-sm btn-success mr-2 open-chat-with-customer" data-customer-id="<?php echo $order->user_id; ?>" style="background-color: #28a745; border: none; padding: 5px 10px;" title="Chat với khách hàng">
                                             <i class="fas fa-comment"></i>
                                         </button>
-                                         <?php if ($order->status !== 'completed' && $order->status !== 'cancelled'): ?>
-                                            <div class="btn-group">
-                                                <button type="button" class="btn btn-sm btn-dark dropdown-toggle" data-toggle="dropdown" style="background-color: #495057; border: none; padding: 5px 15px;">
-                                                    Cập nhật
-                                                </button>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item" href="<?php echo BASE_URL; ?>index.php?url=Seller/updateOrderStatus/<?php echo $order->id; ?>/confirmed">Đang xử lý</a>
-                                                    <a class="dropdown-item" href="<?php echo BASE_URL; ?>index.php?url=Seller/updateOrderStatus/<?php echo $order->id; ?>/shipping">Đang giao</a>
-                                                    <a class="dropdown-item" href="<?php echo BASE_URL; ?>index.php?url=Seller/updateOrderStatus/<?php echo $order->id; ?>/completed">Đã giao</a>
-                                                    <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item text-danger" href="<?php echo BASE_URL; ?>index.php?url=Seller/updateOrderStatus/<?php echo $order->id; ?>/cancelled" onclick="return confirm('Hủy đơn hàng này?')">Hủy đơn</a>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

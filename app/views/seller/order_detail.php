@@ -4,6 +4,23 @@ include 'app/views/dashboard/header.php';
 ?>
 
 <div class="container-fluid py-4">
+    <?php if (isset($_SESSION['success_message'])): ?>
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <?php echo $_SESSION['error_message']; unset($_SESSION['error_message']); ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    <?php endif; ?>
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center">
             <a href="<?php echo BASE_URL; ?>index.php?url=Seller/orders" class="btn btn-outline-secondary mr-3 rounded-circle" style="width: 40px; height: 40px; padding: 7px 0;">
@@ -121,43 +138,6 @@ include 'app/views/dashboard/header.php';
                     <div class="mb-0">
                         <div class="small text-muted mb-1 text-uppercase font-weight-bold">Địa chỉ nhận hàng</div>
                         <div><?php echo htmlspecialchars($order->display_address ?? 'Chưa cung cấp'); ?></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Summary -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0">Thao tác nhanh</h5>
-                </div>
-                <div class="card-body">
-                    <?php if (isset($_SESSION['success_message'])): ?>
-                        <div class="alert alert-success py-2 small mb-3">
-                            <?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <div class="btn-group w-100">
-                        <?php if ($order->status === 'cancelled'): ?>
-                            <button type="button" class="btn btn-danger btn-block disabled" disabled>
-                                Đơn hàng đã hủy
-                            </button>
-                        <?php elseif ($order->status === 'completed'): ?>
-                            <button type="button" class="btn btn-success btn-block disabled" disabled>
-                                Đơn hàng đã hoàn thành
-                            </button>
-                        <?php else: ?>
-                            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Cập nhật trạng thái
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right w-100">
-                                <a class="dropdown-item" href="<?php echo BASE_URL; ?>index.php?url=Seller/updateOrderStatus/<?php echo $order->id; ?>/confirmed">Đang xử lý</a>
-                                <a class="dropdown-item" href="<?php echo BASE_URL; ?>index.php?url=Seller/updateOrderStatus/<?php echo $order->id; ?>/shipping">Đang giao</a>
-                                <a class="dropdown-item" href="<?php echo BASE_URL; ?>index.php?url=Seller/updateOrderStatus/<?php echo $order->id; ?>/completed">Đã giao</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="<?php echo BASE_URL; ?>index.php?url=Seller/updateOrderStatus/<?php echo $order->id; ?>/cancelled" onclick="return confirm('Xác nhận hủy đơn hàng này?')">Hủy đơn</a>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -90,8 +90,8 @@ include 'app/views/dashboard/header.php';
                                     <td class="align-middle text-center">
                                         <?php if ($wdr->status === 'pending'): ?>
                                             <span class="badge badge-warning px-3 py-2 text-white" style="border-radius: 30px; font-weight: 600;">Chờ duyệt</span>
-                                        <?php elseif ($wdr->status === 'approved'): ?>
-                                            <span class="badge badge-success px-3 py-2" style="border-radius: 30px; font-weight: 600;">Đã duyệt</span>
+                                        <?php elseif ($wdr->status === 'approved' || $wdr->status === 'completed'): ?>
+                                            <span class="badge badge-success px-3 py-2" style="border-radius: 30px; font-weight: 600;">Thành công</span>
                                         <?php else: ?>
                                             <span class="badge badge-danger px-3 py-2" style="border-radius: 30px; font-weight: 600;">Từ chối</span>
                                         <?php endif; ?>

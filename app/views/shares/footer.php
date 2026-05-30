@@ -1,39 +1,223 @@
 </div> <!-- Close container from header.php -->
 
-<footer class="bg-light text-center text-lg-start mt-5 border-top">
-    <div class="container p-4">
-        <div class="row">
-            <!-- Cột thông tin liên hệ -->
-            <div class="col-lg-6 col-md-12 mb-4">
-                <h5 class="text-uppercase font-weight-bold" style="color: var(--primary-color);">GÌ CŨNG MÓC</h5>
-                <p>
-                    Hệ thống quản lý sản phẩm giúp bạn theo dõi và cập nhật thông tin sản phẩm dễ dàng. Cảm ơn bạn đã đồng hành cùng "GÌ CŨNG MÓC".
-                </p>
+<style>
+.custom-footer {
+    background-color: #f4f8f5;
+    color: #555;
+    font-size: 13.5px;
+    line-height: 1.5;
+    padding: 28px 0 0;
+    border-top: 2px solid rgba(66,126,89,0.12);
+}
+.custom-footer .footer-brand {
+    color: var(--nav-dark-green);
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+.custom-footer .footer-subtitle {
+    color: var(--primary-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+}
+.custom-footer .color-meaning {
+    font-size: 0.82rem;
+    color: #666;
+    text-align: justify;
+    line-height: 1.55;
+    margin-bottom: 0;
+}
+/* Nav column title — boxed badge style */
+.custom-footer .footer-col-title {
+    color: var(--nav-dark-green);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 10px;
+}
+.custom-footer .footer-col-title.nav-title {
+    display: inline-block;
+    background: var(--nav-dark-green);
+    color: #fff;
+    padding: 3px 14px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 0;
+}
+/* Nav list with divider lines between items */
+.custom-footer .footer-nav-col {
+    border: 1.5px solid rgba(66,126,89,0.2);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 10px;
+    background: #fff;
+}
+.custom-footer .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.custom-footer .footer-links li {
+    border-bottom: 1px solid rgba(66,126,89,0.13);
+    margin: 0;
+}
+.custom-footer .footer-links li:last-child {
+    border-bottom: none;
+}
+.custom-footer .footer-links a {
+    color: #4a4a4a;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: background 0.18s, color 0.18s, padding-left 0.18s;
+    display: block;
+    padding: 6px 12px;
+    letter-spacing: 0.4px;
+}
+.custom-footer .footer-links a:hover {
+    background: rgba(66,126,89,0.08);
+    color: var(--nav-dark-green);
+    padding-left: 18px;
+}
+.custom-footer .contact-info-text {
+    font-size: 0.82rem;
+    color: #666;
+    line-height: 1.7;
+}
+.custom-footer .contact-info-text a {
+    color: #555;
+    text-decoration: none;
+}
+.custom-footer .contact-info-text a:hover {
+    color: var(--nav-dark-green);
+}
+.custom-footer .social-icons {
+    margin-top: 10px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.custom-footer .social-icons a {
+    color: #666;
+    font-size: 1.15rem;
+    transition: color 0.2s, transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(66,126,89,0.25);
+}
+.custom-footer .social-icons a:hover {
+    transform: translateY(-2px);
+    border-color: transparent;
+}
+.custom-footer .social-icons a.facebook-link:hover { color: #1877F2; border-color: #1877F2; }
+.custom-footer .social-icons a.instagram-link:hover { color: #E1306C; border-color: #E1306C; }
+.footer-divider-v {
+    border-left: 1px solid rgba(66,126,89,0.15);
+}
+.copyright-bar {
+    background-color: var(--nav-dark-green);
+    font-weight: 500;
+    font-size: 0.8rem;
+    letter-spacing: 0.4px;
+    margin-top: 20px;
+    padding: 10px 0;
+}
+@media (max-width: 767px) {
+    .footer-divider-v { border-left: none; border-top: 1px solid rgba(66,126,89,0.15); padding-top: 14px; margin-top: 14px; }
+    .custom-footer { padding: 20px 0 0; }
+}
+</style>
+
+<footer class="custom-footer">
+    <div class="container">
+        <div class="row no-gutters">
+
+            <!-- Cột 1: Navigation links (2 cột con, mỗi cột 4 mục) -->
+            <div class="col-md-3 col-12 px-3 pb-3">
+                <div class="text-center">
+                    <div class="footer-col-title nav-title">Điều hướng</div>
+                </div>
+                <div class="d-flex mt-2" style="gap: 10px;">
+                    <!-- Cột trái: 4 mục đầu -->
+                    <div class="flex-fill" style="margin-top:0;">
+                        <ul class="footer-links">
+                            <li><a href="<?php echo BASE_URL; ?>index.php?url=Product/">Trang chủ</a></li>
+                            <li><a href="<?php echo BASE_URL; ?>index.php?url=Product/group/handmade">Sản phẩm len</a></li>
+                            <li><a href="<?php echo BASE_URL; ?>index.php?url=Product/group/keychain">Móc khóa</a></li>
+                            <li><a href="<?php echo BASE_URL; ?>index.php?url=Product/group/flowers">Hoa len</a></li>
+                        </ul>
+                    </div>
+                    <!-- Cột phải: 4 mục sau -->
+                    <div class="flex-fill" style="margin-top:0;">
+                        <ul class="footer-links">
+                            <li><a href="<?php echo BASE_URL; ?>index.php?url=Product/group/yarn">Len sợi</a></li>
+                            <li><a href="<?php echo BASE_URL; ?>index.php?url=Product/group/tools">Dụng cụ đan móc</a></li>
+                            <li><a href="<?php echo BASE_URL; ?>index.php?url=Page/about">Giới thiệu</a></li>
+                            <li><a href="<?php echo BASE_URL; ?>index.php?url=Page/contact">Liên hệ</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <!-- Cột liên kết nhanh -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <h5 class="text-uppercase font-weight-bold">Liên kết nhanh</h5>
-                <ul class="list-unstyled mb-0">
-                    <li><a href="<?php echo BASE_URL; ?>index.php?url=Product/" class="text-dark">Trang chủ</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>index.php?url=Page/about" class="text-dark">Giới thiệu</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>index.php?url=Product/index" class="text-dark">Sản phẩm</a></li>
-                    <li><a href="<?php echo BASE_URL; ?>index.php?url=Page/contact" class="text-dark">Liên hệ</a></li>
-                </ul>
+
+
+            <!-- Cột 2: Giới thiệu thương hiệu -->
+            <div class="col-md-3 col-12 px-3 pb-3 footer-divider-v">
+                <div class="text-center">
+                    <div class="footer-col-title nav-title">GÌ CŨNG MÓC</div>
+                </div>
+                <div class="mt-2 text-center" style="padding: 12px 14px; min-height: 122px;">
+                    <div class="footer-subtitle mb-1">Màu chủ đạo</div>
+                    <p class="color-meaning mb-0">
+                        Website sử dụng màu xanh làm tông màu chủ đạo — mang lại cảm giác nhẹ nhàng, sáng tạo, tỉ mỉ và giá trị thủ công đặc trưng của các sản phẩm len handmade, tạo nên không gian mua sắm gần gũi và tinh tế.
+                    </p>
+                </div>
             </div>
-            <!-- Cột mạng xã hội -->
-            <div class="col-lg-3 col-md-6 mb-4">
-                <h5 class="text-uppercase font-weight-bold">Kết nối với chúng tôi</h5>
-                <a href="https://facebook.com/gicungmoc" target="_blank" class="text-muted mr-3" style="font-size: 24px;"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://twitter.com/gicungmoc" target="_blank" class="text-muted mr-3" style="font-size: 24px;"><i class="fab fa-twitter"></i></a>
-                <a href="https://instagram.com/gicungmoc" target="_blank" class="text-muted mr-3" style="font-size: 24px;"><i class="fab fa-instagram"></i></a>
+
+            <!-- Cột 3: Mạng xã hội -->
+            <div class="col-md-2 col-12 px-3 pb-3 footer-divider-v">
+                <div class="text-center">
+                    <div class="footer-col-title nav-title">Theo dõi</div>
+                </div>
+                <div class="mt-2 text-center d-flex align-items-center justify-content-center" style="padding: 14px 12px; min-height: 122px;">
+                    <div class="social-icons justify-content-center" style="margin-top:0; width: 100%;">
+                        <a href="https://www.facebook.com/nguyen.lan.phuong.1303" target="_blank" class="facebook-link" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/gi_cung_moc/" target="_blank" class="instagram-link" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột 4: Liên hệ -->
+            <div class="col-md-4 col-12 px-3 pb-3 footer-divider-v">
+                <div class="text-center">
+                    <div class="footer-col-title nav-title">Liên hệ</div>
+                </div>
+                <div class="mt-2 text-center d-flex align-items-center justify-content-center" style="padding: 10px 14px; min-height: 122px;">
+                    <div class="contact-info-text">
+                        <div class="mb-1"><i class="fas fa-map-marker-alt mr-1" style="color:var(--primary-color);font-size:0.75rem;"></i> 13/6, Khu phố Tân Hòa, Đông Hòa, Dĩ An, Bình Dương</div>
+                        <div class="mb-1"><i class="fas fa-phone mr-1" style="color:var(--primary-color);font-size:0.75rem;"></i> <a href="tel:0382613031">0382.613.031</a></div>
+                        <div><i class="fas fa-phone mr-1" style="color:var(--primary-color);font-size:0.75rem;"></i> <a href="tel:0964325348">0964.325.348</a></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <!-- Dòng bản quyền -->
-    <div class="text-center p-3 text-white" style="background-color: #333;">
+    <div class="copyright-bar text-center text-white">
         © 2026 "GÌ CŨNG MÓC - ĐỘC ĐÁO - TỰ TAY - ĐẸP MẮT".
     </div>
 </footer>
+
 
 <?php include_once 'app/views/shares/chat_widget.php'; ?>
 

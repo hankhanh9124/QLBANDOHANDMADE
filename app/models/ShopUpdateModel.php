@@ -5,6 +5,11 @@ class ShopUpdateModel {
 
     public function __construct($db) {
         $this->conn = $db;
+        try {
+            $this->conn->exec("ALTER TABLE " . $this->table_name . " ADD COLUMN rejection_reason TEXT");
+        } catch (PDOException $e) {
+            // Ignore if column already exists
+        }
     }
 
     public function create($data) {
@@ -22,6 +27,22 @@ class ShopUpdateModel {
 
     public function getPendingByShopId($shop_id) {
         $query = "SELECT * FROM " . $this->table_name . " WHERE shop_id = :shop_id AND status = 'pending' ORDER BY created_at DESC LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':shop_id', $shop_id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function getLatestRejectedByShopId($shop_id) {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE shop_id = :shop_id AND status = 'rejected' ORDER BY created_at DESC LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':shop_id', $shop_id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_OBJ);
+    }
+
+    public function getLatestRequestByShopId($shop_id) {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE shop_id = :shop_id ORDER BY created_at DESC LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':shop_id', $shop_id);
         $stmt->execute();
@@ -48,10 +69,25 @@ class ShopUpdateModel {
         return $stmt->fetch(PDO::FETCH_OBJ);
     }
 
-    public function updateStatus($id, $status) {
-        $query = "UPDATE " . $this->table_name . " SET status = :status WHERE id = :id";
+    public function updateStatus($id, $status, $reason = null) {
+        if ($reason !== null) {
+            $query = "UPDATE " . $this->table_name . " SET status = :status, rejection_reason = :reason WHERE id = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':reason', $reason);
+            $stmt->bindParam(':id', $id);
+        } else {
+            $query = "UPDATE " . $this->table_name . " SET status = :status WHERE id = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':id', $id);
+        }
+        return $stmt->execute();
+    }
+
+    public function delete($id) {
+        $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':status', $status);
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
     }

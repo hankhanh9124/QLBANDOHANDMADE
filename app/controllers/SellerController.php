@@ -310,43 +310,10 @@ class SellerController
             header('Location: ' . BASE_URL);
             exit;
         }
-        $sellerId = $_SESSION['user_id'];
-
-        // Security check: Does this order contain at least one product from this seller?
-        $query = "SELECT COUNT(*) FROM order_detail od 
-                  JOIN product p ON od.product_id = p.id 
-                  WHERE od.order_id = :order_id AND p.user_id = :seller_id";
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':order_id', $id);
-        $stmt->bindParam(':seller_id', $sellerId);
-        $stmt->execute();
-        if ($stmt->fetchColumn() == 0) {
-            die('Access Denied: You do not have permission to update this order.');
-        }
-
-        if ($this->orderModel->updateStatus($id, $status)) {
-            // Update 'sold' count in product table if status is completed
-            if ($status === 'completed') {
-                $stmtItems = $this->db->prepare("SELECT product_id, quantity FROM order_detail WHERE order_id = :id");
-                $stmtItems->bindParam(':id', $id);
-                $stmtItems->execute();
-                $items = $stmtItems->fetchAll(PDO::FETCH_OBJ);
-
-                foreach ($items as $item) {
-                    $this->db->prepare("UPDATE product SET sold = sold + :qty WHERE id = :pid")
-                        ->execute([':qty' => $item->quantity, ':pid' => $item->product_id]);
-                }
-
-                // Process commission and wallets
-                $this->orderModel->processOrderCommission($id);
-            }
-
-            $_SESSION['success_message'] = "Cập nhật trạng thái đơn hàng thành công.";
-        } else {
-            $_SESSION['error_message'] = "Có lỗi xảy ra khi cập nhật.";
-        }
-
-        header('Location: ' . $_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'index.php?url=Seller/orders'));
+        
+        $_SESSION['error_message'] = "Bạn không có quyền cập nhật trạng thái đơn hàng. Vui lòng liên hệ Admin.";
+        $referrer = $_SERVER['HTTP_REFERER'] ?? (BASE_URL . 'index.php?url=Seller/orders');
+        header('Location: ' . $referrer);
         exit;
     }
 
@@ -361,13 +328,27 @@ class SellerController
         $shop = $this->shopModel->getBySellerId($userId);
 
         if (!$shop) {
-            $_SESSION['error_message'] = "Không tìm thấy thông tin shop.";
-            header('Location: ' . BASE_URL . 'index.php?url=Seller');
-            exit;
+            // Auto-create shop if not exists (for legacy sellers)
+            $this->shopModel->create([
+                'seller_id' => $userId,
+                'name' => $_SESSION['user_name'] . ' Shop',
+                'description' => 'Cửa hàng của ' . $_SESSION['user_name']
+            ]);
+            $shop = $this->shopModel->getBySellerId($userId);
         }
 
         // Check for pending updates
         $pendingUpdate = $this->shopUpdateModel->getPendingByShopId($shop->id);
+        $rejectedUpdate = $this->shopUpdateModel->getLatestRejectedByShopId($shop->id);
+
+        // Fetch latest shop update deletion notification (unread or recent within 3 days)
+        $stmtNotif = $this->db->prepare("SELECT * FROM notifications 
+                                         WHERE user_id = :user_id 
+                                           AND title = 'Yêu cầu cập nhật thông tin Shop bị hủy'
+                                           AND created_at >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+                                         ORDER BY created_at DESC LIMIT 1");
+        $stmtNotif->execute([':user_id' => $userId]);
+        $deletedUpdateNotif = $stmtNotif->fetch(PDO::FETCH_OBJ);
 
         $action = 'settings';
         require_once 'app/views/dashboard/header.php';
@@ -386,13 +367,18 @@ class SellerController
                 exit;
             }
 
-            // check if there's already a pending request
-            $pending = $this->shopUpdateModel->getPendingByShopId($shop->id);
-            if ($pending) {
-                $_SESSION['error_message'] = "Bạn đang có yêu cầu chờ duyệt, vui lòng đợi.";
-                header('Location: ' . BASE_URL . 'index.php?url=Seller/settings');
-                exit;
+            // check if there's already a request (pending or rejected)
+            $existing = $this->shopUpdateModel->getLatestRequestByShopId($shop->id);
+            if ($existing) {
+                // If there's already a request, we will replace it (delete old, create new)
+                $this->shopUpdateModel->delete($existing->id);
             }
+
+            // Mark previous deletion notification as read
+            $stmtMark = $this->db->prepare("UPDATE notifications SET is_read = 1 
+                                             WHERE user_id = :user_id 
+                                               AND title = 'Yêu cầu cập nhật thông tin Shop bị hủy'");
+            $stmtMark->execute([':user_id' => $userId]);
 
             $newName = $_POST['name'] ?? $shop->name;
             $newDesc = $_POST['description'] ?? $shop->description;
@@ -531,11 +517,11 @@ class SellerController
                 // Create request code
                 $requestCode = 'WDR-' . date('Ymd') . '-' . sprintf("%05d", rand(1, 99999)) . '-' . $sellerId;
 
-                // 1. Insert into withdrawal_requests
+                // 1. Insert into withdrawal_requests as 'completed'
                 $stmtInsert = $this->db->prepare("INSERT INTO withdrawal_requests 
-                    (request_code, seller_id, wallet_id, amount, bank_name, bank_account, bank_owner, status) 
+                    (request_code, seller_id, wallet_id, amount, bank_name, bank_account, bank_owner, status, processed_at) 
                     VALUES 
-                    (:code, :seller_id, :wallet_id, :amount, :bank_name, :bank_account, :bank_owner, 'pending')");
+                    (:code, :seller_id, :wallet_id, :amount, :bank_name, :bank_account, :bank_owner, 'completed', CURRENT_TIMESTAMP)");
                 $stmtInsert->execute([
                     ':code' => $requestCode,
                     ':seller_id' => $sellerId,
@@ -547,19 +533,19 @@ class SellerController
                 ]);
                 $requestId = $this->db->lastInsertId();
 
-                // 2. Deduct from wallet balance
-                $stmtDeduct = $this->db->prepare("UPDATE seller_wallets SET balance = balance - :amount WHERE id = :id");
+                // 2. Deduct from wallet balance and increase total_withdrawn
+                $stmtDeduct = $this->db->prepare("UPDATE seller_wallets SET balance = balance - :amount, total_withdrawn = total_withdrawn + :amount WHERE id = :id");
                 $stmtDeduct->execute([
                     ':amount' => $amount,
                     ':id' => $wallet->id
                 ]);
 
-                // 3. Record transaction in wallet_transactions as 'withdrawal' with status 'pending'
+                // 3. Record transaction in wallet_transactions as 'withdrawal' with status 'completed'
                 $txnCode = 'TXN-' . date('Ymd') . '-' . sprintf("%05d", rand(1, 99999)) . '-W' . $requestId;
                 $stmtTxn = $this->db->prepare("INSERT INTO wallet_transactions 
                     (transaction_code, wallet_id, seller_id, type, amount, balance_before, balance_after, note, status) 
                     VALUES 
-                    (:code, :wallet_id, :seller_id, 'withdrawal', :amount, :before, :after, :note, 'pending')");
+                    (:code, :wallet_id, :seller_id, 'withdrawal', :amount, :before, :after, :note, 'completed')");
                 $stmtTxn->execute([
                     ':code' => $txnCode,
                     ':wallet_id' => $wallet->id,
@@ -567,8 +553,7 @@ class SellerController
                     ':amount' => -$amount,
                     ':before' => $wallet->balance,
                     ':after' => $wallet->balance - $amount,
-                    ':note' => 'Yêu cầu rút tiền #' . $requestCode,
-                    ':status' => 'pending'
+                    ':note' => 'Rút tiền về tài khoản ngân hàng #' . $requestCode,
                 ]);
 
                 // 4. Notify admin
@@ -581,15 +566,15 @@ class SellerController
                 foreach ($admins as $admin) {
                     $notif->create(
                         $admin->id,
-                        'Yêu cầu rút tiền mới',
-                        'Seller ' . $_SESSION['user_name'] . ' vừa yêu cầu rút ' . number_format($amount, 0, ',', '.') . ' ₫ về ngân hàng.',
+                        'Rút tiền tự động thành công',
+                        'Seller ' . $_SESSION['user_name'] . ' vừa rút thành công ' . number_format($amount, 0, ',', '.') . ' ₫ về ngân hàng.',
                         'withdrawal_request',
                         'index.php?url=Dashboard/manageWithdrawals'
                     );
                 }
 
                 $this->db->commit();
-                $_SESSION['success_message'] = "Yêu cầu rút tiền đã được gửi thành công và đang chờ duyệt.";
+                $_SESSION['success_message'] = "Rút tiền thành công! Số tiền " . number_format($amount, 0, ',', '.') . " ₫ đã được chuyển vào tài khoản ngân hàng của bạn.";
             } catch (Exception $e) {
                 $this->db->rollBack();
                 error_log("Error in submitWithdrawal: " . $e->getMessage());

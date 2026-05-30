@@ -1,6 +1,15 @@
 <?php
 $action = (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'products' : 'my_products';
 include 'app/views/dashboard/header.php';
+
+// Safe normalization of product object/array to prevent Warning/Fatal errors in PHP 8.x
+$prodObj = $product ?? null;
+if (is_array($prodObj)) {
+    $prodObj = (object)$prodObj;
+}
+if (!$prodObj || $prodObj === false) {
+    $prodObj = new stdClass();
+}
 ?>
 
 <style>
@@ -170,18 +179,26 @@ include 'app/views/dashboard/header.php';
                 </div>
             <?php endif; ?>
 
+            <?php if (isset($prodObj->status) && $prodObj->status === 'rejected' && !empty($prodObj->rejection_reason)): ?>
+                <div class="alert alert-warning mb-4 shadow-sm" style="border-radius: 10px; border-left: 5px solid #ff9800; background-color: #fff8e1;">
+                    <h5 class="alert-heading font-weight-bold" style="color: #f57c00;"><i class="fas fa-exclamation-circle mr-2"></i>Yêu cầu chỉnh sửa từ Admin</h5>
+                    <hr style="border-top-color: #ffe0b2;">
+                    <p class="mb-0" style="color: #424242; font-size: 1.05rem; white-space: pre-wrap;"><?php echo htmlspecialchars($prodObj->rejection_reason, ENT_QUOTES, 'UTF-8'); ?></p>
+                </div>
+            <?php endif; ?>
+
             <form id="productForm" method="POST" action="<?php echo BASE_URL; ?>index.php?url=Product/update" enctype="multipart/form-data">
-                <input type="hidden" name="id" value="<?php echo $product->id ?? ''; ?>">
+                <input type="hidden" name="id" value="<?php echo $prodObj->id ?? ''; ?>">
 
                 <div class="custom-form-group">
                     <label for="name" class="custom-label">Tên sản phẩm:</label>
                     <input type="text" id="name" name="name" class="form-control custom-input"
-                        value="<?php echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?>" required>
+                        value="<?php echo htmlspecialchars($prodObj->name ?? '', ENT_QUOTES, 'UTF-8'); ?>" required>
                 </div>
 
                 <div class="custom-form-group">
                     <label for="description" class="custom-label">Mô tả chi tiết:</label>
-                    <textarea id="description" name="description" class="form-control custom-input" rows="5"><?php echo htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <textarea id="description" name="description" class="form-control custom-input" rows="5"><?php echo htmlspecialchars($prodObj->description ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
                 </div>
 
                 <div class="row mb-3">
@@ -189,7 +206,7 @@ include 'app/views/dashboard/header.php';
                         <div class="form-group mb-0">
                             <label for="price" class="custom-label">Giá gốc / Giá niêm yết (VNĐ) <span class="text-danger">*</span></label>
                             <div class="input-with-icon" style="position: relative;">
-                                <input type="text" id="price" name="price" style="font-size: 18px;" class="form-control custom-input text-success font-weight-bold" oninput="formatPriceInput(this)" value="<?php echo number_format($product->price ?? 0, 0, ',', '.'); ?> đ" required placeholder="Nhập giá (VD: 650.000 đ)">
+                                <input type="text" id="price" name="price" style="font-size: 18px;" class="form-control custom-input text-success font-weight-bold" oninput="formatPriceInput(this)" value="<?php echo number_format($prodObj->price ?? 0, 0, ',', '.'); ?> đ" required placeholder="Nhập giá (VD: 650.000 đ)">
                             </div>
                             <small id="priceError" class="text-danger mt-1" style="display:none; font-weight: 500;"><i class="fas fa-exclamation-circle"></i> Giá trị phải là số lớn hơn 0</small>
                         </div>
@@ -200,25 +217,19 @@ include 'app/views/dashboard/header.php';
                     <div class="col-md-3">
                         <div class="custom-form-group">
                             <label for="discount_percent" class="custom-label" style="color: #ee225b;"><i class="fas fa-tags"></i> Giảm giá (%):</label>
-                            <input type="number" id="discount_percent" name="discount_percent" class="form-control custom-input font-weight-bold" style="color: #ee225b; font-size: 16px;" value="<?php echo isset($product->discount_percent) ? htmlspecialchars($product->discount_percent, ENT_QUOTES, 'UTF-8') : '0'; ?>" min="0" max="100">
+                            <input type="number" id="discount_percent" name="discount_percent" class="form-control custom-input font-weight-bold" style="color: #ee225b; font-size: 16px;" value="<?php echo isset($prodObj->discount_percent) ? htmlspecialchars($prodObj->discount_percent, ENT_QUOTES, 'UTF-8') : '0'; ?>" min="0" max="100">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="custom-form-group">
                             <label for="stock" class="custom-label">Số lượng kho:</label>
-                            <input type="number" id="stock" name="stock" class="form-control custom-input" value="<?php echo $product->stock ?? 0; ?>" min="0">
+                            <input type="number" id="stock" name="stock" class="form-control custom-input" value="<?php echo $prodObj->stock ?? 0; ?>" min="0">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="custom-form-group">
                             <label for="sold" class="custom-label">Đã bán:</label>
-                            <input type="number" id="sold" name="sold" class="form-control custom-input" value="<?php echo $product->sold ?? 0; ?>" min="0">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="custom-form-group">
-                            <label for="rating" class="custom-label">Đánh giá (0-5):</label>
-                            <input type="number" id="rating" name="rating" class="form-control custom-input" value="<?php echo $product->rating ?? 0; ?>" step="0.1" min="0" max="5">
+                            <input type="number" id="sold" name="sold" class="form-control custom-input" value="<?php echo $prodObj->sold ?? 0; ?>" readonly style="background-color: #f1f3f5; color: #6c757d; cursor: not-allowed;" title="Số lượng đã bán được cập nhật tự động từ đơn hàng và không thể sửa thủ công">
                         </div>
                     </div>
                 </div>
@@ -226,24 +237,30 @@ include 'app/views/dashboard/header.php';
                 <div class="custom-form-group">
                     <label for="category_id" class="custom-label">Danh mục:</label>
                     <select id="category_id" name="category_id" class="form-control custom-input" required>
-                        <?php foreach ($categories as $category): ?>
-                            <option value="<?php echo $category->id; ?>" <?php echo $category->id == $product->category_id ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($category->name, ENT_QUOTES, 'UTF-8'); ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <?php if (isset($categories) && (is_array($categories) || is_object($categories))): ?>
+                            <?php foreach ($categories as $category): ?>
+                                <?php 
+                                $catId = is_object($category) ? ($category->id ?? null) : ($category['id'] ?? null); 
+                                $catName = is_object($category) ? ($category->name ?? '') : ($category['name'] ?? ''); 
+                                ?>
+                                <option value="<?php echo $catId; ?>" <?php echo $catId == ($prodObj->category_id ?? null) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($catName, ENT_QUOTES, 'UTF-8'); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </select>
                 </div>
 
                 <div class="custom-form-group">
                     <label for="location" class="custom-label">Địa chỉ người bán:</label>
-                    <input type="text" id="location" name="location" class="form-control custom-input" placeholder="Ví dụ: Tp. Hồ Chí Minh, Đà Nẵng..." value="<?php echo htmlspecialchars($product->location ?? 'Tp. Hồ Chí Minh', ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="text" id="location" name="location" class="form-control custom-input" placeholder="Ví dụ: Tp. Hồ Chí Minh, Đà Nẵng..." value="<?php echo htmlspecialchars($prodObj->location ?? 'Tp. Hồ Chí Minh', ENT_QUOTES, 'UTF-8'); ?>">
                 </div>
 
                 <div class="custom-form-group">
                     <label for="image" class="custom-label">Hình ảnh sản phẩm (chọn nếu muốn đổi ảnh mới):</label>
-                    <?php if (!empty($product->image)): ?>
+                    <?php if (!empty($prodObj->image)): ?>
                         <?php
-                        $imgSrc = $product->image;
+                        $imgSrc = $prodObj->image;
                         if (strpos($imgSrc, 'public/') === false) {
                             $imgSrc = (strpos($imgSrc, 'uploads/') !== false) ? 'public/' . $imgSrc : 'public/uploads/' . $imgSrc;
                         }
@@ -271,19 +288,22 @@ include 'app/views/dashboard/header.php';
                         </div>
                         <div class="text-muted mt-2" style="font-size: 13px;"><i class="fas fa-search-plus"></i> Ảnh mới chọn (Click để phóng to)</div>
                     </div>
-                    <input type="hidden" name="existing_image" value="<?php echo htmlspecialchars($product->image ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="existing_image" value="<?php echo htmlspecialchars($prodObj->image ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                 </div>
+                
+                <div class="custom-form-group mt-5 pt-4" style="border-top: 2px dashed #eee;">
 
-                <!-- PHẦN QUẢN LÝ PHÂN LOẠI SẢN PHẨM (VARIANTS) -->
-                <div class="custom-form-group mt-5" style="border-top: 2px dashed #eee; pt-4;">
-                    <div class="d-flex justify-content-between align-items-center mb-3 pt-4">
-                        <label class="custom-label mb-0" style="color: var(--primary-color); font-size: 22px;">
-                            <i class="fas fa-layer-group mr-2"></i> Quản lý mẫu sản phẩm
-                        </label>
-                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="addVariantRow()">
-                            <i class="fas fa-plus mr-1"></i> Thêm mẫu mới
-                        </button>
-                    </div>
+                    <label class="custom-label mb-0" style="color: var(--primary-color); font-size: 22px;">
+                        <i class="fas fa-layer-group mr-2"></i> Quản lý mẫu sản phẩm
+                    </label>
+
+                    <button type="button"
+                        class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                        onclick="addVariantRow()">
+                        <i class="fas fa-plus mr-1"></i> Thêm mẫu mới
+                    </button>
+
+                </div>
 
                     <div id="variantRowsContainer">
                         <?php if (!empty($variants)): ?>
@@ -321,12 +341,15 @@ include 'app/views/dashboard/header.php';
                     <input type="hidden" name="deleted_variant_ids" id="deleted_variant_ids" value="">
                 </div>
 
-                <div class="action-buttons">
+                <div class="action-buttons d-flex justify-content-end align-items-center" style="gap: 15px;">
+                    <button type="button" class="btn btn-outline-danger" style="border-radius: 8px; padding: 12px 24px; font-weight: 600; font-size: 18px; border-width: 2px;" onclick="if(confirm('Bạn có chắc chắn muốn xóa sạch tất cả thông tin đang nhập không?')) { document.getElementById('productForm').reset(); }">
+                        <i class="fas fa-trash-alt mr-2"></i>Xóa tất cả
+                    </button>
                     <a href="<?php echo BASE_URL; ?>index.php?url=<?php echo (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'Dashboard/products' : 'Product/myProducts'; ?>" class="btn-back-custom">
                         <i class="fas fa-arrow-left mr-2"></i>Quay lại
                     </a>
                     <button type="submit" class="btn-save-custom">
-                        <i class="fas fa-save mr-2"></i>Lưu thay đổi
+                        <i class="fas fa-paper-plane mr-2"></i>Lưu sản phẩm
                     </button>
                 </div>
             </form>
@@ -351,21 +374,69 @@ include 'app/views/dashboard/header.php';
             previewImage.src = "";
             previewContainer.style.display = 'none';
         }
+    }       
+
+    function removeExistingImage() {
+        if (confirm('Bạn có chắc muốn xóa ảnh hiện tại của sản phẩm này? Ảnh sẽ chính thức bị xóa khi bạn lưu lại.')) {
+            const container = document.getElementById('currentImageContainer');
+            if (container) container.style.display = 'none';
+            const removeInput = document.getElementById('remove_existing_image');
+            if (removeInput) removeInput.value = '1';
+        }
     }
 
     function clearImagePreview() {
         const input = document.getElementById('image');
-        input.value = "";
-        document.getElementById('imagePreviewContainer').style.display = 'none';
-        document.getElementById('imagePreview').src = "";
+        if (input) input.value = '';
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        if (previewContainer) previewContainer.style.display = 'none';
+        const previewImage = document.getElementById('imagePreview');
+        if (previewImage) previewImage.src = '';
     }
 
-    function removeExistingImage() {
-        if (confirm('Bạn có chắc chắn muốn xóa ảnh hiện tại không?')) {
-            const container = document.getElementById('currentImageContainer');
-            if (container) container.style.display = 'none';
-            document.getElementById('remove_existing_image').value = '1';
+    // Format chuẩn Shopee có báo đỏ Border và thêm chữ đ
+    function formatPriceInput(input) {
+        let cursorPos = input.selectionStart;
+        let oldVal = input.value;
+
+        // Lấy chỉ các ký tự số
+        let numberVal = input.value.replace(/\D/g, '');
+
+        // Xóa số 0 ở đầu
+        if (numberVal.length > 0) {
+            numberVal = parseInt(numberVal, 10).toString();
         }
+
+        const errorMsg = document.getElementById('priceError');
+        if (input.id === 'price' && (!numberVal || parseInt(numberVal) <= 0)) {
+            input.classList.add('is-invalid');
+            input.style.border = "2px solid #ff424f"; // Viền đỏ Shopee
+            input.style.background = "#fff5f5";
+            if (errorMsg) errorMsg.style.display = "block";
+        } else {
+            input.classList.remove('is-invalid');
+            input.style.border = "1px solid #ddd";
+            input.style.background = "#fff";
+            if (errorMsg) errorMsg.style.display = "none";
+        }
+
+        if (!numberVal) {
+            input.value = '';
+            return;
+        }
+
+        // Format số với dấu chấm
+        let formatted = numberVal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        input.value = formatted + " đ";
+
+        // Tính toán lại vị trí con trỏ
+        if (cursorPos >= oldVal.length - 2) {
+            cursorPos = input.value.length - 2;
+        }
+
+        try {
+            input.setSelectionRange(cursorPos, cursorPos);
+        } catch (e) {}
     }
 
     // Preview cho variant CŨ đang sửa
@@ -437,7 +508,7 @@ include 'app/views/dashboard/header.php';
                         <div id="v-new-preview-container-${rowId}" class="mr-2" style="display: none;">
                             <img id="v-new-preview-${rowId}" src="" style="width: 38px; height: 38px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
                         </div>
-                        <input type="file" name="new_variant_images[]" class="form-control-file" style="font-size: 13px;" accept="image/*" required onchange="previewNewVariantImage(this, '${rowId}')">
+                        <input type="file" name="new_variant_images[]" class="form-control-file" style="font-size: 13px;" accept="image/*" onchange="previewNewVariantImage(this, '${rowId}')">
                     </div>
                 </div>
             </div>
@@ -448,25 +519,10 @@ include 'app/views/dashboard/header.php';
 
     function removeNewVariantRow(rowId) {
         const row = document.getElementById('variant-row-new-' + rowId);
-        if (row) row.remove();
-    }
 
-    function removeExistingImage() {
-        if (confirm('Bạn có chắc muốn xóa ảnh hiện tại của sản phẩm này? Ảnh sẽ chính thức bị xóa khi bạn lưu lại.')) {
-            const container = document.getElementById('currentImageContainer');
-            if (container) container.style.display = 'none';
-            const removeInput = document.getElementById('remove_existing_image');
-            if (removeInput) removeInput.value = '1';
+        if (row && row.parentNode) {
+            row.parentNode.removeChild(row);
         }
-    }
-
-    function clearImagePreview() {
-        const input = document.getElementById('image');
-        if (input) input.value = '';
-        const previewContainer = document.getElementById('imagePreviewContainer');
-        if (previewContainer) previewContainer.style.display = 'none';
-        const previewImage = document.getElementById('imagePreview');
-        if (previewImage) previewImage.src = '';
     }
 
     document.addEventListener('DOMContentLoaded', function() {

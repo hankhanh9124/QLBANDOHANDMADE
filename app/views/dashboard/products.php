@@ -140,6 +140,9 @@ include 'app/views/dashboard/header.php';
                                             $isOwner = (isset($product->user_id) && (int)$product->user_id === (int)$currentUserId);
                                             ?>
                                             <?php if ($isOwner): ?>
+                                                <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" target="_blank" class="btn btn-sm btn-outline-primary mr-1" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
                                                 <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn btn-sm btn-info mr-1" title="Sửa">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
@@ -147,10 +150,16 @@ include 'app/views/dashboard/header.php';
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             <?php elseif ($_SESSION['user_role'] === 'admin'): ?>
+                                                <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" target="_blank" class="btn btn-sm btn-outline-primary mr-1" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
                                                 <a href="javascript:void(0)" class="btn btn-sm btn-outline-danger" onclick="adminDeleteProduct(<?php echo $product->id; ?>)" title="Gỡ bỏ sản phẩm (Vi phạm)">
                                                     <i class="fas fa-ban"></i>
                                                 </a>
                                             <?php else: ?>
+                                                <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" target="_blank" class="btn btn-sm btn-outline-primary mr-1" title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
                                                 <span class="badge badge-light text-muted"><i class="fas fa-lock mr-1"></i>Chế độ xem</span>
                                             <?php endif; ?>
                                         <?php endif; ?>

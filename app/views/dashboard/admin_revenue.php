@@ -4,7 +4,7 @@ include 'app/views/dashboard/header.php';
 ?>
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h3 font-weight-bold text-dark mb-0">Doanh thu hoa hồng hệ thống</h2>
+        <h2 class="h3 font-weight-bold text-dark mb-0">Doanh thu hoa hồng</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb bg-transparent mb-0 p-0">
                 <li class="breadcrumb-item"><a href="<?php echo BASE_URL; ?>index.php?url=Dashboard" class="text-muted">Admin</a></li>

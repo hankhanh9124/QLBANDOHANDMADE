@@ -76,7 +76,11 @@ if (!isset($user) || empty($user)) {
                     <i class="fas fa-chart-line text-success"></i> Dashboard Admin
                 </a>
             </li>
-
+            <li class="sidebar-menu-item">
+                <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/adminRevenue" class="sidebar-menu-link <?php echo $activePage === 'Dashboard/adminRevenue' ? 'active' : ''; ?>">
+                    <i class="fas fa-wallet text-info"></i> Doanh thu hoa hồng (Admin)
+                </a>
+            </li>
         <?php endif; ?>
 
         <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'seller'): ?>

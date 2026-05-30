@@ -86,6 +86,9 @@ include 'app/views/dashboard/header.php';
                                     <td><?php echo !empty($product->created_at) ? date('d/m/Y', strtotime($product->created_at)) : 'Chưa cập nhật'; ?></td>
                                     <td>
                                         <div class="btn-group">
+                                            <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" target="_blank" class="btn btn-outline-success btn-sm">
+                                                <i class="fas fa-eye"></i> Xem
+                                            </a>
                                             <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn btn-outline-primary btn-sm">
                                                 <i class="fas fa-edit"></i> Sửa
                                             </a>

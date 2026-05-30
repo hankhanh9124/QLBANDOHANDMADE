@@ -70,7 +70,7 @@ class ProductModel
 
     public function getPendingProducts()
     {
-        $query = "SELECT p.*, c.name as category_name, u.name as seller_name
+        $query = "SELECT p.*, c.name as category_name, u.name as seller_name, u.role as seller_role
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
         LEFT JOIN user u ON p.user_id = u.id
@@ -84,9 +84,10 @@ class ProductModel
 
     public function getProductsBySeller($seller_id)
     {
-        $query = "SELECT p.*, c.name as category_name
+        $query = "SELECT p.*, c.name as category_name, u.role as seller_role
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
+        LEFT JOIN user u ON p.user_id = u.id
         WHERE p.user_id = :seller_id
         ORDER BY p.id DESC";
 
@@ -107,7 +108,7 @@ class ProductModel
     }
     public function getProducts($minPrice = null, $maxPrice = null, $sort = 'id')
     {
-        $query = "SELECT p.*, c.name as category_name, u.name as seller_name
+        $query = "SELECT p.*, c.name as category_name, u.name as seller_name, u.role as seller_role
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
         LEFT JOIN user u ON p.user_id = u.id
@@ -181,13 +182,15 @@ class ProductModel
 
     public function searchProducts($keyword)
     {
-        $query = "SELECT p.*, c.name as category_name, u.name as seller_name
+        $query = "SELECT p.*, c.name as category_name, u.name as seller_name, u.role as seller_role, s.name as shop_name
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
         LEFT JOIN user u ON p.user_id = u.id
+        LEFT JOIN shops s ON p.user_id = s.seller_id
         WHERE p.name LIKE :keyword 
            OR p.description LIKE :keyword 
-           OR c.name LIKE :keyword";
+           OR c.name LIKE :keyword
+           OR s.name LIKE :keyword";
         $stmt = $this->conn->prepare($query);
         $searchKeyword = "%{$keyword}%";
         $stmt->bindParam(':keyword', $searchKeyword);
@@ -197,12 +200,15 @@ class ProductModel
 
     public function searchProductsFiltered($keyword, $minPrice = null, $maxPrice = null, $user_id = null, $sort = 'newest')
     {
-        $query = "SELECT p.*, c.name as category_name
+        $query = "SELECT p.*, c.name as category_name, s.name as shop_name, u.role as seller_role
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
+        LEFT JOIN user u ON p.user_id = u.id
+        LEFT JOIN shops s ON p.user_id = s.seller_id
         WHERE (p.name LIKE :keyword1 
            OR p.description LIKE :keyword2 
-           OR c.name LIKE :keyword3)
+           OR c.name LIKE :keyword3
+           OR s.name LIKE :keyword4)
            AND p.status = 'approved'";
 
         if ($minPrice !== null) {
@@ -237,6 +243,7 @@ class ProductModel
         $stmt->bindParam(':keyword1', $searchKeyword);
         $stmt->bindParam(':keyword2', $searchKeyword);
         $stmt->bindParam(':keyword3', $searchKeyword);
+        $stmt->bindParam(':keyword4', $searchKeyword);
 
         if ($minPrice !== null) {
             $stmt->bindParam(':minPrice', $minPrice);
@@ -262,9 +269,10 @@ class ProductModel
     }
     public function getProductsByCategory($category_id, $minPrice = null, $maxPrice = null)
     {
-        $query = "SELECT p.id, p.name, p.description, p.price, p.discount_percent, p.image, p.stock, p.sold, p.rating, p.rating_count, p.location, c.name as category_name
+        $query = "SELECT p.id, p.name, p.description, p.price, p.discount_percent, p.image, p.stock, p.sold, p.rating, p.rating_count, p.location, c.name as category_name, u.role as seller_role
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
+        LEFT JOIN user u ON p.user_id = u.id
         WHERE p.category_id = :category_id AND p.status = 'approved'";
 
         if ($minPrice !== null) {
@@ -341,7 +349,7 @@ class ProductModel
     }
     public function updateProduct($id, $name, $description, $price, $category_id, $image, $stock = 0, $sold = 0, $rating = 0.0, $discount_percent = 0, $location = 'Tp. Hồ Chí Minh', $status = 'approved')
     {
-        $query = "UPDATE " . $this->table_name . " SET name=:name, description=:description, price=:price, discount_percent=:discount_percent, category_id=:category_id, image=:image, stock=:stock, sold=:sold, rating=:rating, location=:location, status=:status, rejection_reason=NULL WHERE id=:id";
+        $query = "UPDATE " . $this->table_name . " SET name=:name, description=:description, price=:price, discount_percent=:discount_percent, category_id=:category_id, image=:image, stock=:stock, rating=:rating, location=:location, status=:status, rejection_reason=NULL WHERE id=:id";
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
         $description = htmlspecialchars(strip_tags($description));
@@ -358,7 +366,6 @@ class ProductModel
         $stmt->bindParam(':category_id', $category_id);
         $stmt->bindParam(':image', $image);
         $stmt->bindParam(':stock', $stock);
-        $stmt->bindParam(':sold', $sold);
         $stmt->bindParam(':rating', $rating);
         $stmt->bindParam(':location', $location);
         $stmt->bindParam(':status', $status);
@@ -518,9 +525,10 @@ class ProductModel
         if (empty($ids)) return [];
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
-        $query = "SELECT p.*, c.name as category_name
+        $query = "SELECT p.*, c.name as category_name, u.role as seller_role
                   FROM " . $this->table_name . " p
                   LEFT JOIN category c ON p.category_id = c.id
+                  LEFT JOIN user u ON p.user_id = u.id
                   WHERE p.id IN ($placeholders)";
 
         $stmt = $this->conn->prepare($query);
@@ -544,9 +552,10 @@ class ProductModel
         if (empty($names)) return [];
         $placeholders = implode(',', array_fill(0, count($names), '?'));
 
-        $query = "SELECT p.*, c.name as category_name
+        $query = "SELECT p.*, c.name as category_name, u.role as seller_role
                   FROM " . $this->table_name . " p
                   LEFT JOIN category c ON p.category_id = c.id
+                  LEFT JOIN user u ON p.user_id = u.id
                   WHERE TRIM(c.name) IN ($placeholders)";
 
         if ($minPrice !== null) {
@@ -693,9 +702,10 @@ class ProductModel
 
     public function getProductsByShop($shopId)
     {
-        $query = "SELECT p.*, c.name as category_name
+        $query = "SELECT p.*, c.name as category_name, u.role as seller_role
         FROM " . $this->table_name . " p
         LEFT JOIN category c ON p.category_id = c.id
+        LEFT JOIN user u ON p.user_id = u.id
         JOIN shops s ON p.user_id = s.seller_id
         WHERE s.id = :shop_id AND p.status = 'approved'
         ORDER BY p.id DESC";

@@ -211,9 +211,7 @@
                     <li class="<?php echo $action == 'admin_revenue' ? 'active' : ''; ?>">
                         <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/adminRevenue"><i class="fas fa-wallet mr-2"></i> Doanh thu hoa hồng</a>
                     </li>
-                    <li class="<?php echo $action == 'manage_withdrawals' ? 'active' : ''; ?>">
-                        <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/manageWithdrawals"><i class="fas fa-hand-holding-usd mr-2"></i> Yêu cầu rút tiền</a>
-                    </li>
+                    <!-- Rút tiền tự động đã được kích hoạt, ẩn/xóa menu Yêu cầu rút tiền thủ công -->
 
                 <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'seller'): ?>
                     <!-- Seller Menu -->

@@ -42,7 +42,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
         </div>
     <?php endif; ?>
 
-    <?php if (isset($_SESSION['error_message'])): ?>// cais
+    <?php if (isset($_SESSION['error_message'])): ?>
     <div class="alert alert-danger alert-dismissible fade show rounded-pill px-4 shadow-sm border-0" role="alert" style="background: #ffebee; color: #c62828; font-size: 14px;">
         <i class="fas fa-exclamation-circle mr-2"></i> <?php echo $_SESSION['error_message'];
                                                         unset($_SESSION['error_message']); ?>
@@ -294,7 +294,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
 
                                         <?php if (((int)($product->stock ?? 0) <= 0)): ?>
                                             <div class="sold-out-overlay">
-                                                <img src="<?php echo BASE_URL; ?>public/images/sold_out.png" alt="Hết hàng">
+                                                <span class="sold-out-stamp">Hết hàng</span>
                                             </div>
                                         <?php endif; ?>
 
@@ -363,7 +363,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                                                     <i class="fas fa-edit mr-1"></i> Chỉnh sửa sản phẩm
                                                 </a>
                                             </div>
-                                        <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                                        <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin' && ($product->seller_role ?? '') !== 'seller'): ?>
                                             <div class="admin-actions-mini d-flex mt-2 justify-content-end">
                                                 <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn-admin-edit mx-1" title="Sửa">
                                                     <i class="fas fa-edit"></i>
@@ -479,7 +479,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
 
                                         <?php if (((int)($product->stock ?? 0) <= 0)): ?>
                                             <div class="sold-out-overlay">
-                                                <img src="<?php echo BASE_URL; ?>public/images/sold_out.png" alt="Hết hàng">
+                                                <span class="sold-out-stamp">Hết hàng</span>
                                             </div>
                                         <?php endif; ?>
 
@@ -542,7 +542,7 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                                                         <i class="fas fa-edit mr-1"></i> Chỉnh sửa sản phẩm
                                                     </a>
                                                 </div>
-                                            <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                                            <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin' && ($product->seller_role ?? '') !== 'seller'): ?>
                                                 <div class="admin-actions-mini d-flex mt-2 justify-content-end">
                                                     <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn-admin-edit mx-1" title="Sửa">
                                                         <i class="fas fa-edit"></i>

@@ -883,6 +883,13 @@ class ProductController
         $this->restrictToAdmin();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $product_id = $_POST['product_id'];
+            
+            $product = $this->productModel->getProductById($product_id);
+            if ($product && ($product->seller_role ?? '') === 'seller') {
+                $_SESSION['error_message'] = "Bạn không thể chỉnh sửa sản phẩm của seller.";
+                header('Location: ' . BASE_URL . 'index.php?url=Product/show/' . $product_id);
+                exit;
+            }
             $name = $_POST['variant_name'];
             $price_raw = $_POST['variant_price'] ?? '0';
             $stock = $_POST['variant_stock'] ?? 0;
@@ -915,6 +922,13 @@ class ProductController
 
         if ($variant) {
             $product_id = $variant->product_id;
+            
+            $product = $this->productModel->getProductById($product_id);
+            if ($product && ($product->seller_role ?? '') === 'seller') {
+                $_SESSION['error_message'] = "Bạn không thể chỉnh sửa sản phẩm của seller.";
+                header('Location: ' . BASE_URL . 'index.php?url=Product/show/' . $product_id);
+                exit;
+            }
             $file_path = "public/uploads/" . $variant->image;
             if (file_exists($file_path)) {
                 @unlink($file_path);

@@ -13,6 +13,25 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
 
 <div class="wallet-container py-4 px-3 px-md-4 mt-2" id="wallet-dashboard-root">
     
+    <!-- OTP Toast Notification -->
+    <div id="otp-toast-notification" class="otp-toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-icon">
+            <i class="fas fa-sms"></i>
+        </div>
+        <div class="toast-body flex-grow-1 text-left">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="toast-title font-weight-bold text-main">Tin nhắn OTP</span>
+                <span class="toast-time text-secondary small">Vừa xong</span>
+            </div>
+            <p class="toast-text text-secondary small mb-0">
+                Mã OTP xác thực giao dịch rút tiền của bạn là: <strong class="text-primary font-weight-bold" style="font-size: 1.15rem; letter-spacing: 1px;" id="otp-display-value">------</strong>
+            </p>
+        </div>
+        <button type="button" class="toast-close text-secondary border-0 bg-transparent p-0 ml-2" onclick="hideOTPToast()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <!-- Top Dashboard Header with Theme Switcher -->
     <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 pb-3 border-bottom-soft">
         <div>
@@ -73,7 +92,7 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
     <!-- 1. Card Số Dư Ví (4-Card Glassmorphism Statistics Grid) -->
     <div class="row mb-4">
         <!-- Card 1: Tổng số dư -->
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-4 col-md-6 mb-3">
             <div class="stats-glass-card purple-gradient shadow-soft h-100">
                 <div class="card-glow"></div>
                 <div class="card-body p-4 d-flex flex-column justify-content-between h-100 position-relative">
@@ -89,14 +108,14 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
                         </div>
                     </div>
                     <div class="stats-helper-text text-white-50 mt-3 mb-0">
-                        <i class="fas fa-info-circle mr-1"></i> Số dư khả dụng + tiền đang xử lý
+                        <i class="fas fa-info-circle mr-1"></i> Số dư khả dụng hiện tại trong ví
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Card 2: Có thể rút -->
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-4 col-md-6 mb-3">
             <div class="stats-glass-card pink-gradient shadow-soft h-100">
                 <div class="card-glow"></div>
                 <div class="card-body p-4 d-flex flex-column justify-content-between h-100 position-relative">
@@ -112,37 +131,14 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
                         </div>
                     </div>
                     <div class="stats-helper-text text-white-50 mt-3 mb-0">
-                        <i class="fas fa-check-circle mr-1"></i> Sẵn sàng rút về tài khoản của bạn
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 3: Đang xử lý -->
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="stats-glass-card orange-gradient shadow-soft h-100">
-                <div class="card-glow"></div>
-                <div class="card-body p-4 d-flex flex-column justify-content-between h-100 position-relative">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <span class="stats-label text-white-70">Đang xử lý</span>
-                            <h3 class="stats-value text-white mt-1 mb-0">
-                                <?php echo number_format($processingBalance, 0, ',', '.'); ?> <span class="currency-symbol">₫</span>
-                            </h3>
-                        </div>
-                        <div class="stats-icon-wrapper bg-white-15">
-                            <i class="fas fa-hourglass-half text-white animate-spin-slow"></i>
-                        </div>
-                    </div>
-                    <div class="stats-helper-text text-white-50 mt-3 mb-0">
-                        <i class="fas fa-clock mr-1"></i> Yêu cầu rút đang chờ duyệt
+                        <i class="fas fa-check-circle mr-1"></i> Sẵn sàng rút về tài khoản bất cứ lúc nào
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Card 4: Đã rút -->
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-4 col-md-12 mb-3">
             <div class="stats-glass-card green-gradient shadow-soft h-100">
                 <div class="card-glow"></div>
                 <div class="card-body p-4 d-flex flex-column justify-content-between h-100 position-relative">
@@ -158,7 +154,7 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
                         </div>
                     </div>
                     <div class="stats-helper-text text-white-50 mt-3 mb-0">
-                        <i class="fas fa-university mr-1"></i> Tổng số tiền đã chuyển về ngân hàng
+                        <i class="fas fa-university mr-1"></i> Tổng số tiền đã rút về ngân hàng thành công
                     </div>
                 </div>
             </div>
@@ -272,7 +268,7 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
                     <ul class="nav nav-tabs border-0 px-4 pt-3 flex-row gap-2" id="walletTab" role="tablist">
                         <li class="nav-item" role="presentation">
                             <a class="nav-link tab-modern active font-weight-bold py-3 text-secondary" id="wdr-tab" data-toggle="tab" href="#wdr-panel" role="tab" aria-controls="wdr-panel" aria-selected="true">
-                                <i class="fas fa-university text-primary mr-2"></i> Yêu cầu rút tiền
+                                <i class="fas fa-university text-primary mr-2"></i> Lịch sử rút tiền
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -292,16 +288,16 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
                                 <div class="empty-state-icon bg-warning-soft text-warning mb-3">
                                     <i class="fas fa-university fa-2x"></i>
                                 </div>
-                                <p class="text-muted font-weight-medium">Chưa có yêu cầu rút tiền nào được tạo.</p>
-                                <p class="text-secondary small">Các yêu cầu rút tiền của bạn sẽ hiển thị tại đây kèm theo trạng thái xử lý.</p>
+                                <p class="text-muted font-weight-medium">Chưa có giao dịch rút tiền nào được thực hiện.</p>
+                                <p class="text-secondary small">Các giao dịch rút tiền của bạn sẽ hiển thị tại đây.</p>
                             </div>
                         <?php else: ?>
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle mb-0">
                                     <thead class="table-light text-uppercase small text-muted font-weight-bold border-0">
                                         <tr>
-                                            <th class="border-0 px-3">Mã yêu cầu</th>
-                                            <th class="border-0">Thời gian tạo</th>
+                                            <th class="border-0 px-3">Mã giao dịch</th>
+                                            <th class="border-0">Thời gian rút</th>
                                             <th class="border-0">Ngân hàng</th>
                                             <th class="border-0">Tài khoản nhận</th>
                                             <th class="border-0">Số tiền rút</th>
@@ -414,14 +410,11 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
         </div>
     </div>
 
-</div>
-
-<!-- 3. Modal Xác Nhận Giao Dịch và Nhập OTP (Highly Animated, Responsive, Autoshifting inputs) -->
-<div class="modal fade" id="otpConfirmModal" tabindex="-1" role="dialog" aria-labelledby="otpConfirmModalLabel" aria-hidden="true" data-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content modal-modern border-0 shadow-lg">
-            
-            <div class="modal-header border-0 pb-0 pt-4 px-4 justify-content-center text-center">
+    <!-- 3. Modal Xác Nhận Giao Dịch và Nhập OTP (Highly Animated, Responsive, Autoshifting inputs) -->
+    <div class="modal fade" id="otpConfirmModal" tabindex="-1" role="dialog" aria-labelledby="otpConfirmModalLabel" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content modal-modern border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0 pt-4 px-4 justify-content-center text-center">
                 <div class="modal-header-container">
                     <div class="shield-icon-circle mb-3 mx-auto">
                         <i class="fas fa-shield-alt text-primary animate-pulse"></i>
@@ -509,7 +502,8 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
         --shadow-soft: 0 12px 30px -10px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.02);
         --bg-soft-box: #f8fafc;
         --input-bg: #f8fafc;
-        --input-border: #cbd5e1;
+        --input-border: #8fa4bc;
+        --otp-box-border: #64748b;
         --tab-hover-bg: rgba(194, 37, 92, 0.04);
         --code-bg: #f1f5f9;
         
@@ -531,7 +525,8 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
         --shadow-soft: 0 15px 35px -12px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.15);
         --bg-soft-box: rgba(30, 41, 59, 0.4);
         --input-bg: #1e293b;
-        --input-border: #334155;
+        --input-border: #64748b;
+        --otp-box-border: #cbd5e1;
         --tab-hover-bg: rgba(255, 51, 102, 0.08);
         --code-bg: #1e293b;
     }
@@ -906,13 +901,89 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
         font-size: 1.5rem !important;
         font-weight: 800 !important;
         text-align: center !important;
-        border: 1.5px solid var(--input-border) !important;
+        border: 2px solid var(--otp-box-border) !important;
         border-radius: 12px !important;
         background-color: var(--input-bg) !important;
         color: var(--text-main) !important;
         transition: all 0.2s ease !important;
         box-shadow: none !important;
         padding: 0 !important;
+    }
+
+    /* OTP Toast Notification Styling */
+    .otp-toast {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 1080; /* On top of modal (1050) and backdrop */
+        background: var(--bg-card);
+        border: 1.5px solid var(--border-card);
+        border-radius: 16px;
+        box-shadow: var(--shadow-soft);
+        padding: 16px 20px;
+        width: 360px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        transform: translateX(120%);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+        opacity: 0;
+    }
+    
+    .otp-toast.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .toast-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+        background-color: rgba(121, 40, 202, 0.1) !important;
+        color: #7928ca !important;
+        border: 1px solid rgba(121, 40, 202, 0.15);
+    }
+    
+    .toast-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .toast-time {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .toast-text {
+        font-size: 0.85rem;
+        line-height: 1.4;
+        color: var(--text-secondary);
+        margin-top: 4px;
+    }
+
+    .toast-close {
+        font-size: 1.25rem;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.2s, transform 0.2s;
+        color: var(--text-secondary);
+        background: transparent;
+        border: none;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .toast-close:hover {
+        opacity: 1;
+        transform: scale(1.1);
     }
     .otp-digit-box:focus {
         border-color: #ff3366 !important;
@@ -1084,16 +1155,44 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
         }, 1000);
     }
 
+    // OTP Toast controls
+    window.otpToastTimeout = null;
+    function showOTPToast(otp) {
+        const toast = document.getElementById('otp-toast-notification');
+        const displayVal = document.getElementById('otp-display-value');
+        if (displayVal) displayVal.textContent = otp;
+        if (toast) {
+            toast.classList.add('show');
+            
+            // Auto hide after 15 seconds
+            if (window.otpToastTimeout) {
+                clearTimeout(window.otpToastTimeout);
+            }
+            window.otpToastTimeout = setTimeout(() => {
+                hideOTPToast();
+            }, 15000);
+        }
+    }
+    
+    function hideOTPToast() {
+        const toast = document.getElementById('otp-toast-notification');
+        if (toast) {
+            toast.classList.remove('show');
+        }
+    }
+
     function resendOTPCode() {
-        // Simulate sending alert toast
-        alert('Mã xác thực OTP mới đã được gửi lại vào số điện thoại của bạn!');
+        // Generate random 6-digit OTP
+        const randomOTP = Math.floor(100000 + Math.random() * 900000).toString();
+        window.currentOTP = randomOTP;
         
         // Clear old inputs
         document.querySelectorAll('.otp-digit-box').forEach(box => box.value = '');
         document.querySelectorAll('.otp-digit-box')[0].focus();
         
-        // Restart countdown
+        // Restart countdown and show toast notification
         startOTPTimer();
+        showOTPToast(randomOTP);
     }
 
     // OTP Modal Trigger and Form Validation Integration
@@ -1105,6 +1204,10 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
             form.classList.add('was-validated');
             return;
         }
+
+        // Generate random 6-digit OTP
+        const randomOTP = Math.floor(100000 + Math.random() * 900000).toString();
+        window.currentOTP = randomOTP;
 
         // Fill Bank details dynamically inside OTP Modal
         const bankName = document.getElementById('bank_name').value;
@@ -1122,8 +1225,9 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
         // Show Modal
         $('#otpConfirmModal').modal('show');
         
-        // Start countdown and focus first box
+        // Start countdown, focus first box, and display OTP toast
         startOTPTimer();
+        showOTPToast(randomOTP);
         setTimeout(() => {
             document.querySelectorAll('.otp-digit-box')[0].focus();
         }, 500);
@@ -1140,7 +1244,22 @@ $withdrawnBalance = $wallet->total_withdrawn ?? 0;
             return;
         }
 
-        // OTP verification simulation (Always accept '123456' or any valid 6 digits for testing demo!)
+        // Validate entered OTP against generated OTP
+        if (otpCode !== window.currentOTP) {
+            document.getElementById('otpErrorText').classList.remove('d-none');
+            document.getElementById('otpErrorText').textContent = 'Mã xác thực OTP không chính xác. Vui lòng nhập lại.';
+            
+            // Clear boxes for retry and focus first
+            digits.forEach(box => box.value = '');
+            digits[0].focus();
+            
+            // Reset button Submit styling to default state
+            const submitBtn = document.getElementById('confirmTxnSubmitBtn');
+            submitBtn.classList.add('btn-outline-secondary');
+            submitBtn.classList.remove('btn-primary-modern');
+            return;
+        }
+
         const submitBtn = document.getElementById('confirmTxnSubmitBtn');
         const submitText = submitBtn.querySelector('.submit-text');
         const submitSpinner = submitBtn.querySelector('.submit-spinner');
