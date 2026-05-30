@@ -131,7 +131,7 @@ include 'app/views/dashboard/header.php';
 
                                     <td class="px-4 text-right align-middle">
                                         <?php if ($sort === 'sold_only'): ?>
-                                            <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/orders" class="btn btn-sm btn-outline-primary" title="Xem đơn hàng">
+                                            <a href="<?php echo BASE_URL; ?>index.php?url=Dashboard/orderDetail/<?php echo $product->order_id; ?>" class="btn btn-sm btn-outline-primary" title="Xem chi tiết đơn hàng #<?php echo $product->order_id; ?>">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         <?php else: ?>

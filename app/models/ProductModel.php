@@ -187,10 +187,11 @@ class ProductModel
         LEFT JOIN category c ON p.category_id = c.id
         LEFT JOIN user u ON p.user_id = u.id
         LEFT JOIN shops s ON p.user_id = s.seller_id
-        WHERE p.name LIKE :keyword 
+        WHERE p.status = 'approved'
+          AND (p.name LIKE :keyword 
            OR p.description LIKE :keyword 
            OR c.name LIKE :keyword
-           OR s.name LIKE :keyword";
+           OR s.name LIKE :keyword)";
         $stmt = $this->conn->prepare($query);
         $searchKeyword = "%{$keyword}%";
         $stmt->bindParam(':keyword', $searchKeyword);
@@ -556,7 +557,7 @@ class ProductModel
                   FROM " . $this->table_name . " p
                   LEFT JOIN category c ON p.category_id = c.id
                   LEFT JOIN user u ON p.user_id = u.id
-                  WHERE TRIM(c.name) IN ($placeholders)";
+                  WHERE p.status = 'approved' AND TRIM(c.name) IN ($placeholders)";
 
         if ($minPrice !== null) {
             $query .= " AND p.price >= ?";
@@ -610,6 +611,7 @@ class ProductModel
                   JOIN orders o ON od.order_id = o.id
                   LEFT JOIN user u ON o.user_id = u.id
                   LEFT JOIN user u_s ON p.user_id = u_s.id
+                  WHERE o.status = 'completed'
                   ORDER BY o.created_at DESC";
 
         $stmt = $this->conn->prepare($query);
@@ -635,7 +637,7 @@ class ProductModel
                   JOIN orders o ON od.order_id = o.id
                   LEFT JOIN user u ON o.user_id = u.id
                   LEFT JOIN user u_s ON p.user_id = u_s.id
-                  WHERE p.user_id = :seller_id
+                  WHERE o.status = 'completed' AND p.user_id = :seller_id
                   ORDER BY o.created_at DESC";
 
         $stmt = $this->conn->prepare($query);
