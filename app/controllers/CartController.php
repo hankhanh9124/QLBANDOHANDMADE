@@ -49,6 +49,7 @@ class CartController
                     $vName = "";
                     $vImg = $product->image;
 
+                    $variant = null;
                     if ($vid > 0) {
                         require_once 'app/models/VariantModel.php';
                         $vModel = new VariantModel($this->db);
@@ -61,7 +62,7 @@ class CartController
                     }
 
                     $finalPrice = ($discount > 0) ? $price * (1 - $discount/100) : $price;
-                    $stock = ($vid > 0 && isset($variant)) ? $variant->stock : $product->stock;
+                    $stock = ($vid > 0 && $variant) ? $variant->stock : $product->stock;
                     
                     $newSessionCart[$cartKey] = $item;
                     $newSessionCart[$cartKey]['name'] = $product->name . $vName;
@@ -113,6 +114,7 @@ class CartController
                     $vName = "";
                     $vImg = $product->image;
 
+                    $variant = null;
                     if ($vid > 0) {
                         require_once 'app/models/VariantModel.php';
                         $vModel = new VariantModel($this->db);
@@ -125,7 +127,7 @@ class CartController
                     }
 
                     $finalPrice = ($discount > 0) ? $price * (1 - $discount/100) : $price;
-                    $stock = ($vid > 0 && isset($variant)) ? $variant->stock : $product->stock;
+                    $stock = ($vid > 0 && $variant) ? $variant->stock : $product->stock;
                     
                     if (isset($_SESSION['cart'][$id])) {
                         $_SESSION['cart'][$id]['name'] = $product->name . $vName;
