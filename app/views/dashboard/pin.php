@@ -32,15 +32,59 @@ include 'app/views/dashboard/header.php';
     <div class="card shadow mb-4" style="border-radius: 10px;">
         <div class="card-body p-4">
             <div class="row">
-                <!-- Product Image -->
+                <!-- Product Image & Gallery -->
                 <div class="col-md-5 text-center mb-4">
+                    <style>
+                        .gallery-thumb-wrapper:hover {
+                            border-color: var(--primary-color, #75c794) !important;
+                            transform: scale(1.05);
+                        }
+                    </style>
                     <?php 
                     $pImg = $product->image;
                     $finalPImg = (strpos($pImg, 'public/') === false) ? 
                         ((strpos($pImg, 'uploads/') !== false) ? 'public/' . $pImg : 'public/uploads/' . $pImg) : 
                         $pImg;
+                    
+                    $galleryImages = [];
+                    $galleryImages[] = BASE_URL . $finalPImg;
+                    
+                    if (!empty($product->related_images)) {
+                        $relImgs = json_decode($product->related_images, true);
+                        if (is_array($relImgs)) {
+                            foreach ($relImgs as $relImg) {
+                                $finalRImg = (strpos($relImg, 'public/') === false) ? 
+                                    ((strpos($relImg, 'uploads/') !== false) ? 'public/' . $relImg : 'public/uploads/' . $relImg) : 
+                                    $relImg;
+                                $galleryImages[] = BASE_URL . $finalRImg;
+                            }
+                        }
+                    }
                     ?>
-                    <img src="<?php echo BASE_URL . $finalPImg; ?>" class="img-fluid rounded border shadow-sm" alt="<?php echo htmlspecialchars($product->name); ?>" style="max-height: 450px; object-fit: contain; width: 100%;">
+                    <div class="main-image-container mb-3 position-relative bg-white rounded border p-2 d-flex align-items-center justify-content-center" style="height: 400px; overflow: hidden; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;">
+                        <img id="mainProductImage" src="<?php echo BASE_URL . $finalPImg; ?>" class="img-fluid rounded" alt="<?php echo htmlspecialchars($product->name); ?>" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                    
+                    <?php if (count($galleryImages) > 1): ?>
+                        <div class="product-gallery-thumbnails d-flex justify-content-center align-items-center flex-wrap" style="gap: 10px;">
+                            <?php foreach ($galleryImages as $index => $imgUrl): ?>
+                                <div class="gallery-thumb-wrapper" style="width: 70px; height: 70px; border-radius: 6px; overflow: hidden; border: 2px solid <?php echo $index === 0 ? 'var(--primary-color, #75c794)' : '#e0e0e0'; ?>; cursor: pointer; transition: all 0.2s;" onclick="changeMainImage('<?php echo $imgUrl; ?>', this)">
+                                    <img src="<?php echo $imgUrl; ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <script>
+                    function changeMainImage(imgUrl, element) {
+                        document.getElementById('mainProductImage').src = imgUrl;
+                        const thumbnails = document.querySelectorAll('.gallery-thumb-wrapper');
+                        thumbnails.forEach(thumb => {
+                            thumb.style.borderColor = '#e0e0e0';
+                        });
+                        element.style.borderColor = 'var(--primary-color, #75c794)';
+                    }
+                    </script>
                 </div>
 
                 <!-- Product Details -->

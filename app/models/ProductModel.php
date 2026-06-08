@@ -307,7 +307,7 @@ class ProductModel
         $result = $stmt->fetch(PDO::FETCH_OBJ);
         return $result;
     }
-    public function addProduct($name, $description, $price, $category_id, $image, $stock = 0, $sold = 0, $rating = 0.0, $discount_percent = 0, $location = 'Tp. Hồ Chí Minh', $user_id = 1)
+    public function addProduct($name, $description, $price, $category_id, $image, $stock = 0, $sold = 0, $rating = 0.0, $discount_percent = 0, $location = 'Tp. Hồ Chí Minh', $user_id = 1, $related_images = null)
     {
         $errors = [];
         if (empty($name)) {
@@ -319,7 +319,7 @@ class ProductModel
         if (count($errors) > 0) {
             return $errors;
         }
-        $query = "INSERT INTO " . $this->table_name . " (name, description, price, discount_percent, category_id, image, stock, sold, rating, location, user_id, status) VALUES (:name, :description, :price, :discount_percent, :category_id, :image, :stock, :sold, :rating, :location, :user_id, :status)";
+        $query = "INSERT INTO " . $this->table_name . " (name, description, price, discount_percent, category_id, image, stock, sold, rating, location, user_id, status, related_images) VALUES (:name, :description, :price, :discount_percent, :category_id, :image, :stock, :sold, :rating, :location, :user_id, :status, :related_images)";
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
         $description = htmlspecialchars(strip_tags($description));
@@ -343,14 +343,15 @@ class ProductModel
         $stmt->bindParam(':location', $location);
         $stmt->bindParam(':user_id', $user_id);
         $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':related_images', $related_images);
         if ($stmt->execute()) {
             return $this->conn->lastInsertId();
         }
         return false;
     }
-    public function updateProduct($id, $name, $description, $price, $category_id, $image, $stock = 0, $sold = 0, $rating = 0.0, $discount_percent = 0, $location = 'Tp. Hồ Chí Minh', $status = 'approved')
+    public function updateProduct($id, $name, $description, $price, $category_id, $image, $stock = 0, $sold = 0, $rating = 0.0, $discount_percent = 0, $location = 'Tp. Hồ Chí Minh', $status = 'approved', $related_images = null)
     {
-        $query = "UPDATE " . $this->table_name . " SET name=:name, description=:description, price=:price, discount_percent=:discount_percent, category_id=:category_id, image=:image, stock=:stock, rating=:rating, location=:location, status=:status, rejection_reason=NULL WHERE id=:id";
+        $query = "UPDATE " . $this->table_name . " SET name=:name, description=:description, price=:price, discount_percent=:discount_percent, category_id=:category_id, image=:image, stock=:stock, rating=:rating, location=:location, status=:status, rejection_reason=NULL, related_images=:related_images WHERE id=:id";
         $stmt = $this->conn->prepare($query);
         $name = htmlspecialchars(strip_tags($name));
         $description = htmlspecialchars(strip_tags($description));
@@ -370,6 +371,7 @@ class ProductModel
         $stmt->bindParam(':rating', $rating);
         $stmt->bindParam(':location', $location);
         $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':related_images', $related_images);
         
         if ($stmt->execute()) {
             return true;

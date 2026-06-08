@@ -282,6 +282,17 @@ include 'app/views/dashboard/header.php';
                     </div>
                 </div>
 
+                <div class="custom-form-group">
+                    <label for="related_images" class="custom-label">Hình ảnh liên quan khác (Có thể chọn nhiều ảnh):</label>
+                    <input type="file" id="related_images" name="related_images[]" class="form-control-file" style="padding: 10px 0; font-size: 16px;" accept="image/*" multiple onchange="previewRelatedImages(this)">
+
+                    <!-- Vùng Hiển Thị Xem Trước Ảnh Liên Quan -->
+                    <div id="relatedPreviewContainer" class="mt-3" style="display: none; background: #f8f9fa; border: 1px dashed #ced4da; padding: 15px; border-radius: 8px;">
+                        <div id="relatedPreviews" class="d-flex flex-wrap" style="gap: 10px;"></div>
+                        <div class="text-muted mt-2" style="font-size: 13px;"><i class="fas fa-images"></i> Ảnh liên quan được chọn</div>
+                    </div>
+                </div>
+
                 <!-- PHẦN THÊM PHÂN LOẠI SẢN PHẨM (VARIANTS) -->
                 <div class="custom-form-group mt-5" style="border-top: 2px dashed #eee; padding-top: 20px;">
                     <div class="d-flex justify-content-between align-items-center mb-3 pt-4">
@@ -341,6 +352,92 @@ include 'app/views/dashboard/header.php';
 
         document.getElementById('imagePreviewContainer').style.display = 'none';
         document.getElementById('imagePreview').src = "";
+    }
+
+    let accumulatedRelatedFiles = new DataTransfer();
+
+    function previewRelatedImages(input) {
+        const container = document.getElementById('relatedPreviewContainer');
+        const previewsDiv = document.getElementById('relatedPreviews');
+        
+        // If files are selected, append them to the DataTransfer object
+        if (input.files && input.files.length > 0) {
+            let filesArray = Array.from(input.files);
+            
+            for (let i = 0; i < filesArray.length; i++) {
+                const totalCount = accumulatedRelatedFiles.files.length;
+                if (totalCount >= 10) {
+                    alert("Tổng số lượng ảnh liên quan không được vượt quá 10 ảnh!");
+                    break;
+                }
+                accumulatedRelatedFiles.items.add(filesArray[i]);
+            }
+            
+            // Sync input files with our accumulated list
+            input.files = accumulatedRelatedFiles.files;
+        }
+
+        renderRelatedPreviews(input);
+    }
+
+    function renderRelatedPreviews(input) {
+        const container = document.getElementById('relatedPreviewContainer');
+        const previewsDiv = document.getElementById('relatedPreviews');
+        previewsDiv.innerHTML = "";
+
+        const files = accumulatedRelatedFiles.files;
+        if (files.length > 0) {
+            container.style.display = 'block';
+            
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.className = 'position-relative';
+                    imgWrapper.style.display = 'inline-block';
+                    
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '80px';
+                    img.style.height = '80px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '6px';
+                    img.style.border = '1px solid #ddd';
+                    imgWrapper.appendChild(img);
+
+                    // Add a delete button to remove this specific file from the accumulation queue
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'btn btn-sm btn-danger position-absolute';
+                    removeBtn.style.cssText = 'top: -5px; right: -5px; border-radius: 50%; width: 22px; height: 22px; padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 5;';
+                    removeBtn.innerHTML = '<i class="fas fa-times" style="font-size: 10px;"></i>';
+                    removeBtn.onclick = function() {
+                        removeAccumulatedFile(index, input);
+                    };
+                    imgWrapper.appendChild(removeBtn);
+                    
+                    previewsDiv.appendChild(imgWrapper);
+                }
+                reader.readAsDataURL(file);
+            });
+        } else {
+            container.style.display = 'none';
+        }
+    }
+
+    function removeAccumulatedFile(indexToRemove, input) {
+        const newDataTransfer = new DataTransfer();
+        const files = accumulatedRelatedFiles.files;
+        
+        for (let i = 0; i < files.length; i++) {
+            if (i !== indexToRemove) {
+                newDataTransfer.items.add(files[i]);
+            }
+        }
+        
+        accumulatedRelatedFiles = newDataTransfer;
+        input.files = accumulatedRelatedFiles.files;
+        renderRelatedPreviews(input);
     }
 
     // Format chuẩn Shopee có báo đỏ Border và thêm chữ đ

@@ -1,4 +1,7 @@
-<?php include 'app/views/shares/header.php'; ?>
+<?php 
+$load_datatables = true;
+include 'app/views/shares/header.php'; 
+?>
 <?php 
 // Ensure $current_url is defined to avoid errors in sorting/filtering
 $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index'); 
@@ -460,111 +463,122 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
                 </div>
 
                 <div class="row no-gutters mx-n2">
-                    <?php if (!empty($products)): ?>
-                        <?php foreach ($products as $product): ?>
-                            <div class="col-lg-3 col-md-4 col-6 p-2">
-                                <div class="handmade-card-unique w-100 h-100 m-0">
-                                    <div class="card-img-wrapper <?php echo ((int)($product->stock ?? 0) <= 0) ? 'sold-out-container' : ''; ?>">
-                                        <?php
-                                        $discount = isset($product->discount_percent) ? (int)$product->discount_percent : 0;
-                                        $newPrice = ($discount > 0) ? $product->price * (1 - $discount / 100) : $product->price;
-                                        $pImg = $product->image;
-                                        $finalPImg = (strpos($pImg, 'public/') === false) ?
-                                            ((strpos($pImg, 'uploads/') !== false) ? 'public/' . $pImg : 'public/uploads/' . $pImg) :
-                                            $pImg;
-                                        ?>
-                                        <?php if ($discount > 0): ?>
-                                            <div class="card-badge-sale">-<?php echo $discount; ?>%</div>
-                                        <?php endif; ?>
+                    <div class="col-12">
+                        <?php if (!empty($products)): ?>
+                            <table id="productsDataTable" class="w-100 border-0" style="background: transparent;">
+                                <thead class="d-none">
+                                    <tr>
+                                        <th>Sản phẩm</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="d-flex flex-wrap mx-n2" style="background: transparent;">
+                                    <?php foreach ($products as $product): ?>
+                                        <tr class="col-lg-3 col-md-4 col-6 p-2 d-block" style="background: transparent; border: none;">
+                                            <td class="d-block p-0 border-0 h-100 w-100" style="background: transparent;">
+                                                <div class="handmade-card-unique w-100 h-100 m-0">
+                                                    <div class="card-img-wrapper <?php echo ((int)($product->stock ?? 0) <= 0) ? 'sold-out-container' : ''; ?>">
+                                                        <?php
+                                                        $discount = isset($product->discount_percent) ? (int)$product->discount_percent : 0;
+                                                        $newPrice = ($discount > 0) ? $product->price * (1 - $discount / 100) : $product->price;
+                                                        $pImg = $product->image;
+                                                        $finalPImg = (strpos($pImg, 'public/') === false) ?
+                                                            ((strpos($pImg, 'uploads/') !== false) ? 'public/' . $pImg : 'public/uploads/' . $pImg) :
+                                                            $pImg;
+                                                        ?>
+                                                        <?php if ($discount > 0): ?>
+                                                            <div class="card-badge-sale">-<?php echo $discount; ?>%</div>
+                                                        <?php endif; ?>
 
-                                        <?php if (((int)($product->stock ?? 0) <= 0)): ?>
-                                            <div class="sold-out-overlay">
-                                                <span class="sold-out-stamp">Hết hàng</span>
-                                            </div>
-                                        <?php endif; ?>
+                                                        <?php if (((int)($product->stock ?? 0) <= 0)): ?>
+                                                            <div class="sold-out-overlay">
+                                                                <span class="sold-out-stamp">Hết hàng</span>
+                                                            </div>
+                                                        <?php endif; ?>
 
-                                        <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>">
-                                            <img src="<?php echo BASE_URL . $finalPImg; ?>" alt="<?php echo htmlspecialchars($product->name); ?>" class="<?php echo ((int)($product->stock ?? 0) <= 0) ? 'product-img-sold-out' : ''; ?>">
-                                        </a>
-                                    </div>
-                                    <div class="handmade-card-body d-flex flex-column" style="padding: 12px; min-height: 170px;">
-                                        <div class="card-cat-label text-truncate" style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;"><?php echo $product->category_name; ?></div>
-                                        <h5 class="card-name-unique mb-2" style="margin: 0;">
-                                            <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" style="color: #222; text-decoration: none; font-size: 15px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 42px;">
-                                                <?php echo $product->name; ?>
-                                            </a>
-                                        </h5>
+                                                        <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>">
+                                                            <img src="<?php echo BASE_URL . $finalPImg; ?>" alt="<?php echo htmlspecialchars($product->name); ?>" class="<?php echo ((int)($product->stock ?? 0) <= 0) ? 'product-img-sold-out' : ''; ?>">
+                                                        </a>
+                                                    </div>
+                                                    <div class="handmade-card-body d-flex flex-column" style="padding: 12px; min-height: 170px;">
+                                                        <div class="card-cat-label text-truncate" style="font-size: 11px; color: #999; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;"><?php echo $product->category_name; ?></div>
+                                                        <h5 class="card-name-unique mb-2" style="margin: 0;">
+                                                            <a href="<?php echo BASE_URL; ?>index.php?url=Product/show/<?php echo $product->id; ?>" style="color: #222; text-decoration: none; font-size: 15px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 42px;">
+                                                                <?php echo htmlspecialchars($product->name); ?>
+                                                            </a>
+                                                        </h5>
 
-                                        <div class="mt-auto d-flex justify-content-between align-items-end">
-                                            <div>
-                                                <div class="card-price-shopee d-flex align-items-center">
-                                                    <span class="new-price" style="color: #ee4d2d; font-weight: 600; font-size: 1.25rem;">
-                                                        <?php echo number_format($newPrice, 0, ',', '.'); ?>đ
-                                                    </span>
-                                                    <?php if (floatval($newPrice) >= 55000): ?>
-                                                        <img src="<?php echo BASE_URL; ?>public/images/freeship_new.png" alt="FREE" title="Miễn phí vận chuyển" style="height: 24px !important; width: auto !important; vertical-align: middle !important; margin-left: 8px !important; display: inline-block !important; visibility: visible !important;">
-                                                    <?php endif; ?>
+                                                        <div class="mt-auto d-flex justify-content-between align-items-end">
+                                                            <div>
+                                                                <div class="card-price-shopee d-flex align-items-center">
+                                                                    <span class="new-price" style="color: #ee4d2d; font-weight: 600; font-size: 1.25rem;">
+                                                                        <?php echo number_format($newPrice, 0, ',', '.'); ?>đ
+                                                                    </span>
+                                                                    <?php if (floatval($newPrice) >= 55000): ?>
+                                                                        <img src="<?php echo BASE_URL; ?>public/images/freeship_new.png" alt="FREE" title="Miễn phí vận chuyển" style="height: 24px !important; width: auto !important; vertical-align: middle !important; margin-left: 8px !important; display: inline-block !important; visibility: visible !important;">
+                                                                    <?php endif; ?>
+                                                                </div>
+
+                                                                <div class="card-social-line mt-1" style="font-size: 12.5px; color: #757575; display: flex; align-items: center;">
+                                                                    <span class="star-orange"><i class="fas fa-star" style="font-size: 11px; color: #ff9800;"></i> <?php echo number_format($product->rating, 1); ?></span>
+                                                                    <span class="card-divider mx-2" style="color: #dbdbdb;">|</span>
+                                                                    <span>Đã bán <?php echo number_format($product->sold); ?>+</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Wishlist Heart -->
+                                                            <?php
+                                                            $isFav = isset($wishlistItems) && is_array($wishlistItems) && in_array($product->id, $wishlistItems);
+                                                            $heartClass = $isFav ? 'fas fa-heart' : 'far fa-heart';
+                                                            ?>
+                                                            <button class="btn btn-sm btn-light rounded-circle shadow-sm wishlist-btn-toggle mb-1" data-id="<?php echo $product->id; ?>" style="width: 32px; height: 32px; transition: transform 0.2s; border: 1px solid #ffebee;" title="Thêm vào yêu thích">
+                                                                <i class="<?php echo $heartClass; ?>"></i>
+                                                            </button>
+                                                        </div>
+
+                                                        <div class="card-bottom-info mt-2 pt-2" style="font-size: 12px; color: #888; border-top: 1px solid #f2f2f2;">
+                                                            <div class="d-flex align-items-center text-truncate">
+                                                                <i class="fas fa-truck-moving mr-2" style="color: #00bfa5; font-size: 11px;"></i> 2 - 3 ngày
+                                                                <span class="mx-2" style="color: #eee;">|</span>
+                                                                <i class="fas fa-map-marker-alt mr-2" style="color: #999; font-size: 11px;"></i> <?php echo htmlspecialchars($product->location ?? 'Tp. Hồ Chí Minh', ENT_QUOTES, 'UTF-8'); ?>
+                                                            </div>
+                                                            <?php
+                                                            $currentUserId = $_SESSION['user_id'] ?? 0;
+                                                            $ownerId = isset($product->user_id) ? (int)$product->user_id : 0;
+                                                            $isOwner = ($currentUserId > 0 && $ownerId > 0 && (int)$currentUserId === $ownerId);
+                                                            ?>
+                                                            <?php if ($isOwner): ?>
+                                                                <div class="admin-actions-mini d-flex mt-2 justify-content-end">
+                                                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn-admin-edit mx-1" title="Chỉnh sửa sản phẩm của bạn" style="background: #00bfa5; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; text-decoration: none;">
+                                                                        <i class="fas fa-edit mr-1"></i> Chỉnh sửa sản phẩm
+                                                                    </a>
+                                                                </div>
+                                                            <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin' && ($product->seller_role ?? '') !== 'seller'): ?>
+                                                                <div class="admin-actions-mini d-flex mt-2 justify-content-end">
+                                                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn-admin-edit mx-1" title="Sửa">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </a>
+                                                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/delete/<?php echo $product->id; ?>" class="btn-admin-delete" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')">
+                                                                        <i class="fas fa-trash-alt"></i>
+                                                                    </a>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </div>
                                                 </div>
-
-                                                <div class="card-social-line mt-1" style="font-size: 12.5px; color: #757575; display: flex; align-items: center;">
-                                                    <span class="star-orange"><i class="fas fa-star" style="font-size: 11px; color: #ff9800;"></i> <?php echo number_format($product->rating, 1); ?></span>
-                                                    <span class="card-divider mx-2" style="color: #dbdbdb;">|</span>
-                                                    <span>Đã bán <?php echo number_format($product->sold); ?>+</span>
-                                                </div>
-                                            </div>
-
-                                            <!-- Wishlist Heart -->
-                                            <?php
-                                            $isFav = isset($wishlistItems) && is_array($wishlistItems) && in_array($product->id, $wishlistItems);
-                                            $heartClass = $isFav ? 'fas fa-heart' : 'far fa-heart';
-                                            ?>
-                                            <button class="btn btn-sm btn-light rounded-circle shadow-sm wishlist-btn-toggle mb-1" data-id="<?php echo $product->id; ?>" style="width: 32px; height: 32px; transition: transform 0.2s; border: 1px solid #ffebee;" title="Thêm vào yêu thích">
-                                                <i class="<?php echo $heartClass; ?>"></i>
-                                            </button>
-                                        </div>
-
-
-
-                                        <div class="card-bottom-info mt-2 pt-2" style="font-size: 12px; color: #888; border-top: 1px solid #f2f2f2;">
-                                            <div class="d-flex align-items-center text-truncate">
-                                                <i class="fas fa-truck-moving mr-2" style="color: #00bfa5; font-size: 11px;"></i> 2 - 3 ngày
-                                                <span class="mx-2" style="color: #eee;">|</span>
-                                                <i class="fas fa-map-marker-alt mr-2" style="color: #999; font-size: 11px;"></i> <?php echo htmlspecialchars($product->location ?? 'Tp. Hồ Chí Minh', ENT_QUOTES, 'UTF-8'); ?>
-                                            </div>
-                                            <?php
-                                            $currentUserId = $_SESSION['user_id'] ?? 0;
-                                            $ownerId = isset($product->user_id) ? (int)$product->user_id : 0;
-                                            $isOwner = ($currentUserId > 0 && $ownerId > 0 && (int)$currentUserId === $ownerId);
-                                            ?>
-                                            <?php if ($isOwner): ?>
-                                                <div class="admin-actions-mini d-flex mt-2 justify-content-end">
-                                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn-admin-edit mx-1" title="Chỉnh sửa sản phẩm của bạn" style="background: #00bfa5; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; text-decoration: none;">
-                                                        <i class="fas fa-edit mr-1"></i> Chỉnh sửa sản phẩm
-                                                    </a>
-                                                </div>
-                                            <?php elseif (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin' && ($product->seller_role ?? '') !== 'seller'): ?>
-                                                <div class="admin-actions-mini d-flex mt-2 justify-content-end">
-                                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/edit/<?php echo $product->id; ?>" class="btn-admin-edit mx-1" title="Sửa">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <a href="<?php echo BASE_URL; ?>index.php?url=Product/delete/<?php echo $product->id; ?>" class="btn-admin-delete" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </a>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php else: ?>
+                            <div class="col-12 text-center py-5">
+                                <img src="https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/a60759ad1dabe909c46a817ecbf71878.png" style="width: 150px; opacity: 0.5;" class="mb-3">
+                                <h5 class="text-muted">Rất tiếc, không tìm thấy sản phẩm nào!</h5>
+                                <p class="text-muted small">Thử sử dụng các từ khóa chung hơn hoặc xóa bộ lọc.</p>
+                                <a href="<?php echo BASE_URL; ?>index.php?url=Product/" class="btn btn-outline-success rounded-pill px-4 mt-2">Quay lại Trang Chủ</a>
                             </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <div class="col-12 text-center py-5">
-                            <img src="https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/assets/a60759ad1dabe909c46a817ecbf71878.png" style="width: 150px; opacity: 0.5;" class="mb-3">
-                            <h5 class="text-muted">Rất tiếc, không tìm thấy sản phẩm nào!</h5>
-                            <p class="text-muted small">Thử sử dụng các từ khóa chung hơn hoặc xóa bộ lọc.</p>
-                            <a href="<?php echo BASE_URL; ?>index.php?url=Product/" class="btn btn-outline-success rounded-pill px-4 mt-2">Quay lại Trang Chủ</a>
-                        </div>
-                    <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -812,6 +826,116 @@ $current_url = $current_url ?? ($_GET['url'] ?? 'Product/index');
             });
         });
     });
+</script>
+
+<style>
+    /* Custom DataTables Grid layout styling */
+    #productsDataTable {
+        display: block;
+        width: 100% !important;
+        background: transparent;
+        border: none;
+    }
+    #productsDataTable tbody {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -8px;
+    }
+    #productsDataTable, 
+    #productsDataTable th, 
+    #productsDataTable td, 
+    #productsDataTable tr, 
+    #productsDataTable thead, 
+    #productsDataTable tbody {
+        border: none !important;
+        background: transparent !important;
+    }
+    
+    /* Custom Pagination Styling to match branding */
+    #productsDataTable_wrapper .pagination {
+        justify-content: center;
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+    #productsDataTable_wrapper .page-item.active .page-link {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(194, 37, 92, 0.25);
+    }
+    #productsDataTable_wrapper .page-link {
+        color: #555 !important;
+        border: 1px solid #dee2e6 !important;
+        padding: 8px 16px;
+        margin: 0 3px;
+        border-radius: 20px !important;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+    #productsDataTable_wrapper .page-link:hover {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: #fff !important;
+    }
+    #productsDataTable_wrapper .page-item.disabled .page-link {
+        color: #ccc !important;
+        background-color: #fff !important;
+        border-color: #dee2e6 !important;
+        box-shadow: none;
+    }
+    
+    /* Custom DataTables Search Box Styling */
+    #productsDataTable_wrapper .dataTables_filter {
+        text-align: right;
+        margin-bottom: 20px;
+    }
+    #productsDataTable_wrapper .dataTables_filter label {
+        font-weight: 600;
+        color: #444;
+        font-size: 14.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    #productsDataTable_wrapper .dataTables_filter input {
+        border: 1px solid #ced4da !important;
+        border-radius: 20px !important;
+        padding: 6px 16px !important;
+        font-size: 13.5px !important;
+        outline: none !important;
+        width: 250px !important;
+        transition: all 0.2s ease-in-out !important;
+        background: #fff !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    #productsDataTable_wrapper .dataTables_filter input:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 3px rgba(194, 37, 92, 0.15) !important;
+    }
+</style>
+
+<script>
+$(document).ready(function() {
+    if ($('#productsDataTable').length) {
+        $('#productsDataTable').DataTable({
+            "pageLength": 16,
+            "lengthChange": false, // Hide page length selection dropdown
+            "ordering": false,     // Disable column sorting
+            "info": false,         // Hide "Showing X of Y entries" text
+            "searching": true,     // Enable search box
+            "language": {
+                "zeroRecords": "Không tìm thấy sản phẩm nào",
+                "search": "Tìm kiếm nhanh:",
+                "searchPlaceholder": "Nhập tên, giá, loại...",
+                "paginate": {
+                    "next": "Sau",
+                    "previous": "Trước"
+                }
+            },
+            "dom": "<'row mb-3'<'col-12 text-right'f>><'row'<'col-12'tr>><'row mt-4'<'col-12 d-flex justify-content-center'p>>"
+        });
+    }
+});
 </script>
 
 <?php include 'app/views/shares/footer.php'; ?>

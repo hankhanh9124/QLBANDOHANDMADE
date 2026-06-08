@@ -241,6 +241,17 @@ class ProductController
             if (empty(trim($name))) {
                 $errors[] = "Lỗi: Tên sản phẩm không được để trống.";
             }
+            if (isset($_FILES['related_images']['name']) && is_array($_FILES['related_images']['name'])) {
+                $validFilesCount = 0;
+                foreach ($_FILES['related_images']['name'] as $index => $valName) {
+                    if ($_FILES['related_images']['error'][$index] != 4) { // 4 is UPLOAD_ERR_NO_FILE
+                        $validFilesCount++;
+                    }
+                }
+                if ($validFilesCount > 10) {
+                    $errors[] = "Lỗi: Bạn chỉ được tải lên tối đa 10 ảnh liên quan.";
+                }
+            }
 
             if (!empty($errors)) {
                 $categories = (new CategoryModel($this->db))->getCategories();
@@ -264,8 +275,33 @@ class ProductController
             } else {
                 $image = "";
             }
+
+            // Xử lý upload ảnh liên quan (related_images)
+            $uploadedRelated = [];
+            if (isset($_FILES['related_images']['name']) && is_array($_FILES['related_images']['name'])) {
+                foreach ($_FILES['related_images']['name'] as $index => $relName) {
+                    if ($_FILES['related_images']['error'][$index] == 0) {
+                        $fileData = [
+                            'name'     => $_FILES['related_images']['name'][$index],
+                            'type'     => $_FILES['related_images']['type'][$index],
+                            'tmp_name' => $_FILES['related_images']['tmp_name'][$index],
+                            'error'    => $_FILES['related_images']['error'][$index],
+                            'size'     => $_FILES['related_images']['size'][$index]
+                        ];
+                        try {
+                            $path = $this->uploadImage($fileData);
+                            if (!empty($path)) {
+                                $uploadedRelated[] = $path;
+                            }
+                        } catch (Exception $e) {
+                        }
+                    }
+                }
+            }
+            $related_images = !empty($uploadedRelated) ? json_encode($uploadedRelated, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null;
+
             $user_id = $_SESSION['user_id'] ?? 1;
-            $result = $this->productModel->addProduct($name, $description, $price, $category_id, $image, $stock, $sold, $rating, $discount_percent, $location, $user_id);
+            $result = $this->productModel->addProduct($name, $description, $price, $category_id, $image, $stock, $sold, $rating, $discount_percent, $location, $user_id, $related_images);
 
             if (!is_array($result) && $result > 0) {
                 $productId = $result;
@@ -306,10 +342,23 @@ class ProductController
                 }
 
                 if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'seller') {
-                    // Gửi thông báo cho Admin (User ID 1)
+                    // Gửi thông báo cho tất cả Admin
+                    $stmtShop = $this->db->prepare("SELECT name FROM shops WHERE seller_id = :seller_id");
+                    $stmtShop->execute([':seller_id' => $_SESSION['user_id']]);
+                    $shopObj = $stmtShop->fetch(PDO::FETCH_OBJ);
+                    $shopName = $shopObj ? $shopObj->name : 'Người bán';
+
+                    $stmtAdmins = $this->db->query("SELECT id FROM user WHERE role = 'admin'");
+                    $admins = $stmtAdmins->fetchAll(PDO::FETCH_OBJ);
+
                     require_once 'app/models/NotificationModel.php';
                     $nModel = new NotificationModel($this->db);
-                    $nModel->addNotification(1, "Sản phẩm mới '" . $name . "' từ người bán đang chờ phê duyệt.", "index.php?url=Dashboard/products");
+
+                    foreach ($admins as $admin) {
+                        $msg = "Cửa hàng " . $shopName . " yêu cầu duyệt sản phẩm mới: " . $name;
+                        $link = "index.php?url=Dashboard/pendingProducts#row-" . $productId;
+                        $nModel->create($admin->id, 'Yêu cầu duyệt sản phẩm mới', $msg, 'shop_update', $link);
+                    }
                     
                     $_SESSION['success_message'] = "Sản phẩm đã được gửi và đang chờ Admin phê duyệt.";
                     header('Location: ' . BASE_URL . 'index.php?url=Seller/pendingProducts');
@@ -383,6 +432,38 @@ class ProductController
                 $errors[] = "Lỗi: Giá sản phẩm phải là số nguyên và lớn hơn 0.";
             }
 
+            // Calculate total related images (existing - deleted + new)
+            $currentRelatedCount = 0;
+            if (!empty($product->related_images)) {
+                $currentRelated = json_decode($product->related_images, true) ?: [];
+                $currentRelatedCount = count($currentRelated);
+            }
+            if (!empty($_POST['deleted_related_images'])) {
+                $deleted = json_decode($_POST['deleted_related_images'], true) ?: [];
+                $currentRelatedCount -= count($deleted);
+            }
+            if (isset($_FILES['related_images']['name']) && is_array($_FILES['related_images']['name'])) {
+                $newFilesCount = 0;
+                foreach ($_FILES['related_images']['name'] as $index => $relName) {
+                    if ($_FILES['related_images']['error'][$index] != 4) { // 4 is UPLOAD_ERR_NO_FILE
+                        $newFilesCount++;
+                    }
+                }
+                if ($currentRelatedCount + $newFilesCount > 10) {
+                    $errors[] = "Lỗi: Tổng số lượng hình ảnh liên quan (cũ và mới thêm) không được vượt quá 10.";
+                }
+            }
+
+            if (!empty($errors)) {
+                $categories = (new CategoryModel($this->db))->getCategories();
+                require_once 'app/models/VariantModel.php';
+                $variantModel = new VariantModel($this->db);
+                $variants = $variantModel->getVariantsByProductId($id);
+                $prodObj = $product;
+                include 'app/views/product/edit.php';
+                return;
+            }
+
             $category_id = $_POST['category_id'];
             $stock = $_POST['stock'] ?? 0;
             $sold = $_POST['sold'] ?? 0;
@@ -407,8 +488,47 @@ class ProductController
                     $image = $_POST['existing_image'] ?? '';
                 }
             }
+
+            // Xử lý cập nhật ảnh liên quan (related_images)
+            $currentRelated = [];
+            if (!empty($product->related_images)) {
+                $currentRelated = json_decode($product->related_images, true) ?: [];
+            }
+            // 1. Xóa các ảnh được gửi yêu cầu xóa
+            if (!empty($_POST['deleted_related_images'])) {
+                $deleted = json_decode($_POST['deleted_related_images'], true) ?: [];
+                foreach ($deleted as $delImg) {
+                    if (($key = array_search($delImg, $currentRelated)) !== false) {
+                        unset($currentRelated[$key]);
+                    }
+                }
+                $currentRelated = array_values($currentRelated);
+            }
+            // 2. Thêm các ảnh liên quan mới được chọn tải lên
+            if (isset($_FILES['related_images']['name']) && is_array($_FILES['related_images']['name'])) {
+                foreach ($_FILES['related_images']['name'] as $index => $relName) {
+                    if ($_FILES['related_images']['error'][$index] == 0) {
+                        $fileData = [
+                            'name'     => $_FILES['related_images']['name'][$index],
+                            'type'     => $_FILES['related_images']['type'][$index],
+                            'tmp_name' => $_FILES['related_images']['tmp_name'][$index],
+                            'error'    => $_FILES['related_images']['error'][$index],
+                            'size'     => $_FILES['related_images']['size'][$index]
+                        ];
+                        try {
+                            $path = $this->uploadImage($fileData);
+                            if (!empty($path)) {
+                                $currentRelated[] = $path;
+                            }
+                        } catch (Exception $e) {
+                        }
+                    }
+                }
+            }
+            $related_images = !empty($currentRelated) ? json_encode($currentRelated, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : null;
+
             $status = (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'approved' : 'pending';
-            $edit = $this->productModel->updateProduct($id, $name, $description, $price, $category_id, $image, $stock, $sold, $rating, $discount_percent, $location, $status);
+            $edit = $this->productModel->updateProduct($id, $name, $description, $price, $category_id, $image, $stock, $sold, $rating, $discount_percent, $location, $status, $related_images);
             if ($edit) {
                 require_once 'app/models/VariantModel.php';
                 $vModel = new VariantModel($this->db);
@@ -478,6 +598,26 @@ class ProductController
                                 $vModel->addVariant($id, $vName, $vImg, $vPrice, $vStock);
                             }
                         }
+                    }
+                }
+
+                if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'seller') {
+                    // Gửi thông báo cho tất cả Admin khi seller yêu cầu cập nhật sản phẩm
+                    $stmtShop = $this->db->prepare("SELECT name FROM shops WHERE seller_id = :seller_id");
+                    $stmtShop->execute([':seller_id' => $_SESSION['user_id']]);
+                    $shopObj = $stmtShop->fetch(PDO::FETCH_OBJ);
+                    $shopName = $shopObj ? $shopObj->name : 'Người bán';
+
+                    $stmtAdmins = $this->db->query("SELECT id FROM user WHERE role = 'admin'");
+                    $admins = $stmtAdmins->fetchAll(PDO::FETCH_OBJ);
+
+                    require_once 'app/models/NotificationModel.php';
+                    $nModel = new NotificationModel($this->db);
+
+                    foreach ($admins as $admin) {
+                        $msg = "Cửa hàng " . $shopName . " yêu cầu duyệt chỉnh sửa sản phẩm: " . $name;
+                        $link = "index.php?url=Dashboard/pendingProducts#row-" . $id;
+                        $nModel->create($admin->id, 'Yêu cầu chỉnh sửa sản phẩm', $msg, 'shop_update', $link);
                     }
                 }
 

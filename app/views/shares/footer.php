@@ -239,6 +239,11 @@
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<?php if (isset($load_datatables) && $load_datatables): ?>
+    <!-- DataTables JS for Product Lists -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+<?php endif; ?>
 <script src="<?php echo BASE_URL; ?>public/js/orders.js?v=<?php echo time(); ?>"></script>
 
 <!-- LogIn Reminder Modal (Global) -->

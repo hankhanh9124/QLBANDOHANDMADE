@@ -91,6 +91,82 @@ include 'app/views/shares/header.php';
                                 <?php endif; ?>
                             </div>
 
+                            <!-- PRODUCT GALLERY THUMBNAILS -->
+                            <?php
+                            $galleryImages = [];
+                            if (!empty($product->image)) {
+                                $galleryImages[] = [
+                                    'url' => BASE_URL . htmlspecialchars($finalProdImg, ENT_QUOTES, 'UTF-8'),
+                                    'type' => 'main',
+                                    'variant_id' => null,
+                                    'name' => $product->name
+                                ];
+                            }
+                            if (!empty($variants)) {
+                                foreach ($variants as $variant) {
+                                    $hasVariantImage = !empty($variant->image) && $variant->image !== 'null';
+                                    if ($hasVariantImage) {
+                                        $variantUrl = BASE_URL . 'public/uploads/' . htmlspecialchars($variant->image, ENT_QUOTES, 'UTF-8');
+                                        // Avoid duplicate image paths in the gallery
+                                        $isDuplicate = false;
+                                        foreach ($galleryImages as $gImg) {
+                                            if ($gImg['url'] === $variantUrl) {
+                                                $isDuplicate = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!$isDuplicate) {
+                                            $galleryImages[] = [
+                                                'url' => $variantUrl,
+                                                'type' => 'variant',
+                                                'variant_id' => $variant->id,
+                                                'name' => $variant->name
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                            // Add custom related images from product details
+                            if (!empty($product->related_images)) {
+                                $relImgs = json_decode($product->related_images, true);
+                                if (is_array($relImgs)) {
+                                    foreach ($relImgs as $relImg) {
+                                        $relImgUrl = BASE_URL . 'public/uploads/' . htmlspecialchars($relImg, ENT_QUOTES, 'UTF-8');
+                                        // Avoid duplicate image paths in the gallery
+                                        $isDuplicate = false;
+                                        foreach ($galleryImages as $gImg) {
+                                            if ($gImg['url'] === $relImgUrl) {
+                                                $isDuplicate = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!$isDuplicate) {
+                                            $galleryImages[] = [
+                                                'url' => $relImgUrl,
+                                                'type' => 'related',
+                                                'variant_id' => null,
+                                                'name' => $product->name
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                            ?>
+                            <?php if (count($galleryImages) > 1): ?>
+                                <div class="product-gallery-thumbnails d-flex justify-content-center align-items-center mt-3 flex-wrap animate__animated animate__fadeIn" style="gap: 12px; margin-bottom: 5px;">
+                                    <?php foreach ($galleryImages as $index => $gImg): ?>
+                                        <div class="gallery-thumb-wrapper">
+                                            <img class="gallery-thumb <?php echo $index === 0 ? 'active' : ''; ?>" 
+                                                 src="<?php echo $gImg['url']; ?>" 
+                                                 alt="<?php echo htmlspecialchars($gImg['name'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                 data-index="<?php echo $index; ?>"
+                                                 data-type="<?php echo $gImg['type']; ?>"
+                                                 data-variant-id="<?php echo $gImg['variant_id'] ?? ''; ?>">
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+
                             <!-- SELLER INFO BLOCK -->
                             <div class="mt-4 p-4 bg-white shadow-sm border rounded" style="border-radius: 15px; border-left: 5px solid var(--primary-color) !important;">
                                 <div class="d-flex align-items-center mb-3">
@@ -548,6 +624,32 @@ include 'app/views/shares/header.php';
     .wishlist-btn-toggle:hover {
         transform: scale(1.1);
     }
+
+    /* Product Gallery Thumbnails */
+    .gallery-thumb {
+        width: 75px;
+        height: 75px;
+        object-fit: cover;
+        cursor: pointer;
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 3px;
+        background-color: #fff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .gallery-thumb:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .gallery-thumb.active {
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 5px 15px rgba(13, 145, 57, 0.25) !important;
+        transform: translateY(-2px) scale(1.05);
+    }
 </style>
 
 <script>
@@ -594,6 +696,120 @@ include 'app/views/shares/header.php';
         const btnBuyNow = document.querySelector('a[href*="Cart/buyNow"]');
         const btnAddVariant = document.getElementById('btnAddVariant');
         const variantAddForm = document.getElementById('variantAddForm');
+        const galleryThumbs = document.querySelectorAll('.gallery-thumb');
+
+        // Save defaults for resetting to default image/price/stock
+        const defaultPriceHtml = document.getElementById('mainProductPrice') ? document.getElementById('mainProductPrice').innerHTML : '';
+        const defaultPriceOldHtml = document.getElementById('mainProductPriceOld') ? document.getElementById('mainProductPriceOld').innerHTML : '';
+        const defaultStock = "<?php echo $product->stock ?? 0; ?>";
+        const defaultCartHref = btnAddToCart ? btnAddToCart.getAttribute('href') : '';
+        const defaultBuyNowHref = btnBuyNow ? btnBuyNow.getAttribute('href') : '';
+        const defaultImageSrc = mainImage ? mainImage.src : '';
+        const defaultImageAlt = mainImage ? mainImage.alt : '';
+
+        // Reset details to default product state
+        function selectDefaultProduct() {
+            variantItems.forEach(vi => vi.classList.remove('active'));
+
+            if (mainImage) {
+                const defaultImg = mainImage.getAttribute('data-original-image') || defaultImageSrc;
+                mainImage.src = defaultImg;
+                mainImage.alt = defaultImageAlt;
+            }
+
+            const priceEl = document.getElementById('mainProductPrice');
+            const priceOldEl = document.getElementById('mainProductPriceOld');
+            if (priceEl) priceEl.innerHTML = defaultPriceHtml;
+            if (priceOldEl) priceOldEl.innerHTML = defaultPriceOldHtml;
+
+            const stockEl = document.getElementById('displayStock');
+            const quantityInput = document.getElementById('buyQuantity');
+            const defaultStockInt = parseInt(defaultStock);
+            if (stockEl) {
+                stockEl.classList.remove('text-danger');
+                stockEl.innerText = defaultStockInt;
+            }
+            if (quantityInput) {
+                quantityInput.setAttribute('max', defaultStockInt);
+                if (parseInt(quantityInput.value) > defaultStockInt) {
+                    quantityInput.value = defaultStockInt > 0 ? 1 : 0;
+                }
+            }
+
+            if (btnAddToCart) btnAddToCart.setAttribute('href', defaultCartHref);
+            if (btnBuyNow) btnBuyNow.setAttribute('href', defaultBuyNowHref);
+
+            const imgContainer = mainImage ? mainImage.parentElement : null;
+            if (imgContainer) {
+                if (defaultStockInt <= 0) {
+                    mainImage.classList.add('product-img-sold-out');
+                    imgContainer.classList.add('sold-out-container');
+                    if (!imgContainer.querySelector('.sold-out-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'sold-out-overlay';
+                        overlay.innerHTML = '<span class="sold-out-stamp" style="font-size: 2rem; padding: 10px 24px;">Hết hàng</span>';
+                        imgContainer.appendChild(overlay);
+                    }
+                } else {
+                    mainImage.classList.remove('product-img-sold-out');
+                    imgContainer.classList.remove('sold-out-container');
+                    const overlay = imgContainer.querySelector('.sold-out-overlay');
+                    if (overlay) overlay.remove();
+                }
+            }
+
+            const btnArea = document.querySelector('.d-flex.align-items-center.flex-wrap');
+            const qtySelector = document.querySelector('.d-flex.align-items-center.mb-4');
+            
+            if (defaultStockInt <= 0) {
+                if (qtySelector) qtySelector.style.display = 'none';
+                let alertMsg = document.getElementById('variantOutOfStockAlert');
+                if (!alertMsg && btnArea) {
+                    alertMsg = document.createElement('div');
+                    alertMsg.id = 'variantOutOfStockAlert';
+                    alertMsg.className = 'alert alert-danger w-100 p-3 shadow-sm mb-4';
+                    alertMsg.style.borderRadius = '10px';
+                    alertMsg.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Hết hàng! Sản phẩm này hiện không khả dụng.';
+                    btnArea.parentElement.insertBefore(alertMsg, btnArea);
+                }
+                if (btnArea) btnArea.style.display = 'none';
+            } else {
+                if (qtySelector) qtySelector.style.display = 'flex';
+                const alertMsg = document.getElementById('variantOutOfStockAlert');
+                if (alertMsg) alertMsg.remove();
+                if (btnArea) btnArea.style.display = 'flex';
+            }
+
+            const defaultThumb = document.querySelector('.gallery-thumb[data-type="main"]');
+            if (defaultThumb) {
+                galleryThumbs.forEach(t => t.classList.remove('active'));
+                defaultThumb.classList.add('active');
+            }
+        }
+
+        // Gallery thumbnail click events
+        galleryThumbs.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                galleryThumbs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                const type = this.getAttribute('data-type');
+                if (type === 'main') {
+                    selectDefaultProduct();
+                } else if (type === 'variant') {
+                    const variantId = this.getAttribute('data-variant-id');
+                    const variantItem = document.querySelector(`.variant-item[data-variant-id="${variantId}"]`);
+                    if (variantItem) {
+                        variantItem.click();
+                    }
+                } else if (type === 'related') {
+                    if (mainImage) {
+                        mainImage.src = this.src;
+                        mainImage.alt = this.alt;
+                    }
+                }
+            });
+        });
 
         if (btnAddVariant) {
             btnAddVariant.addEventListener('click', function() {
@@ -609,10 +825,22 @@ include 'app/views/shares/header.php';
                 // Set active
                 this.classList.add('active');
 
+                // Sync active gallery thumbnail
+                const vId = this.getAttribute('data-variant-id');
+                const matchingThumb = document.querySelector(`.gallery-thumb[data-variant-id="${vId}"]`);
+                galleryThumbs.forEach(t => t.classList.remove('active'));
+                if (matchingThumb) {
+                    matchingThumb.classList.add('active');
+                } else {
+                    const defaultThumb = document.querySelector('.gallery-thumb[data-type="main"]');
+                    if (defaultThumb) {
+                        defaultThumb.classList.add('active');
+                    }
+                }
+
                 // Update main image
                 const newImg = this.getAttribute('data-variant-image');
                 const vName = this.getAttribute('data-variant-name');
-                const vId = this.getAttribute('data-variant-id');
                 const vPrice = parseFloat(this.getAttribute('data-variant-price') || 0);
                 const vStock = parseInt(this.getAttribute('data-variant-stock') || 0);
                 const discount = <?php echo $discount ?? 0; ?>;

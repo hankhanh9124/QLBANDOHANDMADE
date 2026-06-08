@@ -61,6 +61,9 @@ $wishlistItems = $_SESSION['wishlist_items'] ?? [];
     <?php if (empty($_GET['url']) || strpos($_GET['url'], 'Product') === 0): ?>
         <link href="<?php echo BASE_URL; ?>public/css/handmade.css?v=<?php echo time(); ?>" rel="stylesheet">
     <?php endif; ?>
+    <?php if (isset($load_datatables) && $load_datatables): ?>
+        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css"/>
+    <?php endif; ?>
     <!-- jQuery loaded early so all inline scripts can use it -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 </head>
